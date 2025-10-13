@@ -1,94 +1,144 @@
-# 10x Astro Starter
+# Definition Quest
 
-A modern, opinionated starter template for building fast, accessible, and AI-friendly web applications.
+> A memory-match web application that turns any text into an engaging flash-card style game powered by AI.
+
+Definition Quest helps students, educators and lifelong learners master definitions faster. Paste your notes or add term–definition pairs manually and play a desktop-friendly memory game that tracks your time and progress. Boards can be shared publicly, stored in your account and regenerated anytime.
+
+---
+
+## Table of Contents
+
+1. [Tech Stack](#tech-stack)
+2. [Getting Started Locally](#getting-started-locally)
+3. [Available Scripts](#available-scripts)
+4. [Project Scope](#project-scope)
+5. [Project Status](#project-status)
+6. [License](#license)
+
+---
 
 ## Tech Stack
 
-- [Astro](https://astro.build/) v5.5.5 - Modern web framework for building fast, content-focused websites
-- [React](https://react.dev/) v19.0.0 - UI library for building interactive components
-- [TypeScript](https://www.typescriptlang.org/) v5 - Type-safe JavaScript
-- [Tailwind CSS](https://tailwindcss.com/) v4.0.17 - Utility-first CSS framework
+### Front-end
 
-## Prerequisites
+- **Astro 5** – lightning-fast static-first framework
+- **React 19** – interactive components when required
+- **TypeScript 5** – type-safe development & better DX
+- **Tailwind CSS 4** – utility-first styling
+- **Shadcn/ui** – accessible React component collection
 
-- Node.js v22.14.0 (as specified in `.nvmrc`)
-- npm (comes with Node.js)
+### Back-end
 
-## Getting Started
+- **Supabase** – PostgreSQL database, authentication & edge functions
 
-1. Clone the repository:
+### AI Layer
+
+- **Openrouter.ai** – unified access to multiple LLM providers (OpenAI, Anthropic, Google …) with quota management
+
+### Tooling & Dev Ops
+
+- **Node 22.14.0** (see `.nvmrc`)
+- **ESLint**, **Prettier**, **Husky** & **lint-staged** – code quality
+- **GitHub Actions** – CI / CD pipelines
+- **Docker + DigitalOcean** – production hosting
+
+---
+
+## Getting Started Locally
+
+### Prerequisites
+
+1. **Node 22.14.0** & npm ≥ 10 (or pnpm / yarn)
+2. A Supabase project (URL & service role key)
+3. An Openrouter.ai API key
+
+### Installation
 
 ```bash
-git clone https://github.com/przeprogramowani/10x-astro-starter.git
-cd 10x-astro-starter
+# 1. Clone repository
+$ git clone https://github.com/<your-org>/definition-quest.git
+$ cd definition-quest
+
+# 2. Install dependencies
+$ npm install
+
+# 3. Configure environment variables
+$ cp .env.example .env
+# then fill in SUPABASE_URL, SUPABASE_ANON_KEY, OPENROUTER_API_KEY, …
+
+# 4. Start dev server
+$ npm run dev
 ```
 
-2. Install dependencies:
+The app will be available at `http://localhost:4321` (default Astro port).
+
+### Building for production
 
 ```bash
-npm install
+# Generate optimized client & server output
+$ npm run build
+
+# Preview the production build locally
+$ npm run preview
 ```
 
-3. Run the development server:
-
-```bash
-npm run dev
-```
-
-4. Build for production:
-
-```bash
-npm run build
-```
+---
 
 ## Available Scripts
 
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build
-- `npm run lint` - Run ESLint
-- `npm run lint:fix` - Fix ESLint issues
+| Script            | Purpose                                                    |
+|-------------------|------------------------------------------------------------|
+| `npm run dev`     | Start Astro in development mode with hot reloading         |
+| `npm run build`   | Generate static client & server output                     |
+| `npm run preview` | Preview the production build locally                       |
+| `npm run astro`   | Expose the underlying Astro CLI                            |
+| `npm run lint`    | Run ESLint on the entire codebase                          |
+| `npm run lint:fix`| Auto-fix lint issues where possible                        |
+| `npm run format`  | Format all supported files with Prettier                   |
 
-## Project Structure
+---
 
-```md
-.
-├── src/
-│   ├── layouts/    # Astro layouts
-│   ├── pages/      # Astro pages
-│   │   └── api/    # API endpoints
-│   ├── components/ # UI components (Astro & React)
-│   └── assets/     # Static assets
-├── public/         # Public assets
-```
+## Project Scope
 
-## AI Development Support
+### MVP Features
 
-This project is configured with AI development tools to enhance the development experience, providing guidelines for:
+- **Board creation**  
+  • Paste up to 5 000 chars of text and let AI extract up to 24 term-definition pairs  
+  • Manually add / edit / delete pairs with validation (16 / 24 cards limit)  
+- **Memory-match gameplay**  
+  • Desktop-only board, select max 2 cards at a time  
+  • Correct pairs disappear, timer stops when board is cleared  
+  • Page refresh resets the board & timer (anti-cheat)  
+- **User accounts** – registration & login via Supabase Auth (OAuth / JWT)
+- **Results storage** – completion times saved to Postgres
+- **Public boards** – browse, search & solve other users’ boards
+- **AI usage limits** – 50 generations per user per day
+- **Analytics** – Google Analytics events (`create_board`, `solve_board`, `time_spent`) with GDPR consent banner & IP anonymization
+- **Basic accessibility** – proper contrast, focus rings, ARIA labels, full keyboard navigation
+- **i18n-ready** – English hard-coded for MVP, JSON structure prepared for future locales
 
-- Project structure
-- Coding practices
-- Frontend development
-- Styling with Tailwind
-- Accessibility best practices
-- Astro and React guidelines
+### Out of Scope (MVP)
 
-### Cursor IDE
+- Mobile gameplay & full responsive layout
+- Teacher / student roles & advanced permissions
+- Content moderation & board versioning
+- Advanced WCAG compliance beyond the basics
+- Paid AI models (initial phase uses free tier)
 
-The project includes AI rules in `.cursor/rules/` directory that help Cursor IDE understand the project structure and provide better code suggestions.
+---
 
-### GitHub Copilot
+## Project Status
 
-AI instructions for GitHub Copilot are available in `.github/copilot-instructions.md`
+🚧 **MVP in active development** – core gameplay and board generation are functional, remaining features are tracked in the [issue tracker](../../issues). Contributions & feedback are welcome!
 
-### Windsurf
+Planned milestones:
 
-The `.windsurfrules` file contains AI configuration for Windsurf.
+- [ ] User profile & stats page
+- [ ] Public board browsing with filters
+- [ ] Dockerised production deployment
 
-## Contributing
-
-Please follow the AI guidelines and coding practices defined in the AI configuration files when contributing to this project.
+---
 
 ## License
 
-MIT
+This project is licensed under the **MIT License** – see the [LICENSE](LICENSE) file for details.
