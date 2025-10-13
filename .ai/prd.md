@@ -36,7 +36,7 @@ Nauka definicji z tradycyjnych notatek bywa żmudna, szczególnie dla osób z pr
    • pomiar i zapis czasu,
    • reset planszy i timera po odświeżeniu.
 5. Przeglądanie, wyszukiwanie i sortowanie plansz:
-   • własnych (edycja, archiwizacja),
+   • własnych (edycja, archiwizacja, rozwiązywanie),
    • publicznych innych użytkowników (rozwiązywanie).
 6. Zapisywanie wyników w Supabase Postgres.
 7. Analityka (Google Analytics): eventy create_board, solve_board, time_spent; baner zgody GDPR, anonimizacja IP.
@@ -55,9 +55,9 @@ Nauka definicji z tradycyjnych notatek bywa żmudna, szczególnie dla osób z pr
 | ID | Tytuł | Opis | Kryteria akceptacji |
 |----|-------|------|----------------------|
 | US-001 | Rejestracja i logowanie | Jako nowy użytkownik chcę utworzyć konto i logować się, aby przechowywać swoje plansze i wyniki. | • Formularz OAuth/JWT działa.<br>• Po zalogowaniu dostępne są funkcje tworzenia i zapisu.<br>• Nie zalogowany widzi przycisk „Log in”. |
-| US-002 | Generowanie planszy przez AI | Jako uczeń chcę wkleić notatki (≤ 5 000 znaków) i otrzymać planszę, aby szybciej się uczyć. | • Po wklejeniu tekstu i kliknięciu „Generate” AI zwraca ≤ 24 par w ≤ 10 s.<br>• ≥ 75 % par jest poprawnych wg użytkownika.<br>• Plansza można zapisać lub edytować przed zapisem. |
+| US-002 | Ręczne tworzenie planszy | Jako autor chcę ręcznie dodać pary słowo-definicja, gdy AI nie jest potrzebne. | • Formularz dodawania par działa.<br>• Limit 16/24 kart z walidacją.<br>• Zapis tworzy planszę. 
 | US-003 | Edycja wygenerowanych par | Jako użytkownik chcę poprawiać lub usuwać błędne pary przed publikacją planszy. | • Interfejs pozwala edytować tekst obu pól.<br>• Można usuwać pary.<br>• Walidacja: min. 1 para przed zapisem.<br>• Zapis tworzy planszę w DB. |
-| US-004 | Ręczne tworzenie planszy | Jako autor chcę ręcznie dodać pary słowo-definicja, gdy AI nie jest potrzebne. | • Formularz dodawania par działa.<br>• Limit 16/24 kart z walidacją.<br>• Zapis tworzy planszę. |
+| US-004 | Generowanie planszy przez AI | Jako uczeń chcę wkleić notatki (≤ 5 000 znaków) i otrzymać planszę, aby szybciej się uczyć. | • Po wklejeniu tekstu i kliknięciu „Generate” AI zwraca ≤ 24 par w ≤ 10 s.<br>• ≥ 75 % par jest poprawnych wg użytkownika.<br>• Plansza można zapisać lub edytować przed zapisem. | Po wygenerowaniu formularz manualnego wypełniania zostaje automatycznie uzupełniony
 | US-005 | Rozwiązywanie planszy | Jako gracz chcę dopasować pary na planszy i zobaczyć czas ukończenia. | • Można zaznaczyć max 2 karty jednocześnie.<br>• Poprawne pary znikają.<br>• Timer start/stop działa.<br>• Wynik zapisany w DB. |
 | US-006 | Reset zabezpieczający | Jako gracz nie chcę oszukiwać przez odświeżenie strony. | • Odświeżenie resetuje planszę i timer.<br>• Wynik nie jest zapisany. |
 | US-007 | Przeglądanie własnych plansz | Jako autor chcę listować moje plansze, aby je przeglądać. | • Lista pokazuje tytuł, datę, liczbę kart.<br>• Dostępne przyciski edytuj, usuń, rozwiąż. |
