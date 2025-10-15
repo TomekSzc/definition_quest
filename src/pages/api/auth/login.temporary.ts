@@ -28,8 +28,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
   const supabase = locals.supabase as SupabaseClient;
   // Sign in with email/password to obtain a session
-  console.log('tomek', supabase);
-  const { data: authData, error } = await supabase.auth.signUp({ email, password });
+  const { data: authData, error } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error) {
     const status = error.status || 401;
