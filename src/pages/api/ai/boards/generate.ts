@@ -1,72 +1,11 @@
 import type { APIRoute } from "astro";
 import { GenerateBoardSchema } from "../../../../lib/validation/boards";
 import { generateBoardPairs } from "../../../../lib/services/board-ai.service";
-
-/**
- * Maps business error codes to HTTP responses.
- * 
- * @param errorCode - Error code from business logic
- * @returns Object with response body and status code, or null if not mapped
- */
-function getErrorMapping(errorCode: string): { response: Record<string, unknown>; status: number } | null {
-  const errorMap: Record<string, { response: Record<string, unknown>; status: number }> = {
-    QUOTA_EXCEEDED: {
-      response: {
-        error: "quota_exceeded",
-        message: "Daily AI generation limit reached. Try again tomorrow.",
-      },
-      status: 429,
-    },
-    INPUT_TEXT_TOO_LONG: {
-      response: {
-        error: "input_too_long",
-        message: "Input text exceeds 5,000 character limit.",
-      },
-      status: 400,
-    },
-    INPUT_TEXT_EMPTY: {
-      response: {
-        error: "input_empty",
-        message: "Input text cannot be empty.",
-      },
-      status: 400,
-    },
-    INVALID_CARD_COUNT: {
-      response: {
-        error: "invalid_card_count",
-        message: "Card count must be 16 or 24.",
-      },
-      status: 400,
-    },
-  };
-
-  return errorMap[errorCode] || null;
-}
-
-/**
- * Helper function to create consistent error responses.
- * 
- * @param response - Error response body (object or string)
- * @param status - HTTP status code
- * @param headers - Optional headers (defaults to JSON content type)
- * @returns Response object
- */
-function createErrorResponse(
-  response: Record<string, unknown> | string,
-  status: number,
-  headers?: HeadersInit
-): Response {
-  const body = typeof response === "string" ? { error: response } : response;
-  const defaultHeaders = { "Content-Type": "application/json" };
-  
-  return new Response(
-    JSON.stringify(body),
-    {
-      status,
-      headers: headers || defaultHeaders,
-    }
-  );
-}
+import {
+  createErrorResponse,
+  createSuccessResponse,
+  getErrorMapping,
+} from "../../../../lib/utils/api-response";
 
 /**
  * POST /api/ai/boards/generate
@@ -87,17 +26,14 @@ function createErrorResponse(
  */
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
-    // 1. Authentication check
-    const {
-      data: { user },
-      error: authError,
-    } = await locals.supabase.auth.getUser();
-
-    if (authError || !user) {
+    // User is already authenticated by middleware and available in locals
+    const user = locals.user;
+    
+    if (!user) {
       return createErrorResponse("Unauthorized", 401);
     }
 
-    // 2. Parse and validate request body
+    // 1. Parse and validate request body
     let body: unknown;
     try {
       body = await request.json();
@@ -124,17 +60,14 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     const command = parseResult.data;
 
-    // 3. Generate pairs using AI service (includes quota check)
+    // 2. Generate pairs using AI service (includes quota check)
     const result = await generateBoardPairs(
       locals.supabase,
       user.id,
       command
     );
 
-    return new Response(JSON.stringify(result), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
+    return createSuccessResponse(result);
   } catch (error) {
     // Handle specific business errors
     if (error instanceof Error) {
