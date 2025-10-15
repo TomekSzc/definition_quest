@@ -158,6 +158,25 @@ export type AiRequestDTO = {
   requestedAt: AiRequestRow["requested_at"];
 };
 
+export interface BoardGenerationEnqueuedDTO {
+  jobId: string; // uuid from ai_requests.id
+  wsChannel: string; // e.g., "ai:requests:<jobId>"
+}
+
+/**
+ * Response from AI board generation containing generated pairs.
+ * Used for synchronous generation flow (MVP).
+ */
+export interface GeneratedPair {
+  term: string;
+  definition: string;
+}
+
+export interface BoardGenerationResultDTO {
+  pairs: GeneratedPair[];
+  requestId: string; // uuid from ai_requests.id for tracking
+}
+
 /**
  * Collection wrappers ───────────────────────────────────────────────────
  */
