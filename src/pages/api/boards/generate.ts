@@ -1,14 +1,30 @@
 import type { APIRoute } from "astro";
-import { GenerateBoardSchema } from "../../../../lib/validation/boards";
-import { generateBoardPairs } from "../../../../lib/services/board-ai.service";
+import { GenerateBoardSchema } from "../../../lib/validation/boards";
+import { generateBoardPairs } from "../../../lib/services/board-ai.service";
 import {
   createErrorResponse,
   createSuccessResponse,
   getErrorMapping,
-} from "../../../../lib/utils/api-response";
+  formatValidationErrors,
+} from "../../../lib/utils/api-response";
+
+// Custom error classes for HTTP errors
+class HttpError extends Error {
+  constructor(public message: string, public status: number, public response?: any) {
+    super(message);
+    this.name = 'HttpError';
+  }
+}
+
+class ValidationError extends HttpError {
+  constructor(message: string, details: any) {
+    super(message, 400, { error: message, details });
+    this.name = 'ValidationError';
+  }
+}
 
 /**
- * POST /api/ai/boards/generate
+ * POST /api/boards/generate
  * 
  * Generates term-definition pairs from raw text (≤ 5,000 chars) using AI.
  * The operation counts toward the daily limit of 50 AI requests per user.
@@ -30,32 +46,21 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const user = locals.user;
     
     if (!user) {
-      return createErrorResponse("Unauthorized", 401);
+      throw new HttpError("Unauthorized", 401);
     }
 
     // 1. Parse and validate request body
-    let body: unknown;
-    try {
-      body = await request.json();
-    } catch {
-      return createErrorResponse("Invalid JSON in request body", 400);
+    const body = await request.json().catch(() => undefined);
+    
+    if (!body) {
+      throw new HttpError("Invalid JSON in request body", 400);
     }
 
     const parseResult = GenerateBoardSchema.safeParse(body);
 
     if (!parseResult.success) {
-      const errors = parseResult.error.errors.map((e) => ({
-        field: e.path.join("."),
-        message: e.message,
-      }));
-
-      return createErrorResponse(
-        {
-          error: "Validation failed",
-          details: errors,
-        },
-        400
-      );
+      const errors = formatValidationErrors(parseResult.error);
+      throw new ValidationError("Validation failed", errors);
     }
 
     const command = parseResult.data;
@@ -69,7 +74,12 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     return createSuccessResponse(result);
   } catch (error) {
-    // Handle specific business errors
+    // Handle custom HTTP errors
+    if (error instanceof HttpError) {
+      return createErrorResponse(error.response || error.message, error.status);
+    }
+
+    // Handle specific business errors from services
     if (error instanceof Error) {
       const errorMapping = getErrorMapping(error.message);
       if (errorMapping) {
@@ -78,7 +88,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     }
 
     // General error handling
-    console.error("Error in POST /api/ai/boards/generate:", error);
+    console.error("Error in POST /api/boards/generate:", error);
     return createErrorResponse("Internal server error", 500);
   }
 };

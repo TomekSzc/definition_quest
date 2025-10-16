@@ -3,6 +3,8 @@
  * These helpers ensure consistent response formats across all endpoints.
  */
 
+import type { ZodError } from "zod";
+
 /**
  * Maps business error codes to HTTP responses.
  * 
@@ -42,6 +44,19 @@ export function getErrorMapping(errorCode: string): { response: Record<string, u
   };
 
   return errorMap[errorCode] || null;
+}
+
+/**
+ * Formats Zod validation errors into a consistent format.
+ * 
+ * @param zodError - Zod validation error object
+ * @returns Array of formatted error objects with field and message
+ */
+export function formatValidationErrors(zodError: ZodError) {
+  return zodError.errors.map((e) => ({
+    field: e.path.join("."),
+    message: e.message,
+  }));
 }
 
 /**
