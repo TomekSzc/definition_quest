@@ -112,7 +112,7 @@ Constraints:
 
 | Method | Path | Description |
 |--------|------|-------------|
-| POST | `/ai/boards/generate` | Generate pairs from raw text ≤ 5 000 chars, then persist board in single call. Counts toward daily quota (50). |
+| POST | `/boards/generate` | Generate pairs from raw text ≤ 5 000 chars. Returns generated pairs for editing before board creation. Counts toward daily quota (50). |
 | GET | `/ai/usage` | Return { remaining: number, resetAt: ISO-date }. Uses `daily_ai_usage` view. |
 
 POST body example:
@@ -125,7 +125,16 @@ POST body example:
   "tags": ["chemistry", "organic"]
 }
 ```
-Success (202 Accepted): returns job id + WebSocket channel; board appears when ready.
+Success (200 OK): returns generated pairs array for editing before board creation.
+```jsonc
+{
+  "pairs": [
+    { "term": "Alkane", "definition": "Saturated hydrocarbon with single bonds" },
+    // ... more pairs
+  ],
+  "requestId": "<uuid>"
+}
+```
 
 ### 2.7 Analytics (optional)
 
@@ -197,7 +206,7 @@ Errors return shape:
 
 ## 7. Security & Performance Considerations
 
-* **Rate Limiting** – 60 req/min/user; separate bucket for `/ai/*` (50/day).
+* **Rate Limiting** – 60 req/min/user; separate bucket for AI generation (50/day).
 * **Input Sanitisation** – strip HTML, enforce UTF-8.
 * **Compression** – Enable gzip / brotli.
 * **Caching** – `GET /boards/:id` & leaderboard endpoints cache public responses (ETag, 60 s).
