@@ -48,6 +48,34 @@ export function getErrorMapping(errorCode: string): { response: Record<string, u
       },
       status: 409,
     },
+    INVALID_INPUT: {
+      response: {
+        error: "invalid_input",
+        message: "Request body validation failed.",
+      },
+      status: 400,
+    },
+    BOARD_NOT_FOUND: {
+      response: {
+        error: "board_not_found",
+        message: "Board does not exist or access denied.",
+      },
+      status: 404,
+    },
+    UNAUTHORIZED: {
+      response: {
+        error: "unauthorized",
+        message: "Authentication required.",
+      },
+      status: 401,
+    },
+    SERVER_ERROR: {
+      response: {
+        error: "server_error",
+        message: "Internal server error.",
+      },
+      status: 500,
+    },
   };
 
   return errorMap[errorCode] || null;

@@ -142,3 +142,38 @@ Planned milestones:
 ## License
 
 This project is licensed under the **MIT License** – see the [LICENSE](LICENSE) file for details.
+
+## API Reference
+
+### Submit Board Score
+
+```
+POST /api/boards/:boardId/scores
+```
+
+Saves the user’s completion time (in milliseconds) for a given board. If a record for the same user & board already exists, it is overwritten.
+
+| Status | Meaning | Body |
+|--------|---------|------|
+| 201    | Created (first score) | `{ id, elapsedMs }` |
+| 200    | Updated (score overwritten) | `{ id, elapsedMs }` |
+| 400    | Invalid input          | `{ error: "invalid_input", details }` |
+| 401    | Unauthorized           | `{ error: "unauthorized" }` |
+| 404    | Board not found / no access | `{ error: "board_not_found" }` |
+| 500    | Server error           | `{ error: "server_error" }` |
+
+#### Request Parameters
+
+- **URL Param** `boardId` – `uuid` of the board (required)
+
+#### Request Body
+
+```jsonc
+{
+  "elapsedMs": 93400 // positive integer > 0
+}
+```
+
+#### Headers
+
+- `Authorization: Bearer <JWT>` – Supabase access token
