@@ -41,6 +41,13 @@ export function getErrorMapping(errorCode: string): { response: Record<string, u
       },
       status: 400,
     },
+    DUPLICATE_BOARD: {
+      response: {
+        error: "duplicate_board",
+        message: "A board with the same title and level already exists.",
+      },
+      status: 409,
+    },
   };
 
   return errorMap[errorCode] || null;
