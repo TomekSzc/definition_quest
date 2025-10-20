@@ -40,6 +40,7 @@ Common query params for listing:
 |--------|------|-------------|
 | GET | `/boards` | List **public** boards (optionally filtered) – anonymous access allowed. |
 | GET | `/boards/mine` | List **own** boards (private + public + archived). Requires auth. |
+| GET | `/boards/played` | List **public** boards in which the authenticated user has at least one score. Requires auth. |
 | POST | `/boards` | Create board manually (pairs embedded in body). |
 | POST | `/boards/generate` | Create board via AI – see AI section. |
 | GET | `/boards/:id` | Get board metadata + pairs. Public boards accessible to all, private to owner. |

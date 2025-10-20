@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
-import { CreateBoardSchema } from "../../../lib/validation/boards";
-import { createBoard } from "../../../lib/services/board.service";
+import { CreateBoardSchema, ListBoardsSchema } from "../../../lib/validation/boards";
+import { createBoard, listPublicBoards } from "../../../lib/services/board.service";
 import {
   createErrorResponse,
   createSuccessResponse,
@@ -23,6 +23,46 @@ class ValidationError extends HttpError {
 }
 
 export const prerender = false;
+
+/**
+ * GET /api/boards
+ *
+ * Lists public, non-archived boards with pagination, optional FTS search, tag filter,
+ * author filter and sorting. Anonymous access permitted.
+ *
+ * @returns 200 OK - Paged<BoardSummaryDTO>
+ * @returns 400 Bad Request - Invalid query params
+ * @returns 500 Internal Server Error - Unexpected errors
+ */
+export const GET: APIRoute = async ({ url, locals }) => {
+  try {
+    // 1. Parse & validate query params
+    const parseResult = ListBoardsSchema.safeParse(Object.fromEntries(url.searchParams));
+    if (!parseResult.success) {
+      const errors = formatValidationErrors(parseResult.error);
+      throw new ValidationError("Validation failed", errors);
+    }
+
+    // 2. Service call (no auth required, use service with public filter)
+    const paged = await listPublicBoards(locals.supabase, parseResult.data);
+
+    return createSuccessResponse(paged);
+  } catch (error: any) {
+    if (error instanceof ValidationError) {
+      return createErrorResponse(error.response, error.status);
+    }
+
+    if (error instanceof Error) {
+      const mapping = getErrorMapping(error.message);
+      if (mapping) {
+        return createErrorResponse(mapping.response, mapping.status);
+      }
+    }
+
+    console.error("Error in GET /api/boards:", error);
+    return createErrorResponse("Internal server error", 500);
+  }
+};
 
 /**
  * POST /api/boards
