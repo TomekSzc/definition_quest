@@ -62,6 +62,13 @@ export function getErrorMapping(errorCode: string): { response: Record<string, u
       },
       status: 404,
     },
+    BOARD_PRIVATE: {
+      response: {
+        error: "board_private",
+        message: "This board is private and you are not the owner.",
+      },
+      status: 401,
+    },
     UNAUTHORIZED: {
       response: {
         error: "unauthorized",

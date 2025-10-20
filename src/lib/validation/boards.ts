@@ -162,3 +162,10 @@ export const ListPlayedBoardsSchema = ListBoardsBaseSchema.omit({ ownerId: true 
 
 export type ListPlayedBoardsQuery = z.infer<typeof ListPlayedBoardsSchema>;
 
+/**
+ * Validation schema for board id path param
+ */
+export const BoardIdParamSchema = z.object({
+  id: z.string().uuid("Invalid board id")
+});
+

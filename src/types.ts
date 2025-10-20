@@ -145,6 +145,17 @@ export type PlayedBoardDTO = Omit<BoardSummaryDTO, "archived"> & {
 };
 
 /**
+ * View single board with optional last score for current user
+ */
+export interface BoardMyScoreDTO {
+  lastTime: ScoreRow["elapsed_ms"];
+}
+
+export type BoardViewDTO = BoardDetailDTO & {
+  myScore?: BoardMyScoreDTO;
+};
+
+/**
  * AI endpoints ───────────────────────────────────────────────────────────
  */
 

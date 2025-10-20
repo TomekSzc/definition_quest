@@ -5,18 +5,11 @@ import {
   formatValidationErrors,
   getErrorMapping,
 } from "../../../../lib/utils/api-response";
+import { HttpError, ValidationError } from "../../../../lib/utils/http-error";
 import { SubmitScoreSchema } from "../../../../lib/validation/scores";
 import { upsertScore } from "../../../../lib/services/score.service";
 
 export const prerender = false;
-
-// Custom HTTP error wrapper
-class HttpError extends Error {
-  constructor(public status: number, public body: Record<string, unknown> | string) {
-    super(typeof body === "string" ? body : JSON.stringify(body));
-    this.name = "HttpError";
-  }
-}
 
 async function handleUpsert(
   { params, request, locals }: Parameters<APIRoute>[0],
@@ -26,24 +19,24 @@ async function handleUpsert(
     const { boardId } = params;
 
     if (!boardId) {
-      throw new HttpError(400, { error: "INVALID_BOARD_ID" });
+      throw new HttpError("invalid_board_id", 400, { error: "INVALID_BOARD_ID" });
     }
 
     const user = locals.user;
     if (!user) {
-      throw new HttpError(401, { error: "UNAUTHORIZED" });
+      throw new HttpError("unauthorized", 401, { error: "UNAUTHORIZED" });
     }
 
     // Parse JSON body
     const body = await request.json().catch(() => undefined);
     if (!body) {
-      throw new HttpError(400, { error: "INVALID_JSON" });
+      throw new HttpError("invalid_json", 400, { error: "INVALID_JSON" });
     }
 
     const parseResult = SubmitScoreSchema.safeParse(body);
     if (!parseResult.success) {
       const details = formatValidationErrors(parseResult.error);
-      throw new HttpError(400, { error: "invalid_input", details });
+      throw new ValidationError("invalid_input", details);
     }
 
     const { elapsedMs } = parseResult.data;
@@ -69,7 +62,7 @@ async function handleUpsert(
     );
   } catch (error) {
     if (error instanceof HttpError) {
-      return createErrorResponse(error.body, error.status);
+      return createErrorResponse(error.response || error.message, error.status);
     }
 
     if (error instanceof Error) {

@@ -1,9 +1,8 @@
 import { v4 as uuid } from "uuid";
 import type { SupabaseClient } from "../../db/supabase.client";
-import type { PairDTO } from "../../types";
+import type { PairDTO, PaginationMeta, BoardSummaryDTO, Paged, BoardDetailDTO, BoardMyScoreDTO, BoardViewDTO, PlayedBoardDTO } from "../../types";
 import type { CreateBoardInput } from "../validation/boards";
 import type { ListBoardsQuery } from "../validation/boards";
-import type { PaginationMeta, BoardSummaryDTO, Paged } from "../../types";
 import type { Database } from "../../db/database.types";
 // Board row type corresponding to the selected columns from the `boards` table
 type BoardSelect = Pick<
@@ -224,7 +223,7 @@ export async function listBoardsPlayedByUser(
   supabase: SupabaseClient,
   userId: string,
   query: Omit<ListBoardsQuery, "ownerId">,
-): Promise<Paged<import("../../types").PlayedBoardDTO>> {
+): Promise<Paged<PlayedBoardDTO>> {
   const { page, pageSize, q, tags, sort, direction } = query;
 
   const columnMap: Record<ListBoardsQuery["sort"], string> = {
@@ -263,7 +262,7 @@ export async function listBoardsPlayedByUser(
   }
 
   // Remove duplicates and pick bestTime
-  const uniqueMap = new Map<string, import("../../types").PlayedBoardDTO>();
+  const uniqueMap = new Map<string, PlayedBoardDTO>();
 
   (data ?? []).forEach((r: any) => {
     const existing = uniqueMap.get(r.id);
@@ -297,4 +296,76 @@ export async function listBoardsPlayedByUser(
   };
 
   return { data: boards, meta };
+}
+
+/**
+ * Fetch a single board with pairs and the current user last score (if any).
+ * Ensures board exists, is not archived and user has access.
+ *
+ * @throws Error("BOARD_NOT_FOUND") when no board or no access
+ */
+export async function fetchBoardById(
+  supabase: SupabaseClient,
+  boardId: string,
+  userId?: string,
+): Promise<BoardViewDTO> {
+  // Build base select with left joins
+  let request = supabase
+    .from("boards")
+    .select(
+      `id, owner_id, title, card_count, level, is_public, archived, tags, created_at, updated_at,
+       pairs(id, term, definition),
+       scores(elapsed_ms)`
+    )
+    .eq("id", boardId)
+    .eq("archived", false);
+
+  // Filter score by current user if provided
+  if (userId) {
+    request = request.eq("scores.user_id", userId);
+  }
+
+  const { data, error } = await request.maybeSingle();
+
+  if (error) {
+    console.error("Error fetching board by id:", error);
+    throw error;
+  }
+
+  if (!data) {
+    throw new Error("BOARD_NOT_FOUND");
+  }
+
+  // If board is private and user is not owner
+  if (!data.is_public && data.owner_id !== userId) {
+    throw new Error("BOARD_PRIVATE");
+  }
+
+  // Map to DTOs
+  const pairs: PairDTO[] = (data.pairs ?? []).map((p: any) => ({
+    id: p.id,
+    term: p.term,
+    definition: p.definition,
+  }));
+
+  const boardDetail: BoardDetailDTO = {
+    id: data.id,
+    ownerId: data.owner_id,
+    title: data.title,
+    cardCount: data.card_count,
+    level: data.level,
+    isPublic: data.is_public,
+    archived: data.archived,
+    tags: data.tags,
+    createdAt: data.created_at,
+    updatedAt: data.updated_at,
+    pairs,
+  };
+
+  const myScore: BoardMyScoreDTO | undefined =
+    data.scores && data.scores.length
+      ? { lastTime: data.scores[0].elapsed_ms }
+      : undefined;
+
+  return { ...boardDetail, myScore };
 }
