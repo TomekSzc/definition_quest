@@ -177,3 +177,35 @@ Saves the user’s completion time (in milliseconds) for a given board. If a rec
 #### Headers
 
 - `Authorization: Bearer <JWT>` – Supabase access token
+
+### List Boards Played By User
+
+```
+GET /api/boards/played
+```
+
+Returns a paginated list of boards (public *or* private) in which the authenticated user has at least one recorded score. Each item includes the user’s last recorded completion time (`lastTime`).
+
+The response type is `Paged<PlayedBoardDTO>`.
+
+| Status | Meaning | Body |
+|--------|---------|------|
+| 200    | OK                      | `Paged<BoardSummaryDTO>` |
+| 400    | Invalid query params    | `{ error: "validation_failed", details }` |
+| 401    | Unauthorized            | `{ error: "unauthorized" }` |
+| 500    | Server error            | `{ error: "server_error" }` |
+
+#### Query Parameters
+
+| Name       | Type              | Default | Notes |
+|------------|-------------------|---------|-------|
+| `page`     | `number >= 1`     | `1`     | Page number |
+| `pageSize` | `number 1–100`    | `20`    | Items per page |
+| `q`        | `string ≤ 100`    | —       | Full-text search on title |
+| `tags`     | `string`          | —       | Comma-separated list, max 10 tags |
+| `sort`     | `created \| updated \| cardCount` | `created` | Sort column |
+| `direction`| `asc \| desc`     | `desc`  | Sort order |
+
+#### Headers
+
+- `Authorization: Bearer <JWT>` – Supabase access token (required)

@@ -138,6 +138,13 @@ export interface MyScoreDTO {
 }
 
 /**
+ * Extended board summary returned by GET /boards/played – includes the user’s best time for that board.
+ */
+export type PlayedBoardDTO = Omit<BoardSummaryDTO, "archived"> & {
+  lastTime: ScoreRow["elapsed_ms"];
+};
+
+/**
  * AI endpoints ───────────────────────────────────────────────────────────
  */
 

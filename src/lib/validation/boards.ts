@@ -106,47 +106,59 @@ export const CreateBoardSchema = z.object({
 
 export type CreateBoardInput = z.infer<typeof CreateBoardSchema>;
 
+// Base object schema (before .transform) so we can reuse & omit keys
+const ListBoardsBaseSchema = z.object({
+  page: z
+    .preprocess((v) => (v === undefined ? 1 : Number(v)), z.number().int().min(1))
+    .default(1),
+  pageSize: z
+    .preprocess((v) => (v === undefined ? 20 : Number(v)), z.number().int().min(1).max(100))
+    .default(20),
+  q: z
+    .preprocess(
+      (v) => (typeof v === "string" && v.trim() === "" ? undefined : v),
+      z.string().max(100),
+    )
+    .optional(),
+  tags: z
+    .preprocess((v) => {
+      if (typeof v !== "string") return v;
+      const arr = v
+        .split(",")
+        .map((t) => t.trim())
+        .filter(Boolean);
+      return arr.length ? arr : undefined;
+    }, z.array(z.string().max(20)).max(10))
+    .optional(),
+  ownerId: z.string().uuid().optional(),
+  sort: z
+    .preprocess((v) => (v === undefined ? "created" : v), z.enum(["created", "updated", "cardCount"]))
+    .default("created"),
+  direction: z
+    .preprocess((v) => (v === undefined ? "desc" : v), z.enum(["asc", "desc"]))
+    .default("desc"),
+});
+
 /**
  * Validation schema for listing public boards with pagination, filtering and sorting.
- * Processes raw URLSearchParams where all values are strings.
  */
-export const ListBoardsSchema = z
-  .object({
-    page: z
-      .preprocess((v) => (v === undefined ? 1 : Number(v)), z.number().int().min(1))
-      .default(1),
-    pageSize: z
-      .preprocess((v) => (v === undefined ? 20 : Number(v)), z.number().int().min(1).max(100))
-      .default(20),
-    q: z
-      .preprocess((v) => (typeof v === "string" && v.trim() === "" ? undefined : v), z.string().max(100))
-      .optional(),
-    tags: z
-      .preprocess((v) => {
-        if (typeof v !== "string") return v;
-        const arr = v
-          .split(",")
-          .map((t) => t.trim())
-          .filter(Boolean);
-        return arr.length ? arr : undefined;
-      }, z.array(z.string().max(20)).max(10))
-      .optional(),
-    ownerId: z.string().uuid().optional(),
-    sort: z
-      .preprocess((v) => (v === undefined ? "created" : v), z.enum(["created", "updated", "cardCount"]))
-      .default("created"),
-    direction: z
-      .preprocess((v) => (v === undefined ? "desc" : v), z.enum(["asc", "desc"]))
-      .default("desc"),
-  })
-  .transform((data) => {
-    // Ensure numbers after preprocess
-    return {
-      ...data,
-      page: Number(data.page),
-      pageSize: Number(data.pageSize),
-    };
-  });
+export const ListBoardsSchema = ListBoardsBaseSchema.transform((data) => ({
+  ...data,
+  page: Number(data.page),
+  pageSize: Number(data.pageSize),
+}));
 
 export type ListBoardsQuery = z.infer<typeof ListBoardsSchema>;
+
+/**
+ * Validation schema for listing boards the current authenticated user has played.
+ * Same as ListBoards but without ownerId filter.
+ */
+export const ListPlayedBoardsSchema = ListBoardsBaseSchema.omit({ ownerId: true }).transform((data) => ({
+  ...data,
+  page: Number(data.page),
+  pageSize: Number(data.pageSize),
+}));
+
+export type ListPlayedBoardsQuery = z.infer<typeof ListPlayedBoardsSchema>;
 
