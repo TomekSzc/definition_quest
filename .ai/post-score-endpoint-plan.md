@@ -81,5 +81,4 @@ Punkt końcowy pozwala zalogowanemu użytkownikowi **zapisać** czas ukończenia
 2. **Service** `src/lib/services/score.service.ts` z funkcją `upsertScore`.
 3. **API Route** `scores.ts` (POST): walidacja → `upsertScore` → odpowiedź.
 4. **Frontend**: zawsze wysyła `POST`; otrzymuje zwrotnie „ostatni czas”.
-5. **Dokumentacja**: README / OpenAPI.
-6. **Przyszłość**: dodać kolumnę `best_elapsed_ms` + endpoint `PATCH`/logika leaderboard.
+5. **Przyszłość**: dodać kolumnę `best_elapsed_ms` + endpoint `PATCH`/logika leaderboard.

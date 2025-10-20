@@ -76,6 +76,13 @@ export function getErrorMapping(errorCode: string): { response: Record<string, u
       },
       status: 500,
     },
+    VALIDATION_FAILED: {
+      response: {
+        error: "validation_failed",
+        message: "Request validation failed.",
+      },
+      status: 400,
+    },
   };
 
   return errorMap[errorCode] || null;
