@@ -215,3 +215,86 @@ export async function listPublicBoards(
 
   return { data: boards, meta };
 }
+
+/**
+ * Lists public, non-archived boards that the given user has played (has at least one score).
+ * Uses an inner join on `scores` limited to `user_id` plus standard filters/search/sort/pagination.
+ */
+export async function listBoardsPlayedByUser(
+  supabase: SupabaseClient,
+  userId: string,
+  query: Omit<ListBoardsQuery, "ownerId">,
+): Promise<Paged<import("../../types").PlayedBoardDTO>> {
+  const { page, pageSize, q, tags, sort, direction } = query;
+
+  const columnMap: Record<ListBoardsQuery["sort"], string> = {
+    created: "created_at",
+    updated: "updated_at",
+    cardCount: "card_count",
+  } as const;
+
+  const from = (page - 1) * pageSize;
+  const to = page * pageSize - 1;
+
+  let request = supabase
+    .from("boards")
+    .select(
+      "id, owner_id, title, card_count, level, is_public, archived, tags, created_at, updated_at, scores!inner(user_id, elapsed_ms)",
+      { count: "exact" },
+    )
+    .eq("archived", false)
+    .eq("scores.user_id", userId);
+
+  if (q) {
+    request = request.textSearch("search_vector", q, { type: "plain" });
+  }
+
+  if (tags && tags.length) {
+    request = request.contains("tags", tags);
+  }
+
+  request = request.order(columnMap[sort], { ascending: direction === "asc" }).range(from, to);
+
+  const { data, error, count } = await request;
+
+  if (error) {
+    console.error("Error selecting played boards:", error);
+    throw error;
+  }
+
+  // Remove duplicates and pick bestTime
+  const uniqueMap = new Map<string, import("../../types").PlayedBoardDTO>();
+
+  (data ?? []).forEach((r: any) => {
+    const existing = uniqueMap.get(r.id);
+    const elapsed = r.scores?.elapsed_ms ?? null;
+
+    if (!existing) {
+      uniqueMap.set(r.id, {
+        id: r.id,
+        ownerId: r.owner_id,
+        title: r.title,
+        cardCount: r.card_count,
+        level: r.level,
+        isPublic: r.is_public,
+        tags: r.tags,
+        createdAt: r.created_at,
+        updatedAt: r.updated_at,
+        lastTime: elapsed,
+      });
+    } else if (elapsed !== null) {
+      // For MVP we keep the most recent score regardless of value (scores returned sorted by board order, not time)
+      existing.lastTime = elapsed;
+    }
+  });
+
+  const boards = Array.from(uniqueMap.values());
+
+  const meta: PaginationMeta = {
+    page,
+    pageSize,
+    total: count ?? boards.length,
+  };
+
+  return { data: boards, meta };
+}
