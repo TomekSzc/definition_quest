@@ -104,6 +104,20 @@ export function getErrorMapping(errorCode: string): { response: Record<string, u
       },
       status: 400,
     },
+    CARD_LIMIT_REACHED: {
+      response: {
+        error: "card_limit_reached",
+        message: "Board has reached maximum number of pairs.",
+      },
+      status: 400,
+    },
+    DUPLICATE_PAIR: {
+      response: {
+        error: "duplicate_pair",
+        message: "Term already exists on this board.",
+      },
+      status: 409,
+    },
   };
 
   return errorMap[errorCode] || null;

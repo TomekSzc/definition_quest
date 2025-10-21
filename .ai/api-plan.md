@@ -113,7 +113,7 @@ Validation rules enforced server-side:
 
 | Method | Path | Description |
 |--------|------|-------------|
-| POST | `/boards/:boardId/pairs` | Add a new pair. Owner only. |
+| POST | `/boards/:boardId/pairs` | Add a new pair. Owner only. Add only when board did't reached card limit|
 | PATCH | `/boards/:boardId/pairs/:pairId` | Edit term or definition. |
 | DELETE | `/boards/:boardId/pairs/:pairId` | Remove pair. |
 
