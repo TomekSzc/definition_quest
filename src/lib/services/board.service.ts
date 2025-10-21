@@ -465,6 +465,78 @@ export async function fetchBoardById(
   return { ...boardDetail, myScore };
 }
 
+// NEW CODE: Update board meta (title, is_public, archived, tags)
+export async function updateBoardMeta(
+  supabase: SupabaseClient,
+  userId: string,
+  boardId: string,
+  payload: {
+    title?: string;
+    isPublic?: boolean;
+    tags?: string[];
+  },
+): Promise<string> {
+  // 1. Fetch board to verify ownership and current status
+  const { data: boardRow, error: selectErr } = await supabase
+    .from("boards")
+    .select(
+      "id, owner_id, title, card_count, level, is_public, archived, tags, created_at, updated_at",
+    )
+    .eq("id", boardId)
+    .maybeSingle();
+
+  if (selectErr) {
+    console.error("Error selecting board:", selectErr);
+    throw selectErr;
+  }
+
+  if (!boardRow) {
+    throw new Error("BOARD_NOT_FOUND");
+  }
+
+  if (boardRow.owner_id !== userId) {
+    throw new Error("NOT_OWNER");
+  }
+
+  // Disallow modifications on archived boards
+  if (boardRow.archived) {
+    throw new Error("BOARD_ARCHIVED");
+  }
+
+  // 2. Build update object, skipping undefined fields
+  const updateColumns = Object.fromEntries(
+    Object.entries({
+      title: payload.title,
+      is_public: payload.isPublic,
+      tags: payload.tags,
+    }).filter(([, value]) => value !== undefined),
+  );
+
+  if (Object.keys(updateColumns).length === 0) {
+    // Client did not provide any new values.
+    throw new Error("NO_CHANGES");
+  }
+
+  updateColumns.updated_at = new Date().toISOString();
+
+  // 3. Apply update to all levels (same owner & current title)
+  const { error: updateErr2 } = await supabase
+    .from("boards")
+    .update(updateColumns)
+    .eq("owner_id", userId)
+    .eq("title", boardRow.title);
+
+  if (updateErr2) {
+    if ((updateErr2 as any).code === "23505") {
+      throw new Error("DUPLICATE_BOARD");
+    }
+    console.error("Error updating boards:", updateErr2);
+    throw updateErr2;
+  }
+
+  return `updated ${Object.keys(updateColumns).join(", ")} for all levels`;
+}
+
 export async function updatePair(
   supabase: SupabaseClient,
   userId: string,

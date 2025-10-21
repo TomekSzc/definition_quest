@@ -169,3 +169,32 @@ export const BoardIdParamSchema = z.object({
   id: z.string().uuid("Invalid board id")
 });
 
+// NEW CODE: PatchBoardSchema for PATCH /boards/:id
+export const PatchBoardSchema = z.object({
+  title: z
+    .string()
+    .min(1, "Title must be at least 1 character")
+    .max(255, "Title must not exceed 255 characters")
+    .trim()
+    .optional(),
+
+  isPublic: z.boolean().optional(),
+
+  tags: z
+    .array(
+      z
+        .string()
+        .min(1, "Tags cannot be empty")
+        .max(20, "Each tag must not exceed 20 characters")
+        .trim()
+    )
+    .max(10, "A maximum of 10 tags are allowed")
+    .optional(),
+})
+  .refine((data) => Object.keys(data).length > 0, {
+    message: "At least one field must be provided",
+    path: [],
+  });
+
+export type PatchBoardInput = z.infer<typeof PatchBoardSchema>;
+
