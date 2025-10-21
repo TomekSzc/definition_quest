@@ -69,6 +69,20 @@ export function getErrorMapping(errorCode: string): { response: Record<string, u
       },
       status: 401,
     },
+    NOT_OWNER: {
+      response: {
+        error: "not_owner",
+        message: "You are not the owner of this board.",
+      },
+      status: 401,
+    },
+    BOARD_ARCHIVED: {
+      response: {
+        error: "board_archived",
+        message: "Board is archived and cannot be modified.",
+      },
+      status: 400,
+    },
     UNAUTHORIZED: {
       response: {
         error: "unauthorized",

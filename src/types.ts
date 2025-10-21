@@ -116,6 +116,14 @@ export type PatchBoardCmd = Strict<
 >;
 
 /**
+ * Command model for creating the next level of an existing board
+ */
+export type CreateNextLevelCmd = Strict<{
+  boardId: string;
+  pairs: PairCreateCmd[];
+}>;
+
+/**
  * Score / Leaderboard ────────────────────────────────────────────────────
  */
 
