@@ -284,3 +284,30 @@ Partially updates board meta fields (title, public status, archived flag, tags).
 
 - `Authorization: Bearer <JWT>` – Supabase access token (required)
 - `Content-Type: application/json`
+
+### Archive Board
+
+```
+DELETE /api/boards/:boardId
+```
+
+Soft-archives a board level (sets `archived = true`). Owner-only.
+
+| Status | Meaning | Body |
+|--------|---------|------|
+| 200    | Archived | `{ message: "Board archived" }` |
+| 400    | Validation error        | `{ error, message }` |
+| 401    | Unauthorized / not owner | `{ error, message }` |
+| 404    | Board not found | `{ error, message }` |
+| 409    | Already archived | `{ error, message }` |
+| 500    | Server error | `{ error, message }` |
+
+#### Request Parameters
+
+| Name      | Type   | Required | Notes |
+|-----------|--------|----------|-------|
+| `boardId` | `uuid` | Yes      | URL param |
+
+#### Headers
+
+- `Authorization: Bearer <JWT>` – Supabase access token (required)

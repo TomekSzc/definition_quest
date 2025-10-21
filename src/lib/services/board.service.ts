@@ -726,3 +726,46 @@ export async function addPairToBoard(
     definition: pairRow.definition,
   };
 }
+
+export async function archiveBoard(
+  supabase: SupabaseClient,
+  userId: string,
+  boardId: string,
+): Promise<string> {
+  // 1. Fetch board to verify ownership and status
+  const { data: boardRow, error: selectErr } = await supabase
+    .from("boards")
+    .select("owner_id, archived")
+    .eq("id", boardId)
+    .maybeSingle();
+
+  if (selectErr) {
+    console.error("Error selecting board:", selectErr);
+    throw selectErr;
+  }
+
+  if (!boardRow) {
+    throw new Error("BOARD_NOT_FOUND");
+  }
+
+  if (boardRow.owner_id !== userId) {
+    throw new Error("NOT_OWNER");
+  }
+
+  if (boardRow.archived) {
+    throw new Error("BOARD_ALREADY_ARCHIVED");
+  }
+
+  // 2. Soft-archive – affect only this board level
+  const { error: updateErr } = await supabase
+    .from("boards")
+    .update({ archived: true, updated_at: new Date().toISOString() })
+    .eq("id", boardId);
+
+  if (updateErr) {
+    console.error("Error archiving board:", updateErr);
+    throw updateErr;
+  }
+
+  return "Board archived";
+}
