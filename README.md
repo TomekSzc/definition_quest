@@ -243,3 +243,44 @@ The response type is `Paged<PlayedBoardDTO>`.
 #### Headers
 
 - `Authorization: Bearer <JWT>` – Supabase access token (required)
+
+---
+
+### Update Board Metadata
+
+```
+PATCH /api/boards/:boardId
+```
+
+Partially updates board meta fields (title, public status, archived flag, tags). Owner-only.
+
+| Status | Meaning | Body |
+|--------|---------|------|
+| 200    | Updated | `BoardDetailDTO` |
+| 400    | Validation error / archived board | `{ error, message }` |
+| 401    | Unauthorized / not owner | `{ error, message }` |
+| 404    | Board not found | `{ error, message }` |
+| 409    | Duplicate title | `{ error, message }` |
+| 500    | Server error | `{ error, message }` |
+
+#### Request Parameters
+
+| Name      | Type   | Required | Notes |
+|-----------|--------|----------|-------|
+| `boardId` | `uuid` | Yes      | URL param |
+
+#### Request Body (any combination)
+
+```jsonc
+{
+  "title": "New title",          // optional, 1-255 chars
+  "isPublic": true,               // optional
+  "archived": false,              // optional
+  "tags": ["biology", "cells"]   // optional, ≤10 tags
+}
+```
+
+#### Headers
+
+- `Authorization: Bearer <JWT>` – Supabase access token (required)
+- `Content-Type: application/json`

@@ -118,6 +118,13 @@ export function getErrorMapping(errorCode: string): { response: Record<string, u
       },
       status: 409,
     },
+    NO_CHANGES: {
+      response: {
+        error: "no_changes",
+        message: "No fields provided or values identical to current state.",
+      },
+      status: 400,
+    },
   };
 
   return errorMap[errorCode] || null;
