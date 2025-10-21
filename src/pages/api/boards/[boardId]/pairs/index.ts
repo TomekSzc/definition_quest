@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 import { z } from "zod";
-import { PatchPairSchema } from "../../../../../lib/validation/pairs";
+import { CreatePairSchema } from "../../../../../lib/validation/pairs";
 import {
   createErrorResponse,
   createSuccessResponse,
@@ -8,16 +8,15 @@ import {
   getErrorMapping,
 } from "../../../../../lib/utils/api-response";
 import { ValidationError } from "../../../../../lib/utils/http-error";
-import { updatePair } from "../../../../../lib/services/board.service";
+import { addPairToBoard } from "../../../../../lib/services/board.service";
 
 export const prerender = false;
 
 const PathParamSchema = z.object({
   boardId: z.string().uuid("Invalid board id"),
-  pairId: z.string().uuid("Invalid pair id"),
 });
 
-export const PATCH: APIRoute = async ({ params, request, locals }) => {
+export const POST: APIRoute = async ({ params, request, locals }) => {
   try {
     const user = locals.user;
     if (!user) {
@@ -25,34 +24,34 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
       return createErrorResponse(map.response, map.status);
     }
 
-    // 1. Validate params
-    const paramResult = PathParamSchema.safeParse(params);
-    if (!paramResult.success) {
-      const errors = formatValidationErrors(paramResult.error);
+    // 1. Validate path params
+    const paramRes = PathParamSchema.safeParse(params);
+    if (!paramRes.success) {
+      const errors = formatValidationErrors(paramRes.error);
       throw new ValidationError("Validation failed", errors);
     }
-    // 2. Validate body
+
+    // 2. Validate body JSON
     const bodyJson = await request.json().catch(() => undefined);
     if (!bodyJson) {
       throw new ValidationError("Invalid JSON body", []);
     }
-    const bodyResult = PatchPairSchema.safeParse(bodyJson);
-    if (!bodyResult.success) {
-      const errors = formatValidationErrors(bodyResult.error);
+    const bodyRes = CreatePairSchema.safeParse(bodyJson);
+    if (!bodyRes.success) {
+      const errors = formatValidationErrors(bodyRes.error);
       throw new ValidationError("Validation failed", errors);
     }
 
     // 3. Service call
-    const { boardId, pairId } = paramResult.data;
-    const updated = await updatePair(
+    const { boardId } = paramRes.data;
+    const created = await addPairToBoard(
       locals.supabase,
       user.id,
       boardId,
-      pairId,
-      bodyResult.data,
+      bodyRes.data,
     );
 
-    return createSuccessResponse(updated);
+    return createSuccessResponse(created, 201);
   } catch (error: any) {
     if (error instanceof ValidationError) {
       return createErrorResponse(error.response, error.status);
@@ -65,7 +64,7 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
       }
     }
 
-    console.error("Error in PATCH /api/boards/:boardId/pairs/:pairId:", error);
+    console.error("Error in POST /api/boards/:boardId/pairs:", error);
     return createErrorResponse("Internal server error", 500);
   }
 };

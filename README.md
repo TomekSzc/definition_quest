@@ -178,6 +178,40 @@ Saves the user’s completion time (in milliseconds) for a given board. If a rec
 
 - `Authorization: Bearer <JWT>` – Supabase access token
 
+### Add Pair to Board
+
+```
+POST /api/boards/:boardId/pairs
+```
+
+Adds a new term–definition pair to the specified board level. Owner-only and only while the board has not yet reached its card limit (`card_count / 2` pairs).
+
+| Status | Meaning | Body |
+|--------|---------|------|
+| 201    | Pair created | `PairDTO` |
+| 400    | Validation error / card limit reached | `{ error, message }` |
+| 401    | Unauthorized / not owner | `{ error, message }` |
+| 404    | Board not found | `{ error, message }` |
+| 409    | Duplicate term | `{ error, message }` |
+| 500    | Server error | `{ error, message }` |
+
+#### Request Parameters
+
+- **URL Param** `boardId` – `uuid` of the board (required)
+
+#### Request Body
+```jsonc
+{
+  "term": "Mitochondria",
+  "definition": "Powerhouse of the cell"
+}
+```
+
+#### Headers
+
+- `Authorization: Bearer <JWT>` – Supabase access token (required)
+- `Content-Type: application/json`
+
 ### List Boards Played By User
 
 ```

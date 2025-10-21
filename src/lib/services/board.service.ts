@@ -520,3 +520,83 @@ export async function updatePair(
     definition: pairRow.definition,
   };
 }
+
+export async function addPairToBoard(
+  supabase: SupabaseClient,
+  userId: string,
+  boardId: string,
+  input: { term: string; definition: string },
+): Promise<{ id: string; term: string; definition: string }> {
+  // 1. Ensure board exists and user is owner
+  const { data: boardRow, error: boardErr } = await supabase
+    .from("boards")
+    .select("owner_id, card_count, archived")
+    .eq("id", boardId)
+    .maybeSingle();
+
+  if (boardErr) {
+    console.error("Error selecting board:", boardErr);
+    throw boardErr;
+  }
+
+  if (!boardRow) {
+    throw new Error("BOARD_NOT_FOUND");
+  }
+
+  if (boardRow.owner_id !== userId) {
+    throw new Error("NOT_OWNER");
+  }
+
+  if (boardRow.archived) {
+    throw new Error("BOARD_ARCHIVED");
+  }
+
+  // 2. Check card limit
+  const { count: pairCount, error: countErr } = await supabase
+    .from("pairs")
+    .select("id", { count: "exact", head: true })
+    .eq("board_id", boardId);
+
+  if (countErr) {
+    console.error("Error counting pairs:", countErr);
+    throw countErr;
+  }
+
+  const maxPairs = boardRow.card_count / 2;
+  if ((pairCount ?? 0) >= maxPairs) {
+    throw new Error("CARD_LIMIT_REACHED");
+  }
+
+  // 3. Insert new pair
+  const newId = uuid();
+  const { data: pairRow, error: insertErr } = await supabase
+    .from("pairs")
+    .insert({
+      id: newId,
+      board_id: boardId,
+      term: input.term,
+      definition: input.definition,
+    })
+    .select("id, term, definition")
+    .single();
+
+  if (insertErr) {
+    // Unique violation
+    if ((insertErr as any).code === "23505") {
+      throw new Error("DUPLICATE_PAIR");
+    }
+
+    console.error("Error inserting pair:", insertErr);
+    throw insertErr;
+  }
+
+  if (!pairRow) {
+    throw new Error("SERVER_ERROR");
+  }
+
+  return {
+    id: pairRow.id,
+    term: pairRow.term,
+    definition: pairRow.definition,
+  };
+}
