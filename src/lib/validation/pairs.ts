@@ -40,3 +40,10 @@ export const CreatePairSchema = z.object({
 });
 
 export type CreatePairInput = z.infer<typeof CreatePairSchema>;
+
+export const PairPathParamSchema = z.object({
+  boardId: z.string().uuid("Invalid board id"),
+  pairId: z.string().uuid("Invalid pair id"),
+});
+
+export type PairPathParams = z.infer<typeof PairPathParamSchema>;

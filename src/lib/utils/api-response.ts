@@ -81,7 +81,14 @@ export function getErrorMapping(errorCode: string): { response: Record<string, u
         error: "board_archived",
         message: "Board is archived and cannot be modified.",
       },
-      status: 400,
+      status: 409,
+    },
+    PAIR_NOT_FOUND: {
+      response: {
+        error: "pair_not_found",
+        message: "Pair does not exist on this board or access denied.",
+      },
+      status: 404,
     },
     UNAUTHORIZED: {
       response: {

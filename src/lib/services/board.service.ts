@@ -593,6 +593,60 @@ export async function updatePair(
   };
 }
 
+export async function removePair(
+  supabase: SupabaseClient,
+  userId: string,
+  boardId: string,
+  pairId: string,
+): Promise<{ id: string; boardId: string }> {
+  // 1. Ensure board exists and user is owner and not archived
+  const { data: boardRow, error: boardErr } = await supabase
+    .from("boards")
+    .select("owner_id, archived")
+    .eq("id", boardId)
+    .maybeSingle();
+
+  if (boardErr) {
+    console.error("Error selecting board:", boardErr);
+    throw boardErr;
+  }
+
+  if (!boardRow) {
+    throw new Error("BOARD_NOT_FOUND");
+  }
+
+  if (boardRow.archived) {
+    throw new Error("BOARD_ARCHIVED");
+  }
+
+  if (boardRow.owner_id !== userId) {
+    throw new Error("NOT_OWNER");
+  }
+
+  // 2. Delete pair
+  const { data: deletedRow, error: delErr } = await supabase
+    .from("pairs")
+    .delete()
+    .eq("id", pairId)
+    .eq("board_id", boardId)
+    .select("id, board_id")
+    .maybeSingle();
+
+  if (delErr) {
+    console.error("Error deleting pair:", delErr);
+    throw delErr;
+  }
+
+  if (!deletedRow) {
+    throw new Error("PAIR_NOT_FOUND");
+  }
+
+  return {
+    id: deletedRow.id,
+    boardId: deletedRow.board_id,
+  };
+}
+
 export async function addPairToBoard(
   supabase: SupabaseClient,
   userId: string,

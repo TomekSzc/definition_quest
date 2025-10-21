@@ -9,6 +9,8 @@ import {
 } from "../../../../../lib/utils/api-response";
 import { ValidationError } from "../../../../../lib/utils/http-error";
 import { updatePair } from "../../../../../lib/services/board.service";
+import { removePair } from "../../../../../lib/services/board.service";
+import { PairPathParamSchema } from "../../../../../lib/validation/pairs";
 
 export const prerender = false;
 
@@ -66,6 +68,44 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
     }
 
     console.error("Error in PATCH /api/boards/:boardId/pairs/:pairId:", error);
+    return createErrorResponse("Internal server error", 500);
+  }
+};
+
+export const DELETE: APIRoute = async ({ params, locals }) => {
+  try {
+    const user = locals.user;
+    if (!user) {
+      const map = getErrorMapping("UNAUTHORIZED")!;
+      return createErrorResponse(map.response, map.status);
+    }
+
+    // 1. Validate params
+    const paramResult = PairPathParamSchema.safeParse(params);
+    if (!paramResult.success) {
+      const errors = formatValidationErrors(paramResult.error);
+      throw new ValidationError("Validation failed", errors);
+    }
+
+    const { boardId, pairId } = paramResult.data;
+
+    // 2. Service call
+    const deleted = await removePair(locals.supabase, user.id, boardId, pairId);
+
+    return createSuccessResponse({ ...deleted, message: "deleted" });
+  } catch (error: any) {
+    if (error instanceof ValidationError) {
+      return createErrorResponse(error.response, error.status);
+    }
+
+    if (error instanceof Error) {
+      const mapping = getErrorMapping(error.message);
+      if (mapping) {
+        return createErrorResponse(mapping.response, mapping.status);
+      }
+    }
+
+    console.error("Error in DELETE /api/boards/:boardId/pairs/:pairId:", error);
     return createErrorResponse("Internal server error", 500);
   }
 };
