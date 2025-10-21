@@ -464,3 +464,59 @@ export async function fetchBoardById(
 
   return { ...boardDetail, myScore };
 }
+
+export async function updatePair(
+  supabase: SupabaseClient,
+  userId: string,
+  boardId: string,
+  pairId: string,
+  updates: { term?: string; definition?: string },
+): Promise<{ id: string; term: string; definition: string }> {
+  // 1. Ensure board exists and user is owner
+  const { data: boardRow, error: boardErr } = await supabase
+    .from("boards")
+    .select("owner_id, archived")
+    .eq("id", boardId)
+    .maybeSingle();
+
+  if (boardErr) {
+    console.error("Error selecting board:", boardErr);
+    throw boardErr;
+  }
+
+  if (!boardRow) {
+    throw new Error("BOARD_NOT_FOUND");
+  }
+
+  if (boardRow.archived) {
+    throw new Error("BOARD_ARCHIVED");
+  }
+
+  if (boardRow.owner_id !== userId) {
+    throw new Error("NOT_OWNER");
+  }
+
+  // 2. Perform update
+  const { data: pairRow, error: pairErr } = await supabase
+    .from("pairs")
+    .update({ ...updates })
+    .eq("id", pairId)
+    .eq("board_id", boardId)
+    .select("id, term, definition")
+    .maybeSingle();
+
+  if (pairErr) {
+    console.error("Error updating pair:", pairErr);
+    throw pairErr;
+  }
+
+  if (!pairRow) {
+    throw new Error("PAIR_NOT_FOUND");
+  }
+
+  return {
+    id: pairRow.id,
+    term: pairRow.term,
+    definition: pairRow.definition,
+  };
+}
