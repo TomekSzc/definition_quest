@@ -10,6 +10,7 @@ import {
 import { HttpError, ValidationError } from "../../../lib/utils/http-error";
 import { PatchBoardSchema } from "../../../lib/validation/boards";
 import { updateBoardMeta } from "../../../lib/services/board.service";
+import { archiveBoard } from "../../../lib/services/board.service";
 
 export const prerender = false;
 
@@ -113,6 +114,53 @@ export const PATCH: APIRoute = async ({ params, locals, request }) => {
     }
 
     console.error("Error in PATCH /api/boards/:id:", error);
+    return createErrorResponse("Internal server error", 500);
+  }
+};
+
+/**
+ * DELETE /api/boards/:id
+ *
+ * Soft-archives board (archived = true).
+ */
+export const DELETE: APIRoute = async ({ params, locals }) => {
+  try {
+    // 1. Validate path param
+    const parse = BoardIdParamSchema.safeParse(params);
+    if (!parse.success) {
+      const errors = formatValidationErrors(parse.error);
+      throw new ValidationError("Validation failed", errors);
+    }
+    const { id } = parse.data;
+
+    // 2. Ensure authenticated user
+    if (!locals.user) {
+      throw new HttpError("Authentication required", 401);
+    }
+
+    const userId = locals.user.id;
+
+    // 3. Archive board
+    const message = await archiveBoard(locals.supabase, userId, id);
+
+    return createSuccessResponse({ message });
+  } catch (error: any) {
+    if (error instanceof ValidationError) {
+      return createErrorResponse(error.response, error.status);
+    }
+
+    if (error instanceof HttpError) {
+      return createErrorResponse({ error: error.message }, error.status);
+    }
+
+    if (error instanceof Error) {
+      const mapping = getErrorMapping(error.message);
+      if (mapping) {
+        return createErrorResponse(mapping.response, mapping.status);
+      }
+    }
+
+    console.error("Error in DELETE /api/boards/:id:", error);
     return createErrorResponse("Internal server error", 500);
   }
 };

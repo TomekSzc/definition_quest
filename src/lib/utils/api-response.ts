@@ -132,6 +132,13 @@ export function getErrorMapping(errorCode: string): { response: Record<string, u
       },
       status: 400,
     },
+    BOARD_ALREADY_ARCHIVED: {
+      response: {
+        error: "board_already_archived",
+        message: "Board is already archived.",
+      },
+      status: 409,
+    },
   };
 
   return errorMap[errorCode] || null;
