@@ -135,6 +135,101 @@ export async function createBoard(
 }
 
 /**
+ * Creates the next level for an existing board (identified by boardId of any previous level)
+ * adhering to business rules described in CreateNextLevelCmd.
+ *
+ * Preconditions (caller responsibility):
+ *   • supabase client authenticated as the board owner (middleware enforces JWT)
+ *
+ * @throws Error codes (string) mapped by api-response.getErrorMapping
+ *   • BOARD_NOT_FOUND – board id not found
+ *   • NOT_OWNER – current user is not the owner
+ *   • BOARD_ARCHIVED – board is archived
+ *   • INVALID_INPUT – pairs length mismatch with cardCount/2
+ */
+export async function createBoardNextLevel(
+  supabase: SupabaseClient,
+  ownerId: string,
+  command: { boardId: string; pairs: { term: string; definition: string }[] },
+): Promise<string> {
+  const { boardId, pairs } = command;
+
+  // 1. Fetch reference board row to inherit properties
+  const { data: baseRow, error: selectErr } = await supabase
+    .from("boards")
+    .select("id, owner_id, title, card_count, is_public, tags, archived")
+    .eq("id", boardId)
+    .maybeSingle();
+
+  if (selectErr) {
+    console.error("Error selecting board:", selectErr);
+    throw selectErr;
+  }
+
+  if (!baseRow) {
+    throw new Error("BOARD_NOT_FOUND");
+  }
+
+  if (baseRow.owner_id !== ownerId) {
+    throw new Error("NOT_OWNER");
+  }
+
+  if (baseRow.archived) {
+    throw new Error("BOARD_ARCHIVED");
+  }
+
+  // 2. Business validation – cannot exceed cardCount/2 pairs
+  const maxExpectedPairs = baseRow.card_count / 2;
+  if (pairs.length > maxExpectedPairs) {
+    throw new Error("INVALID_INPUT");
+  }
+
+  // 3. Determine next level
+  const { data: maxRes, error: maxErr } = await supabase
+    .from("boards")
+    .select("level")
+    .eq("owner_id", ownerId)
+    .eq("title", baseRow.title)
+    .order("level", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (maxErr) {
+    console.error("Error fetching max level:", maxErr);
+    throw maxErr;
+  }
+
+  const nextLevel = (maxRes?.level ?? 0) + 1;
+
+  // 4. Insert new board level
+  const { data: newBoard, error: insertErr } = await supabase
+    .from("boards")
+    .insert({
+      id: uuid(),
+      owner_id: ownerId,
+      title: baseRow.title,
+      card_count: baseRow.card_count,
+      level: nextLevel,
+      is_public: baseRow.is_public,
+      archived: false,
+      tags: baseRow.tags,
+    })
+    .select()
+    .single();
+
+  if (insertErr || !newBoard) {
+    console.error("Error inserting next level board:", insertErr);
+    throw insertErr ?? new Error("INSERT_BOARD_FAILED");
+  }
+
+  // 5. Insert pairs
+  await insertPairsForBoard(supabase, newBoard.id, pairs);
+
+  // 6. Return confirmation message
+  return `Level ${newBoard.level} of ${newBoard.title} created`;
+}
+
+/**
  * Lists public, non-archived boards with optional search, filters, sorting and pagination.
  */
 export async function listPublicBoards(
