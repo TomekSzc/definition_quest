@@ -42,8 +42,9 @@ Common query params for listing:
 | GET | `/boards/mine` | List **own** boards (private + public + archived). Requires auth. |
 | GET | `/boards/played` | List **public** boards in which the authenticated user has at least one score. Requires auth. |
 | POST | `/boards` | Create board manually (pairs embedded in body). |
+| POST | `/boards/level` | Create board next level manually (pairs embedded in body). |
 | POST | `/boards/generate` | Create board via AI – see AI section. |
-| GET | `/boards/:id` | Get board metadata + pairs. Public boards accessible to all, private to owner. |
+| GET | `/boards/:id` | Get board metadata + pairs + score of current logged in user if exist. Public boards accessible to all, private to owner. |
 | PUT | `/boards/:id` | Replace board metadata + pairs. Owner only, prohibited for archived boards. |
 | PATCH | `/boards/:id` | Partial update (e.g. title, tags, isPublic, archived). |
 | DELETE | `/boards/:id` | Soft-archive board (`archived=true`). |
@@ -76,6 +77,30 @@ Request/response shapes (abbreviated):
   "updatedAt": "2025-10-14T12:45:00Z",
   "pairs": [ { "id": "<uuid>", "term": "France", "definition": "Paris" } ]
 }
+
+// POST /boards/level
+{
+  "boardId": "<uuid>",
+  "pairs": [
+    { "term": "France", "definition": "Paris" },
+    // max 24 pairs …
+  ],
+}
+
+// 201 Created
+{
+  "id": "<uuid>",
+  "ownerId": "<uuid>",
+  "title": "Capital Cities",
+  "cardCount": 16,
+  "level": 2,
+  "isPublic": false,
+  "archived": false,
+  "tags": ["geography", "europe"],
+  "createdAt": "2025-10-14T12:45:00Z",
+  "updatedAt": "2025-10-14T12:45:00Z",
+  "pairs": [ { "id": "<uuid>", "term": "France", "definition": "Paris" } ]
+}
 ```
 Validation rules enforced server-side:
 * `cardCount` ∈ {16, 24}
@@ -91,6 +116,29 @@ Validation rules enforced server-side:
 | POST | `/boards/:boardId/pairs` | Add a new pair. Owner only. |
 | PATCH | `/boards/:boardId/pairs/:pairId` | Edit term or definition. |
 | DELETE | `/boards/:boardId/pairs/:pairId` | Remove pair. |
+
+#### PATCH `/boards/:boardId/pairs/:pairId`
+Edytuje istniejącą parę term/definition.
+
+*Auth*: właściciel planszy (JWT).
+
+Request body (co najmniej jedno pole):
+```jsonc
+{
+  "term": "photosynthesis",
+  "definition": "Process by which plants convert light into energy."
+}
+```
+
+Responses:
+| Code | Description |
+|------|-------------|
+| 200 OK | Zaktualizowana para (`PairDTO`). |
+| 400 Bad Request | Walidacja nie powiodła się. |
+| 401 Unauthorized | Brak/niepoprawny token lub nie jesteś właścicielem. |
+| 404 Not Found | Board lub pair nie istnieje. |
+| 409 Conflict | Board zarchiwizowany. |
+| 500 Internal Server Error | Nieoczekiwany błąd. |
 
 ### 2.5 Scores
 
