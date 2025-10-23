@@ -72,6 +72,37 @@ $ npm run dev
 
 The app will be available at `http://localhost:4321` (default Astro port).
 
+### OpenRouter Configuration
+
+The application uses [OpenRouter.ai](https://openrouter.ai) to access multiple LLM providers through a unified API. To configure:
+
+1. **Get an API key**
+   - Sign up at [openrouter.ai](https://openrouter.ai)
+   - Navigate to [Keys](https://openrouter.ai/keys) and create a new API key
+   - Add credits to your account (minimum $5 recommended)
+
+2. **Configure environment**
+   ```bash
+   # Add to your .env file
+   OPENROUTER_API_KEY=sk-or-v1-...
+   ```
+
+3. **Test the connection**
+   ```bash
+   # Run the test script to verify API connectivity
+   $ npx tsx scripts/test-openrouter.ts
+   ```
+
+4. **Default model**
+   - Current default: `openai/gpt-4o-mini`
+   - Cost: ~$0.15 per 1M input tokens, ~$0.60 per 1M output tokens
+   - Average board generation (8-12 pairs): ~2000 tokens = $0.001-0.002
+
+5. **Rate limits**
+   - Application enforces 50 AI generations per user per day
+   - OpenRouter has its own rate limits per model
+   - Automatic retry with exponential backoff for transient failures
+
 ### Building for production
 
 ```bash
@@ -86,15 +117,17 @@ $ npm run preview
 
 ## Available Scripts
 
-| Script            | Purpose                                                    |
-|-------------------|------------------------------------------------------------|
-| `npm run dev`     | Start Astro in development mode with hot reloading         |
-| `npm run build`   | Generate static client & server output                     |
-| `npm run preview` | Preview the production build locally                       |
-| `npm run astro`   | Expose the underlying Astro CLI                            |
-| `npm run lint`    | Run ESLint on the entire codebase                          |
-| `npm run lint:fix`| Auto-fix lint issues where possible                        |
-| `npm run format`  | Format all supported files with Prettier                   |
+| Script                    | Purpose                                                    |
+|---------------------------|------------------------------------------------------------|
+| `npm run dev`             | Start Astro in development mode with hot reloading         |
+| `npm run build`           | Generate static client & server output                     |
+| `npm run preview`         | Preview the production build locally                       |
+| `npm run astro`           | Expose the underlying Astro CLI                            |
+| `npm run lint`            | Run ESLint on the entire codebase                          |
+| `npm run lint:fix`        | Auto-fix lint issues where possible                        |
+| `npm run format`          | Format all supported files with Prettier                   |
+| `npm run test:openrouter` | Test OpenRouter API connection and functionality           |
+| `npm run test:ai-generation` | Test AI board pair generation end-to-end                |
 
 ---
 

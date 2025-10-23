@@ -9,7 +9,9 @@
     "astro": "astro",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "test:openrouter": "tsx scripts/test-openrouter.ts",
+    "test:ai-generation": "tsx scripts/test-board-generation.ts"
   },
   "dependencies": {
     "@astrojs/node": "^9.4.3",
@@ -24,6 +26,8 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.487.0",
+    "openai": "^6.6.0",
+    "p-limit": "^7.2.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "tailwind-merge": "^3.1.0",
@@ -38,6 +42,7 @@
     "@types/uuid": "^10.0.0",
     "@typescript-eslint/eslint-plugin": "8.28.0",
     "@typescript-eslint/parser": "8.28.0",
+    "dotenv": "^17.2.3",
     "eslint": "9.23.0",
     "eslint-config-prettier": "10.1.1",
     "eslint-import-resolver-typescript": "4.2.5",
@@ -51,6 +56,7 @@
     "husky": "9.1.7",
     "lint-staged": "15.5.0",
     "prettier-plugin-astro": "0.14.1",
+    "tsx": "^4.20.6",
     "typescript-eslint": "8.28.0"
   },
   "lint-staged": {
