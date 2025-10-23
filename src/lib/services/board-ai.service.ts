@@ -4,17 +4,20 @@ import type {
   BoardGenerationResultDTO,
   GeneratedPair,
 } from "../../types";
+import { createOpenRouterService } from "./openrouter.factory";
+import type { Message, JsonSchemaFormat } from "./openrouter.service";
+import { OpenRouterError } from "./openrouter.service";
 
 /**
  * Service for AI-powered board generation.
  * Handles quota checking, AI pair generation, and request tracking.
  * 
- * Current implementation uses mock data for MVP.
- * Production version will integrate with OpenRouter API.
+ * Integrates with OpenRouter API for real-time pair generation.
  */
 
 const DAILY_QUOTA_LIMIT = 50;
 const INPUT_TEXT_MAX_LENGTH = 5000;
+const DEFAULT_MODEL = "openai/gpt-4o-mini";
 
 /**
  * Checks if the user has exceeded their daily AI request quota.
@@ -47,52 +50,132 @@ export async function checkDailyQuota(
 }
 
 /**
- * Generates mock pairs based on requested card count.
- * In production, this will be replaced with actual OpenRouter API call.
+ * Generates educational term-definition pairs using OpenRouter AI.
  * 
  * @param cardCount - Number of cards to generate (16 or 24)
- * @param inputText - Source text for generation (currently unused in mock)
- * @returns Array of term-definition pairs
+ * @param inputText - Source text for generation
+ * @param title - Board title for context
+ * @returns Array of term-definition pairs and token usage stats
  */
-function generateMockPairs(cardCount: 16 | 24, inputText: string): GeneratedPair[] {
+async function generatePairsWithAI(
+  cardCount: 16 | 24,
+  inputText: string,
+  title: string
+): Promise<{ pairs: GeneratedPair[]; promptTokens: number; completionTokens: number; totalTokens: number }> {
   const pairCount = cardCount / 2;
-  const pairs: GeneratedPair[] = [];
   
-  // Mock data generation - replace with actual AI call in production
-  const topics = [
-    { term: "Photosynthesis", definition: "Process by which plants convert light energy into chemical energy" },
-    { term: "Mitosis", definition: "Cell division resulting in two identical daughter cells" },
-    { term: "DNA", definition: "Deoxyribonucleic acid, carrier of genetic information" },
-    { term: "Ecosystem", definition: "Community of living organisms interacting with their environment" },
-    { term: "Evolution", definition: "Process of gradual change in species over time" },
-    { term: "Metabolism", definition: "Chemical processes that occur within living organisms" },
-    { term: "Homeostasis", definition: "Ability of organism to maintain stable internal conditions" },
-    { term: "Osmosis", definition: "Movement of water across semi-permeable membrane" },
-    { term: "Catalyst", definition: "Substance that speeds up chemical reactions" },
-    { term: "Polymer", definition: "Large molecule composed of repeating structural units" },
-    { term: "Entropy", definition: "Measure of disorder or randomness in system" },
-    { term: "Isotope", definition: "Atoms of same element with different numbers of neutrons" },
+  // Create OpenRouter service
+  const service = createOpenRouterService();
+
+  // Build system prompt
+  const systemPrompt = `You are an expert educational content creator specializing in creating study materials.
+Your task is to analyze provided text and extract the most important concepts as term-definition pairs for a memory matching game.
+
+Requirements:
+- Extract exactly ${pairCount} pairs
+- Terms should be 1-4 words: key concepts, names, or technical terms
+- Definitions should be 5-15 words: clear, concise explanations
+- Focus on the most important concepts from the text
+- Ensure variety - avoid repetitive or overlapping concepts
+- Use language that matches the input text (Polish or English), if you dont know which one, use Polish
+- Definitions must be self-contained and understandable without context`;
+
+  const userPrompt = `Title: ${title}
+
+Input text:
+${inputText}
+
+Generate ${pairCount} term-definition pairs from the above content.`;
+
+  // Define response format schema
+  const responseFormat: JsonSchemaFormat = {
+    type: 'json_schema',
+    json_schema: {
+      name: 'GeneratedPairs',
+      strict: true,
+      schema: {
+        type: 'object',
+        properties: {
+          pairs: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                term: { type: 'string' },
+                definition: { type: 'string' },
+              },
+              required: ['term', 'definition'],
+              additionalProperties: false,
+            },
+            minItems: pairCount,
+            maxItems: pairCount,
+          },
+        },
+        required: ['pairs'],
+        additionalProperties: false,
+      },
+    },
+  };
+
+  const messages: Message[] = [
+    { role: 'system', content: systemPrompt },
+    { role: 'user', content: userPrompt },
   ];
+
+  // Call OpenRouter API
+  const completion = await service.chatCompletion(messages, {
+    model: DEFAULT_MODEL,
+    responseFormat,
+    temperature: 0.7,
+    top_p: 1.0,
+  });
+
+  // Parse and validate response
+  const result = completion.json as { pairs: GeneratedPair[] };
   
-  // Generate requested number of pairs
-  for (let i = 0; i < pairCount && i < topics.length; i++) {
-    pairs.push(topics[i]);
+  if (!result.pairs || !Array.isArray(result.pairs) || result.pairs.length !== pairCount) {
+    throw new Error('AI_INVALID_RESPONSE_FORMAT');
   }
-  
-  // If we need more pairs than available in mock data, generate generic ones
-  while (pairs.length < pairCount) {
-    const index = pairs.length + 1;
-    pairs.push({
-      term: `Term ${index}`,
-      definition: `Definition for term ${index} extracted from provided text`,
-    });
+
+  // Validate each pair
+  for (const pair of result.pairs) {
+    if (!pair.term || !pair.definition || 
+        typeof pair.term !== 'string' || 
+        typeof pair.definition !== 'string' ||
+        pair.term.trim().length === 0 ||
+        pair.definition.trim().length === 0) {
+      throw new Error('AI_INVALID_PAIR_FORMAT');
+    }
   }
-  
-  return pairs;
+
+  return {
+    pairs: result.pairs,
+    promptTokens: completion.usage.promptTokens,
+    completionTokens: completion.usage.completionTokens,
+    totalTokens: completion.usage.totalTokens,
+  };
 }
 
 /**
- * Generates board pairs using AI (currently mock implementation).
+ * Calculates cost in USD based on OpenRouter pricing for gpt-4o-mini
+ * Pricing as of 2025: $0.15 per 1M input tokens, $0.60 per 1M output tokens
+ * 
+ * @param promptTokens - Number of input tokens
+ * @param completionTokens - Number of output tokens
+ * @returns Cost in USD (rounded to 4 decimal places)
+ */
+function calculateCost(promptTokens: number, completionTokens: number): number {
+  const INPUT_COST_PER_1M = 0.15;
+  const OUTPUT_COST_PER_1M = 0.60;
+  
+  const inputCost = (promptTokens / 1_000_000) * INPUT_COST_PER_1M;
+  const outputCost = (completionTokens / 1_000_000) * OUTPUT_COST_PER_1M;
+  
+  return Math.round((inputCost + outputCost) * 10000) / 10000; // Round to 4 decimals
+}
+
+/**
+ * Generates board pairs using OpenRouter AI.
  * Validates input, checks quota, creates audit record, and returns generated pairs.
  * 
  * @param supabase - Authenticated Supabase client
@@ -133,9 +216,9 @@ export async function generateBoardPairs(
     .insert({
       user_id: userId,
       status: "pending",
-      model: "mock/gpt-4", // Will be "openai/gpt-4" in production
-      prompt_tokens: 0, // Will be calculated from actual API response
-      cost_usd: 0, // Will be calculated based on model pricing
+      model: DEFAULT_MODEL,
+      prompt_tokens: 0,
+      cost_usd: 0,
     })
     .select("id")
     .single();
@@ -148,17 +231,23 @@ export async function generateBoardPairs(
   const requestId = aiRequest.id;
 
   try {
-    // Generate pairs (mock implementation)
-    const pairs = generateMockPairs(command.cardCount, command.inputText);
+    // Generate pairs using OpenRouter AI
+    const result = await generatePairsWithAI(
+      command.cardCount,
+      command.inputText,
+      command.title
+    );
     
-    // Update request status to completed
-    // In production, this would include actual token counts and costs
+    // Calculate actual cost
+    const costUsd = calculateCost(result.promptTokens, result.completionTokens);
+    
+    // Update request status to completed with actual metrics
     const { error: updateError } = await supabase
       .from("ai_requests")
       .update({
         status: "completed",
-        prompt_tokens: Math.floor(command.inputText.length / 4), // Rough estimate for mock
-        cost_usd: 0.001, // Mock cost
+        prompt_tokens: result.totalTokens, // Store total tokens in prompt_tokens field
+        cost_usd: costUsd,
       })
       .eq("id", requestId);
 
@@ -168,7 +257,7 @@ export async function generateBoardPairs(
     }
 
     return {
-      pairs,
+      pairs: result.pairs,
       requestId,
     };
   } catch (error) {
@@ -177,6 +266,11 @@ export async function generateBoardPairs(
       .from("ai_requests")
       .update({ status: "failed" })
       .eq("id", requestId);
+    
+    // Re-throw with more context if it's an OpenRouter error
+    if (error instanceof OpenRouterError) {
+      throw new Error(`AI_SERVICE_ERROR: ${error.message}`);
+    }
     
     throw error;
   }

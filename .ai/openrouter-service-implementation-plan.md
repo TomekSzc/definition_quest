@@ -66,7 +66,7 @@ Pola prywatne:
 | 5 | Niezgodność z `responseFormat` | `SchemaValidationError` (z biblioteki `zod`/`ajv`). |
 
 ## 6. Kwestie bezpieczeństwa
-1. **Przechowywanie kluczy** – `OPENROUTER_API_KEY` w pliku obecny w istniejącym pliku `.env`, odczytywany przez `environment.ts` i niecommitowany do repo.
+1. **Przechowywanie kluczy** – `OPENROUTER_API_KEY` w pliku obecny w istniejącym pliku `.env`, odczytywany przez `environment.ts` i niecommitowany do repo.(już jest dodany do gitignore)
 2. **Rate limiting** – lokalny semafor lub `p-limit` + retry-after dla 429.
 3. **Sanityzacja promptu** – usuwanie potencjalnych wstrzyknięć kodu, logowanie tylko zahashowanych treści (RODO/GDPR).
 4. **TLS** – wymuszanie HTTPS; odrzucenie nie-TLS (np. przez testowe proxy).

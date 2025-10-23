@@ -206,3 +206,19 @@ export function createSuccessResponse(
   );
 }
 
+/**
+ * Generic API response helper (auto-detects success vs error based on status code).
+ * 
+ * @param data - Response data
+ * @param status - HTTP status code (defaults to 200)
+ * @returns Response object
+ */
+export function apiResponse(
+  data: unknown,
+  status: number = 200
+): Response {
+  return status >= 400 
+    ? createErrorResponse(data as Record<string, unknown>, status)
+    : createSuccessResponse(data, status);
+}
+
