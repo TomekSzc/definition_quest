@@ -23,7 +23,7 @@ Nauka definicji z tradycyjnych notatek bywa żmudna, szczególnie dla osób z pr
 • przechowuje wyniki do dalszych porównań.
 
 ## 3. Wymagania funkcjonalne
-1. Konto użytkownika: rejestracja, logowanie (OAuth lub JWT).
+1. Konto użytkownika: rejestracja, logowanie (OAuth lub JWT).Tylko login i rejestracja dostepne dla niezalogowanych użytkowników
 2. Tworzenie planszy:
    a. Wprowadzenie tekstu ≤ 5 000 znaków → AI generuje pary.
    b. Edycja / usuwanie par przed zapisem.

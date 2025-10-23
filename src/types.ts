@@ -210,3 +210,48 @@ export interface Paged<T> {
   data: T[];
   meta: PaginationMeta;
 }
+
+/**
+ * Auth DTOs ──────────────────────────────────────────────────────────────
+ */
+
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+export interface SignUpRequest {
+  email: string;
+  password: string;
+  displayName: string;
+}
+
+export interface ForgotPasswordRequest {
+  email: string;
+}
+
+export interface ResetPasswordRequest {
+  newPassword: string;
+}
+
+export interface RefreshTokenRequest {
+  refreshToken: string;
+}
+
+export interface AuthUserDTO {
+  id: string;
+  email: string;
+}
+
+export interface AuthSessionDTO {
+  accessToken: string;
+  refreshToken: string;
+}
+
+export interface AuthResponse {
+  data?: {
+    user: AuthUserDTO;
+    session?: AuthSessionDTO;
+  };
+  message?: string;
+}

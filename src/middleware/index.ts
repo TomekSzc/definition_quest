@@ -6,9 +6,18 @@ import { supabaseClient } from '../db/supabase.client.ts';
  * Add endpoint paths that should be accessible without login.
  */
 const PUBLIC_ENDPOINTS = [
+  // Legacy temporary endpoints (to be removed)
   '/api/auth/signIn.temporary',
   '/api/auth/login.temporary',
-  // Add other public endpoints here
+  // New auth endpoints
+  '/api/auth/login',
+  '/api/auth/signUp',
+  '/api/auth/logout',
+  '/api/auth/forgot-password',
+  '/api/auth/reset-password',
+  '/api/auth/refresh-token',
+  // Public board endpoints
+  '/api/boards'
 ];
 
 /**
@@ -21,8 +30,9 @@ function isPublicEndpoint(pathname: string): boolean {
 /**
  * Global middleware that:
  * 1. Adds Supabase client to context.locals
- * 2. Checks authentication for protected API endpoints
- * 3. Adds authenticated user to context.locals
+ * 2. Checks authentication for API endpoints
+ * 3. Adds authenticated user to context.locals (if present)
+ * 4. Enforces authentication for protected endpoints
  */
 export const onRequest = defineMiddleware(async (context, next) => {
   // Always add Supabase client to locals
@@ -31,18 +41,25 @@ export const onRequest = defineMiddleware(async (context, next) => {
   // Check if this is an API endpoint (not a page or asset)
   const isApiEndpoint = context.url.pathname.startsWith('/api/');
   
-  // Skip authentication for public endpoints
-  if (!isApiEndpoint || isPublicEndpoint(context.url.pathname)) {
+  // For non-API requests, just continue
+  if (!isApiEndpoint) {
     return next();
   }
 
-  // For protected API endpoints, verify authentication
+  // Try to get authenticated user (don't fail if not present)
   const {
     data: { user },
     error: authError,
   } = await context.locals.supabase.auth.getUser();
 
-  if (authError || !user) {
+  // Add user to locals if authentication succeeded
+  if (!authError && user) {
+    context.locals.user = user;
+  }
+
+  // For protected endpoints, require authentication
+  const isPublic = isPublicEndpoint(context.url.pathname);
+  if (!isPublic && (!user || authError)) {
     return new Response(
       JSON.stringify({ error: "Unauthorized" }),
       {
@@ -51,9 +68,6 @@ export const onRequest = defineMiddleware(async (context, next) => {
       }
     );
   }
-
-  // Add authenticated user to locals for use in endpoints
-  context.locals.user = user;
 
   return next();
 });

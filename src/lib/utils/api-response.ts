@@ -139,6 +139,49 @@ export function getErrorMapping(errorCode: string): { response: Record<string, u
       },
       status: 409,
     },
+    // Auth errors
+    EMAIL_ALREADY_EXISTS: {
+      response: {
+        error: "email_already_exists",
+        message: "User with this email already exists.",
+      },
+      status: 409,
+    },
+    INVALID_CREDENTIALS: {
+      response: {
+        error: "invalid_credentials",
+        message: "Invalid email or password.",
+      },
+      status: 401,
+    },
+    EMAIL_NOT_CONFIRMED: {
+      response: {
+        error: "email_not_confirmed",
+        message: "Please verify your email before logging in. Check your inbox for the confirmation link.",
+      },
+      status: 403,
+    },
+    INVALID_RESET_TOKEN: {
+      response: {
+        error: "invalid_reset_token",
+        message: "Invalid or expired reset token.",
+      },
+      status: 401,
+    },
+    INVALID_REFRESH_TOKEN: {
+      response: {
+        error: "invalid_refresh_token",
+        message: "Invalid or expired refresh token.",
+      },
+      status: 401,
+    },
+    USER_CREATION_FAILED: {
+      response: {
+        error: "user_creation_failed",
+        message: "Failed to create user account.",
+      },
+      status: 500,
+    },
   };
 
   return errorMap[errorCode] || null;
