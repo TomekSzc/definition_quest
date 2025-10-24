@@ -1,5 +1,6 @@
 ---
 import "../styles/global.css";
+import Providers from "../components/Providers";
 
 interface Props {
   title?: string;
@@ -18,7 +19,10 @@ const { title = "10x Astro Starter" } = Astro.props;
     <title>{title}</title>
   </head>
   <body>
-    <slot />
+    <!-- Redux & Persist providers -->
+    <Providers client:only="react">
+      <slot />
+    </Providers>
   </body>
 </html>
 
