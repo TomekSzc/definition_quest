@@ -6,9 +6,6 @@ import { supabaseClient } from '../db/supabase.client.ts';
  * Add endpoint paths that should be accessible without login.
  */
 const PUBLIC_ENDPOINTS = [
-  // Legacy temporary endpoints (to be removed)
-  '/api/auth/signIn.temporary',
-  '/api/auth/login.temporary',
   // New auth endpoints
   '/api/auth/login',
   '/api/auth/signUp',
@@ -16,8 +13,6 @@ const PUBLIC_ENDPOINTS = [
   '/api/auth/forgot-password',
   '/api/auth/reset-password',
   '/api/auth/refresh-token',
-  // Public board endpoints
-  '/api/boards'
 ];
 
 /**
