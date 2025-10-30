@@ -1,0 +1,15 @@
+:root {
+  --color-white: #ffffff;
+  --color-primary: #0c5397;
+  --color-muted: #a6a6a6;
+  --color-text: #0c5397;
+}
+
+[data-theme="minimalism"] {
+  --color-white: #ffffff;
+  --color-primary: #0c5397;
+  --color-muted: #a6a6a6;
+  --color-text: #0c5397;
+}
+
+/* Future themes can override the variables using [data-theme="..."] selectors */
