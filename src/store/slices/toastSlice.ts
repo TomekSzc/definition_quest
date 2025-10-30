@@ -20,8 +20,8 @@ const initialState: ToastState = {
 
 interface ShowToastPayload {
   type: ToastType;
-  title: string;
   message: string;
+  title?: string;
 }
 
 const toastSlice = createSlice({
@@ -30,7 +30,13 @@ const toastSlice = createSlice({
   reducers: {
     showToast: (state, action: PayloadAction<ShowToastPayload>) => {
       state.type = action.payload.type;
-      state.title = action.payload.title;
+      const fallback = {
+        success: 'Sukces',
+        error: 'Błąd',
+        warning: 'Uwaga',
+        info: 'Info',
+      } as Record<ToastType, string>;
+      state.title = action.payload.title ?? fallback[action.payload.type];
       state.message = action.payload.message;
       state.visible = true;
     },

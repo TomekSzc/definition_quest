@@ -52,6 +52,18 @@ const baseQueryWithReauth: typeof baseQuery = async (args, api, extraOptions) =>
     }
   }
 
+  // Pokaż toast dla wszystkich innych błędów sieciowych
+  if (result.error && result.error.status !== 401) {
+    api.dispatch(
+      showToast({
+        type: 'error',
+        title: 'Błąd',
+        message:
+          (result.error.data as any)?.message || 'Wystąpił błąd zapytania',
+      }),
+    );
+  }
+
   return result;
 };
 

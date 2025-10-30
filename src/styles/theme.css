@@ -3,6 +3,21 @@
   --color-primary: #0c5397;
   --color-muted: #a6a6a6;
   --color-text: #0c5397;
+  /* Toast colors */
+  --toast-success-bg: #acf3e4;
+  --toast-success-text: #056764;
+  --toast-error-bg: #fcdde3;
+  --toast-error-text: #b90f5b;
+  --toast-warning-bg: #f9e3b6;
+  --toast-warning-text: #8c4b02;
+
+  /* expose colors for components */
+  --color-toast-success-bg: var(--toast-success-bg);
+  --color-toast-success-text: var(--toast-success-text);
+  --color-toast-error-bg: var(--toast-error-bg);
+  --color-toast-error-text: var(--toast-error-text);
+  --color-toast-warning-bg: var(--toast-warning-bg);
+  --color-toast-warning-text: var(--toast-warning-text);
 }
 
 [data-theme="minimalism"] {
@@ -10,6 +25,13 @@
   --color-primary: #0c5397;
   --color-muted: #a6a6a6;
   --color-text: #0c5397;
+  --color-muted-foreground: var(--muted-foreground);
+  --color-toast-success-bg: var(--toast-success-bg);
+  --color-toast-success-text: var(--toast-success-text);
+  --color-toast-error-bg: var(--toast-error-bg);
+  --color-toast-error-text: var(--toast-error-text);
+  --color-toast-warning-bg: var(--toast-warning-bg);
+  --color-toast-warning-text: var(--toast-warning-text);
 }
 
 /* Future themes can override the variables using [data-theme="..."] selectors */
