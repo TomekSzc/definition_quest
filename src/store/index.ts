@@ -9,7 +9,23 @@ import {
   PURGE,
   REGISTER,
 } from 'redux-persist';
-import storage from 'redux-persist/lib/storage';
+import createWebStorage from 'redux-persist/lib/storage/createWebStorage';
+
+function createNoopStorage() {
+  return {
+    getItem() {
+      return Promise.resolve(null);
+    },
+    setItem(_k: string, v: any) {
+      return Promise.resolve(v);
+    },
+    removeItem() {
+      return Promise.resolve();
+    },
+  };
+}
+
+const storage = typeof window !== 'undefined' ? createWebStorage('local') : createNoopStorage();
 
 import authReducer from './slices/authSlice';
 import toastReducer from './slices/toastSlice';
