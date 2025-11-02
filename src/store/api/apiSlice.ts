@@ -25,6 +25,12 @@ const baseQueryWithReauth: typeof baseQuery = async (args, api, extraOptions) =>
   let result = await baseQuery(args, api, extraOptions);
 
   if (result.error && result.error.status === 401) {
+    // Do not attempt token refresh for authentication endpoints themselves
+    const requestUrl = typeof args === 'string' ? args : args.url;
+    if (requestUrl && (requestUrl.startsWith('/api/auth/login') || requestUrl.startsWith('/api/auth/signUp'))) {
+      return result;
+    }
+
     const refreshToken = (api.getState() as any).auth.refreshToken as string | null;
     if (!refreshToken) {
       api.dispatch(logout());
