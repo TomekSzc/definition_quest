@@ -20,6 +20,7 @@
     "@hookform/resolvers": "^5.2.2",
     "@radix-ui/react-form": "^0.1.8",
     "@radix-ui/react-slot": "^1.1.2",
+    "@radix-ui/react-toast": "^1.2.15",
     "@reduxjs/toolkit": "^2.9.2",
     "@supabase/supabase-js": "^2.75.0",
     "@tailwindcss/vite": "^4.1.13",
