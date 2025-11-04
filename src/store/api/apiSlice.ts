@@ -5,6 +5,7 @@ import type {
   SignUpRequest,
   RefreshTokenRequest,
   ForgotPasswordRequest,
+  ResetPasswordRequest,
   BoardSummaryDTO,
 } from '../../types';
 import { setCredentials, logout, updateTokens } from '../slices/authSlice';
@@ -180,6 +181,35 @@ export const apiSlice = createApi({
         }
       },
     }),
+    resetPassword: builder.mutation<{ message: string }, { newPassword: string }>({
+      query: (body) => ({
+        url: '/api/auth/reset-password',
+        method: 'POST',
+        body,
+      }),
+      async onQueryStarted(_, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+          dispatch(
+            showToast({
+              type: 'success',
+              title: 'Sukces',
+              message: data.message || 'Hasło zostało zmienione.',
+            }),
+          );
+          // Redirect to login page after success
+          window.location.href = '/';
+        } catch (err: any) {
+          dispatch(
+            showToast({
+              type: 'error',
+              title: 'Błąd',
+              message: err.error?.data?.error || 'Nie udało się zresetować hasła',
+            }),
+          );
+        }
+      },
+    }),
     getBoards: builder.query<BoardSummaryDTO[], void>({
       query: () => '/api/boards',
       providesTags: ['Boards'],
@@ -193,4 +223,5 @@ export const {
   useLogoutMutation,
   useGetBoardsQuery,
   useForgotPasswordMutation,
+  useResetPasswordMutation,
 } = apiSlice;

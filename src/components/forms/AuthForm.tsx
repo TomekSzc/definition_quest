@@ -24,14 +24,9 @@ export const AuthForm: FC = () => {
   const [login, { isLoading }] = useLoginMutation();
 
   async function onSubmit(data: LoginRequest) {
-    try {
-      const res = await login(data).unwrap();
-      if (res.data?.user) {
-        window.location.href = "/dashboard";
-      }
-    } catch {
-      console.warn("Login failed");
-      /* toast handled globally */
+    const res = await login(data).unwrap();
+    if (res.data?.user) {
+      window.location.href = "/dashboard";
     }
   }
 

@@ -24,12 +24,7 @@ const ForgotPasswordForm: FC = () => {
   const [requestReset, { isLoading, isSuccess }] = useForgotPasswordMutation();
 
   async function onSubmit(data: ForgotPasswordRequest) {
-    try {
-      await requestReset(data).unwrap();
-      /* toast handled globally */
-    } catch {
-      /* toast handled globally */
-    }
+    await requestReset(data).unwrap(); // toast handled globally
   }
 
   return (
