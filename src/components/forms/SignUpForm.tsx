@@ -30,14 +30,8 @@ export default function SignUpForm() {
       password: data.password,
       displayName: data.displayName,
     };
-    try {
-      await signUp(payload).unwrap();
-      // after success, redirect to home page
-      window.location.href = Routes.Home;
-    } catch {
-      console.warn("Sign up failed");
-      /* toast handled globally */
-    }
+    await signUp(payload).unwrap();
+    window.location.href = Routes.Home;
   }
 
   return (
