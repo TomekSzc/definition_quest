@@ -2,6 +2,7 @@ import { useState } from "react";
 import * as Form from "@radix-ui/react-form";
 import type { UseFormRegisterReturn } from "react-hook-form";
 import type { FC } from "react";
+import { Icons } from "@/assets/icons";
 
 interface IInputProps {
   name: string;
@@ -43,9 +44,9 @@ export const FormInput:FC<IInputProps> = ({
         </Form.Control>
         {type === "password" && showPasswordToggle && (
           <img
-            src="/icons/eye.svg"
+            src={Icons.Eye}
             alt="Pokaż hasło"
-            className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 cursor-pointer select-none"
+            className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 cursor-pointer select-none invert"
             onMouseDown={() => setShowPwd(true)}
             onMouseUp={() => setShowPwd(false)}
             onMouseLeave={() => setShowPwd(false)}
