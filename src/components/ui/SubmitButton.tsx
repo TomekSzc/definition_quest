@@ -4,6 +4,7 @@ interface ISubmitButtonProps {
   loadingText: string;
   idleText: string;
   isLoading: boolean;
+  disabled?: boolean;
   className?: string;
   onClick?: MouseEventHandler<HTMLButtonElement>;
 }
@@ -12,6 +13,7 @@ export const SubmitButton: FC<ISubmitButtonProps> = ({
   loadingText,
   idleText,
   isLoading,
+  disabled,
   className = "",
   onClick,
 }) => {
@@ -20,7 +22,7 @@ export const SubmitButton: FC<ISubmitButtonProps> = ({
       type="submit"
       onClick={onClick}
       className={`w-full font-bold bg-[var(--color-white)] text-[var(--color-primary)] hover:bg-[var(--color-black)] hover:text-[var(--color-white)] cursor-pointer disabled:opacity-50 disabled:pointer-events-none px-4 py-2 rounded ${className}`}
-      disabled={isLoading}
+      disabled={disabled ?? isLoading}
     >
       {isLoading ? loadingText : idleText}
     </button>

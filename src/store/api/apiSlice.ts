@@ -4,6 +4,7 @@ import type {
   AuthResponse,
   SignUpRequest,
   RefreshTokenRequest,
+  ForgotPasswordRequest,
   BoardSummaryDTO,
 } from '../../types';
 import { setCredentials, logout, updateTokens } from '../slices/authSlice';
@@ -152,6 +153,33 @@ export const apiSlice = createApi({
         }
       },
     }),
+    forgotPassword: builder.mutation<AuthResponse, ForgotPasswordRequest>({
+      query: (body) => ({
+        url: '/api/auth/forgot-password',
+        method: 'POST',
+        body,
+      }),
+      async onQueryStarted(_, { dispatch, queryFulfilled }) {
+        try {
+          await queryFulfilled;
+          dispatch(
+            showToast({
+              type: 'success',
+              title: 'Sprawdź skrzynkę',
+              message: 'Wysłaliśmy link resetujący hasło.',
+            }),
+          );
+        } catch (err: any) {
+          dispatch(
+            showToast({
+              type: 'error',
+              title: 'Błąd',
+              message: err.error?.data?.error || 'Coś poszło nie tak',
+            }),
+          );
+        }
+      },
+    }),
     getBoards: builder.query<BoardSummaryDTO[], void>({
       query: () => '/api/boards',
       providesTags: ['Boards'],
@@ -164,4 +192,5 @@ export const {
   useSignUpMutation,
   useLogoutMutation,
   useGetBoardsQuery,
+  useForgotPasswordMutation,
 } = apiSlice;
