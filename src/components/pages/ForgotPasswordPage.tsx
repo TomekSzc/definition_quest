@@ -1,22 +1,20 @@
 import Providers from "../Providers";
-import { AuthForm } from "../forms/AuthForm";
+import ForgotPasswordForm from "../forms/ForgotPasswordForm";
 import { Routes } from "../../lib/routes";
 import type { FC } from "react";
 
-export const LoginPage: FC = () =>  {
+const ForgotPasswordPage: FC = () => {
   return (
     <Providers>
       <div className="min-h-screen flex flex-col items-center justify-center bg-[var(--color-primary)] space-y-6">
         <h1 className="text-[36px] text-[var(--color-white)] font-bold">Definition quest</h1>
-        <AuthForm />
+        <ForgotPasswordForm />
         <p className="text-[var(--color-white)] text-sm mt-4">
-          Nie masz konta? <a href={Routes.SignUp} className="underline">Zarejestruj się</a>
-        </p>
-        <p className="text-[var(--color-white)] text-sm">
-          <a href={Routes.ForgotPassword} className="underline">Zapomniałeś hasła?</a>
+          Pamiętasz hasło? <a href={Routes.Login} className="underline">Zaloguj się</a>
         </p>
       </div>
     </Providers>
   );
-}
- export default LoginPage;
+};
+
+export default ForgotPasswordPage;
