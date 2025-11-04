@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="8" ry="8" fill="#0c5397"/>
+  <g transform="translate(30,0) scale(-1,1)">
+    <text x="12" y="48" font-family="Roboto, sans-serif" font-size="40" fill="#ffffff" font-weight="700">D</text>
+  </g>
+  <text x="36" y="48" font-family="Roboto, sans-serif" font-size="40" fill="#ffffff" font-weight="700">q</text>
+</svg>
