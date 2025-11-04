@@ -1,26 +1,24 @@
 import { useEffect } from "react";
-// @ts-ignore types bundled
 import * as ToastPrimitive from "@radix-ui/react-toast";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { hideToast, selectToast, clearToast } from "@/store/slices/toastSlice";
 import type { ToastType } from "@/store/slices/toastSlice";
+import type { FC } from "react";
 
-export default function Toast() {
+export const Toast: FC = () => {
   const dispatch = useAppDispatch();
   const { visible, type = 'info', title, message } = useAppSelector(selectToast);
-  let timeout: NodeJS.Timeout | null = null;
 
   useEffect(() => {
     if (!visible) return;
-    timeout = setTimeout(() => dispatch(hideToast()), 15000);
-    return () => timeout && clearTimeout(timeout);
+    const timeout = setTimeout(() => dispatch(hideToast()), 15000);
+    return () => clearTimeout(timeout);
   }, [visible, dispatch]);
 
   if (!visible) return null;
 
   const closeToast = () => {
-    dispatch(clearToast());
-    timeout && clearTimeout(timeout);
+    dispatch(clearToast()); 
   }
 
   const colorMap: Record<ToastType, string> = {
@@ -52,3 +50,6 @@ export default function Toast() {
     </ToastPrimitive.Provider>
   );
 }
+
+
+export default Toast;

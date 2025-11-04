@@ -3,12 +3,13 @@ import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
 import { store, persistor } from '@/store';
 import Toast from '../ui/Toast';
+import type { FC } from 'react';
 
-interface Props {
+interface IProvidersProps {
   children: ReactNode;
 }
 
-export default function Providers({ children }: Props) {
+export const Providers: FC<IProvidersProps> = ({ children }) => {
   return (
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
@@ -18,3 +19,4 @@ export default function Providers({ children }: Props) {
     </Provider>
   );
 }
+export default Providers;
