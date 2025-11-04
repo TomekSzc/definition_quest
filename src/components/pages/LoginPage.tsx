@@ -1,8 +1,9 @@
 import Providers from "../Providers";
 import { AuthForm } from "../forms/AuthForm";
 import { Routes } from "../../lib/routes";
+import type { FC } from "react";
 
-export default function LoginPage() {
+export const LoginPage: FC = () =>  {
   return (
     <Providers>
       <div className="min-h-screen flex flex-col items-center justify-center bg-[var(--color-primary)] space-y-6">
@@ -15,3 +16,4 @@ export default function LoginPage() {
     </Providers>
   );
 }
+ export default LoginPage;

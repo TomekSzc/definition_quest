@@ -1,8 +1,9 @@
 import { useState } from "react";
 import * as Form from "@radix-ui/react-form";
 import type { UseFormRegisterReturn } from "react-hook-form";
+import type { FC } from "react";
 
-interface InputProps {
+interface IInputProps {
   name: string;
   label: string;
   register: UseFormRegisterReturn;
@@ -12,7 +13,7 @@ interface InputProps {
   showPasswordToggle?: boolean;
 }
 
-export const FormInput = ({
+export const FormInput:FC<IInputProps> = ({
   name,
   label,
   register,
@@ -20,7 +21,7 @@ export const FormInput = ({
   type = "text",
   disabled = false,
   showPasswordToggle = false,
-}: InputProps) => {
+}) => {
   const [showPwd, setShowPwd] = useState(false);
   const computedType = type === "password" && showPasswordToggle ? (showPwd ? "text" : "password") : type;
 

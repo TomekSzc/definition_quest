@@ -1,8 +1,9 @@
 import Providers from "../Providers";
 import SignUpForm from "../forms/SignUpForm";
 import { Routes } from "../../lib/routes";
+import type { FC } from "react";
 
-export default function SignUpPage() {
+export const SignUpPage: FC = () => {
   return (
     <Providers>
       <div className="min-h-screen flex flex-col items-center justify-center bg-[var(--color-primary)] space-y-6">
@@ -15,3 +16,5 @@ export default function SignUpPage() {
     </Providers>
   );
 }
+
+export default SignUpPage;
