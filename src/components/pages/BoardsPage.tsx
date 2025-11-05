@@ -9,19 +9,12 @@ import type { ListBoardsQuery } from "@/types";
 
 const BoardsPageComponent: FC = () => {
   const { params, setQueryParams } = useQueryParams<{ q?: string; page?: string }>();
-  const { data, isFetching, error } = useListPublicBoardsQuery((params as unknown as Partial<ListBoardsQuery>));
+  const { data, isFetching } = useListPublicBoardsQuery((params as unknown as Partial<ListBoardsQuery>));
 
-  const updateUrl = (newQuery: string, newPage: number) => {
-    const searchQuery = newQuery ? {q: newQuery} : {};
-    setQueryParams({...params, ...searchQuery, page: String(newPage)});
-  };
 
   const handleQueryChange = (val: string) => {
-    updateUrl(val, 1); 
-  };
-
-  const handlePageChange = (p: number) => {
-    updateUrl(params.q ?? '', p);
+    const searchQuery = val ? {q: val} : {};
+    setQueryParams({...params, ...searchQuery});
   };
 
   return (
@@ -35,7 +28,7 @@ const BoardsPageComponent: FC = () => {
             <SearchInput onChange={handleQueryChange} />
         </header>
 
-        <CardsBoard boards={data?.data} loading={isFetching} meta={data?.meta} onPageChange={handlePageChange} />
+        <CardsBoard boards={data?.data} loading={isFetching} meta={data?.meta} />
         </section>
         </div>
     </>

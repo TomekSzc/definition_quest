@@ -16,7 +16,7 @@ export function useQueryParams<T extends Record<string, string | undefined>>() {
   const [params, setParamsState] = useState<T>(() => (typeof window !== 'undefined' ? getParams() : ({} as T)));
 
   useEffect(() => {
-    const handler = () => setParamsState(getParams());
+    const handler = () => {console.log('tomek', getParams());setParamsState(getParams())};
     window.addEventListener('popstate', handler);
     return () => window.removeEventListener('popstate', handler);
   }, []);

@@ -1,14 +1,20 @@
 import type { FC } from "react";
 import type { PaginationMeta } from "@/types";
+import { useQueryParams } from "@/hooks/useQueryParams";
 
 interface Props {
   meta?: PaginationMeta;
-  onPageChange: (page: number) => void;
 }
 
-export const Pagination: FC<Props> = ({ meta, onPageChange }) => {
+export const Pagination: FC<Props> = ({ meta }) => {
   if (!meta || meta.total <= meta.pageSize) return null;
   const totalPages = Math.ceil(meta.total / meta.pageSize);
+  const { params, setQueryParams } = useQueryParams<{ q?: string; page?: string }>();
+
+  const onPageChange = (page: number) => {
+    console.log('page', page);
+    setQueryParams({...params, page: String(page)});
+  }
   return (
     <nav className="mt-6 flex items-center justify-center gap-2" aria-label="Paginacja">
       <button
