@@ -8,7 +8,7 @@ import { SubmitButton } from "@/components/ui/SubmitButton";
 import { FormInput } from "../ui/FormInput";
 import { z } from "zod";
 import type { FC } from "react";
-
+import { Routes } from "@/lib/routes";
 export type AuthFormData = z.infer<typeof LoginSchema>;
 
 export const AuthForm: FC = () => {
@@ -26,12 +26,12 @@ export const AuthForm: FC = () => {
   async function onSubmit(data: LoginRequest) {
     const res = await login(data).unwrap();
     if (res.data?.user) {
-      window.location.href = "/dashboard";
+      window.location.href = Routes.Boards;
     }
   }
 
   return (
-    <div className="max-w-md w-full mx-auto bg-[var(--color-primary)] p-8 rounded-xl shadow border-2 border-[var(--color-white)]">
+    <div className="max-w-md w-full mx-auto bg-[var(--color-primary)]  p-8 rounded-xl shadow border-2 border-[var(--color-white)]">
       <Form.Root className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
         <FormInput
           name="email"

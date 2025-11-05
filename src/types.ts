@@ -255,3 +255,51 @@ export interface AuthResponse {
   };
   message?: string;
 }
+
+// Public Boards view models ───────────────────────────────────────────────
+
+/**
+ * Płaski view-model jednej planszy wyświetlanej w widoku Public Boards.
+ */
+export interface BoardCardVM {
+  id: string;
+  title: string;
+  ownerDisplayName: string;
+  cardCount: number;
+  tags: string[];
+  createdAt: string; // ISO date string
+}
+
+/**
+ * Stan wyświetlania listy publicznych plansz.
+ */
+export interface BoardsViewState {
+  query: string[];
+  page: number;
+  pageSize: number;
+  loading: boolean;
+  error?: string;
+  data: BoardCardVM[];
+  meta?: PaginationMeta;
+}
+
+/**
+ * Propsy komponentu SearchInput pozwalającego na wprowadzanie wielu fraz.
+ */
+export interface SearchInputProps {
+  value: string[];
+  onChange: (value: string[]) => void;
+}
+
+/**
+ * Query params accepted by GET /api/boards endpoint (validated by backend).
+ */
+export interface ListBoardsQuery {
+  page: number;
+  pageSize: number;
+  q?: string;
+  tags?: string[];
+  ownerId?: string;
+  sort?: "created" | "updated" | "cardCount";
+  direction?: "asc" | "desc";
+}
