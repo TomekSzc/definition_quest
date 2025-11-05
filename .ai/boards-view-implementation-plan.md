@@ -144,3 +144,6 @@ export interface SearchInputProps {
 9. **A11y**: aria-label dla inputu, klikalne elementy focusable, kontrast.
 10. **Testy jednostkowe**: komponent `SearchInput` i hook `usePublicBoards` (mock fetch).
 11. **Dokumentacja**: zaktualizuj README i Storybook (jeśli obecny) o `SearchInput`.
+
+## 12. Header komponent
+- Dodany komponent `Header` w `src/components/ui/Header.tsx` (100 vw, 80 px, cień). Aktualizuje strukturę widoku – `BoardsPage` będzie opakowany przez `Header` w layout.

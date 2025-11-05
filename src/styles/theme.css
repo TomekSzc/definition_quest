@@ -1,6 +1,7 @@
 :root {
   --color-white: #ffffff;
   --color-primary: #0c5397;
+  --color-secondary: #d1dbe5;
   --color-muted: #a6a6a6;
   --color-text: #0c5397;
   /* Toast colors */
@@ -23,6 +24,7 @@
 [data-theme="minimalism"] {
   --color-white: #ffffff;
   --color-primary: #0c5397;
+  --color-secondary: #d1dbe5;
   --color-muted: #a6a6a6;
   --color-text: #0c5397;
   --color-muted-foreground: var(--muted-foreground);

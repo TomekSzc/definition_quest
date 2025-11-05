@@ -1,13 +1,11 @@
 import { useEffect, useMemo } from "react";
 import { useLazyListPublicBoardsQuery } from "@/store/api/apiSlice";
-import type { BoardCardVM, PaginationMeta, ListBoardsQuery, Paged, BoardSummaryDTO } from "@/types";
+import type { BoardCardVM, PaginationMeta, ListBoardsQuery } from "@/types";
 
 const DEFAULT_PAGE_SIZE = 20;
 
 interface UsePublicBoardsParams {
-  query: string[];
-  page: number;
-  pageSize?: number;
+  params: any;
 }
 
 interface UsePublicBoardsResult {
@@ -17,17 +15,9 @@ interface UsePublicBoardsResult {
   error?: string;
 }
 
-export function usePublicBoards({ query, page, pageSize = DEFAULT_PAGE_SIZE }: UsePublicBoardsParams): UsePublicBoardsResult {
+export function usePublicBoards({ params }: UsePublicBoardsParams): UsePublicBoardsResult {
   const [trigger, { data, isFetching, error }] = useLazyListPublicBoardsQuery();
 
-  // Build params object
-  const params = useMemo<Partial<ListBoardsQuery>>(() => ({
-    page,
-    pageSize,
-    q: query.length ? query.join(" ") : undefined,
-  }), [query, page, pageSize]);
-
-  // Debounced fetch when params change
   useEffect(() => {
     const handle = setTimeout(() => trigger(params), 300);
     return () => clearTimeout(handle);

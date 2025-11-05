@@ -10,7 +10,7 @@ export const BoardCard: FC<IBoardCardProps> = ({ board }) => {
   const href = `/boards/${board.id}`;
   return (
     <a href={href} className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-      <Card className="cursor-pointer transition-shadow hover:shadow-lg">
+      <Card className="cursor-pointer transition-shadow hover:shadow-lg border-2 border-[var(--color-primary)] rounded-lg">
         <CardHeader>
           <CardTitle className="text-base font-semibold leading-tight line-clamp-2">
             {board.title}

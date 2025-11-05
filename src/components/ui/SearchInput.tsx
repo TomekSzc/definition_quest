@@ -1,74 +1,29 @@
 import { useCallback, useRef, useState } from "react";
 import type { FC } from "react";
-import type { SearchInputProps } from "@/types";
-import { X } from "lucide-react";
-import clsx from "clsx";
+import debounce  from "lodash.debounce";
 
-/**
- * Reużywalny komponent inputu wyszukiwania akceptujący wiele fraz/tagów.
- * - Wartością jest tablica stringów.
- * - Dodaje frazę po naciśnięciu Enter lub przecinka.
- * - Pozwala usuwać pojedyncze tagi lub wyczyścić całość.
- */
-export const SearchInput: FC<SearchInputProps> = ({ value, onChange }) => {
-  const [draft, setDraft] = useState("");
-  const inputRef = useRef<HTMLInputElement>(null);
+interface ISearchInputProps {
+  value: string[];
+  onChange: (value: string) => void;
+}
 
-  const addDraft = useCallback(() => {
-    const trimmed = draft.trim();
-    if (!trimmed) return;
-    if (trimmed.length > 100 || value.length >= 10) return; // validation guard
-    if (value.includes(trimmed)) return;
-    onChange([...value, trimmed]);
-    setDraft("");
-  }, [draft, onChange, value]);
+export const SearchInput: FC<ISearchInputProps> = ({ value, onChange }) => {
 
-  const handleKeyDown: React.KeyboardEventHandler<HTMLInputElement> = (e) => {
-    if (e.key === "Enter" || e.key === ",") {
-      e.preventDefault();
-      addDraft();
-    } else if (e.key === "Backspace" && !draft && value.length) {
-      // Backspace on empty draft removes last tag
-      onChange(value.slice(0, -1));
-    }
-  };
-
-  const removeTag = (index: number) => onChange(value.filter((_, i) => i !== index));
-
-  const clearAll = () => {
-    setDraft("");
-    onChange([]);
-    inputRef.current?.focus();
-  };
+  const debouncedSearch = debounce(async (search: string) => {
+    onChange(search);
+  }, 300);
+  
+  const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => debouncedSearch(e.target.value);
 
   return (
-    <div className="flex flex-wrap items-center gap-2 rounded-md border border-input px-3 py-2 focus-within:ring-2 focus-within:ring-ring">
-      {value.map((tag, idx) => (
-        <span
-          key={idx}
-          className="flex items-center gap-1 rounded bg-muted px-2 py-0.5 text-sm text-muted-foreground"
-        >
-          {tag}
-          <button
-            type="button"
-            aria-label={`Usuń tag ${tag}`}
-            onClick={() => removeTag(idx)}
-            className="ml-1 inline-flex h-4 w-4 items-center justify-center rounded hover:bg-muted-foreground/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            <X className="h-3 w-3" />
-          </button>
-        </span>
-      ))}
+    <div className="flex flex-wrap items-center gap-2 rounded-md border border-[var(--color-primary)] bg-white px-3 py-2 focus-within:ring-2 focus-within:ring-[var(--color-primary)] ">
       <input
-        ref={inputRef}
-        value={draft}
-        onChange={(e) => setDraft(e.target.value)}
-        onKeyDown={handleKeyDown}
+        onChange={handleOnChange}
         placeholder="Szukaj..."
         aria-label="Pole wyszukiwania"
-        className="flex-1 min-w-[120px] border-0 bg-transparent p-0 text-sm focus:outline-none"
+        className="flex-1 min-w-[120px] border-0 bg-transparent p-0 text-sm text-[var(--color-primary)] placeholder-[var(--color-primary)] focus:outline-none"
       />
-      {value.length > 0 && (
+      {/* {value.length > 0 && (
         <button
           type="button"
           onClick={clearAll}
@@ -77,7 +32,7 @@ export const SearchInput: FC<SearchInputProps> = ({ value, onChange }) => {
         >
           <X className="h-4 w-4" />
         </button>
-      )}
+      )} */}
     </div>
   );
 };

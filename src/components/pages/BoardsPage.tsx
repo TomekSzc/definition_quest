@@ -1,44 +1,32 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import type { FC } from "react";
-import { usePublicBoards } from "@/lib/hooks/usePublicBoards";
+import { withProviders } from "@/components/Providers";
+import { useQueryParams } from "@/hooks/useQueryParams";
+import { usePublicBoards } from "@/hooks/usePublicBoards";
 import { SearchInput } from "@/components/ui/SearchInput";
-import { BoardsGrid } from "@/components/ui/BoardsGrid";
-import { Pagination } from "@/components/ui/Pagination";
-import Providers from "../Providers";
-
-function parseQuery(search: string) {
-  const params = new URLSearchParams(search);
-  const query = params.get("q")?.split(" ").filter(Boolean) ?? [];
-  const page = Math.max(1, Number(params.get("page") ?? 1));
-  return { query, page };
-}
+import { CardsBoard } from "@/components/ui/CardsBoard";
+import { Header } from "@/components/ui/Header";
 
 const BoardsPageComponent: FC = () => {
-  const isBrowser = typeof window !== "undefined";
-  const locationSearch = isBrowser ? window.location.search : "";
-  const navigate = (path: string) => {
-    if (isBrowser) {
-      window.history.pushState({}, "", path);
-    }
-  };
-  const { query: initialQuery, page: initialPage } = useMemo(() => parseQuery(locationSearch), [locationSearch]);
+  const { params, setQueryParams } = useQueryParams<{ q?: string; page?: string }>();
+  const initialQuery = params.q ? params.q.split(' ').filter(Boolean) : [];
+  const initialPage = Math.max(1, Number(params.page ?? 1));
+
   const [query, setQuery] = useState<string[]>(initialQuery);
   const [page, setPage] = useState<number>(initialPage);
 
-  const { data, meta, loading, error } = usePublicBoards({ query, page });
+  const { data, meta, loading, error } = usePublicBoards({params});
 
   const updateUrl = (newQuery: string[], newPage: number) => {
-    const params = new URLSearchParams();
-    if (newQuery.length) params.set("q", newQuery.join(" "));
-    if (newPage > 1) params.set("page", newPage.toString());
-    navigate(`/boards?${params.toString()}`);
+    const searchQuery = newQuery ? newQuery : {};
+    setQueryParams({...params, ...searchQuery, page: String(newPage)});
   };
 
-  const handleQueryChange = (val: string[]) => {
-    setQuery(val);
-    setPage(1);
-    updateUrl(val, 1);
-  };
+//   const handleQueryChange = (val: string[]) => {
+//     setQuery(val);
+//     setPage(1);
+//     updateUrl(val, 1); 
+//   };
 
   const handlePageChange = (p: number) => {
     setPage(p);
@@ -46,23 +34,23 @@ const BoardsPageComponent: FC = () => {
   };
 
   return (
-    <Providers>
+    <>
+        <Header>
+            <h1 className="text-2xl font-bold">Public Boards</h1>
+        </Header>
+        <div className="min-h-screen bg-secondary">
         <section className="container mx-auto max-w-6xl px-4 py-8">
         <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <h1 className="text-2xl font-bold">Public Boards</h1>
-            <SearchInput value={query} onChange={handleQueryChange} />
+            <SearchInput onChange={(s: string) => console.log('searech2222', s)} />
         </header>
 
         {error && <p className="mb-4 rounded bg-destructive/10 p-3 text-destructive">{error}</p>}
 
-        <BoardsGrid boards={data} loading={loading} />
-
-        <Pagination meta={meta} onPageChange={handlePageChange} />
+        <CardsBoard boards={data} loading={loading} meta={meta} onPageChange={handlePageChange} />
         </section>
-    </Providers>
+        </div>
+    </>
   );
 };
-
-import { withProviders } from "@/components/Providers";
 
 export const BoardsPage = withProviders(BoardsPageComponent);
