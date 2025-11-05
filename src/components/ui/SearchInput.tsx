@@ -3,11 +3,10 @@ import type { FC } from "react";
 import debounce  from "lodash.debounce";
 
 interface ISearchInputProps {
-  value: string[];
   onChange: (value: string) => void;
 }
 
-export const SearchInput: FC<ISearchInputProps> = ({ value, onChange }) => {
+export const SearchInput: FC<ISearchInputProps> = ({ onChange }) => {
 
   const debouncedSearch = debounce(async (search: string) => {
     onChange(search);
