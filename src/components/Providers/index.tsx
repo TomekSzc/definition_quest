@@ -20,3 +20,17 @@ export const Providers: FC<IProvidersProps> = ({ children }) => {
   );
 }
 export default Providers;
+
+// Higher-order component to wrap pages with Providers without repeating boilerplate.
+import type { FC } from 'react';
+
+export function withProviders<P>(Component: FC<P>): FC<P> {
+  const Wrapped: FC<P> = (props) => (
+    <Providers>
+      {/* eslint-disable-next-line react/jsx-props-no-spreading */}
+      <Component {...props} />
+    </Providers>
+  );
+  Wrapped.displayName = `withProviders(${Component.displayName || Component.name || 'Component'})`;
+  return Wrapped;
+}

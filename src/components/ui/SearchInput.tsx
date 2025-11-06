@@ -1,0 +1,52 @@
+import { useCallback, useEffect, useRef, useState } from "react";
+import type { FC } from "react";
+import debounce  from "lodash.debounce";
+import { X } from "lucide-react";
+
+interface ISearchInputProps {
+  onChange: (value: string) => void;
+}
+
+export const SearchInput: FC<ISearchInputProps> = ({ onChange }) => {
+  const searchRef = useRef<HTMLInputElement>(null);
+  const value = searchRef.current?.value ?? '';
+  const debouncedSearch = debounce(async (search: string) => {
+    onChange(search);
+  }, 300);
+  
+  const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => debouncedSearch(e.target.value);
+  const clearAll = () => {
+    if (searchRef.current) searchRef.current.value = '';
+    onChange('');
+  }
+
+  useEffect(() => {
+    const input = searchRef.current;
+    const handleInput = () => debouncedSearch(input?.value ?? '');
+
+  input?.addEventListener('input', handleInput);
+  return () => input?.removeEventListener('input', handleInput);
+  },[])
+
+  return (
+    <div className="relative flex items-center rounded-md border border-[var(--color-primary)] bg-white px-3 py-2 focus-within:ring-2 focus-within:ring-[var(--color-primary)] w-screen h-[50px] border-2">
+      <input
+        ref={searchRef}
+        placeholder="Szukaj..."
+        aria-label="Pole wyszukiwania"
+        className="w-full border-0 bg-transparent pr-8 text-sm text-[var(--color-primary)] placeholder-[var(--color-primary)] focus:outline-none"
+      />
+      {value && value.length > 0 && (
+        <button
+          type="button"
+          onClick={clearAll}
+          aria-label="Wyczyść wyszukiwanie"
+          className="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--color-primary)] hover:text-[var(--color-muted)] focus:outline-none"
+          style={{ zIndex: 1 }}
+        >
+          <X className="h-4 w-4" />
+        </button>
+      )}
+    </div>
+  );
+};

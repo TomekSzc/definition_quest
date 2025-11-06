@@ -7,6 +7,8 @@ import type {
   ForgotPasswordRequest,
   ResetPasswordRequest,
   BoardSummaryDTO,
+  Paged,
+  ListBoardsQuery,
 } from '../../types';
 import { setCredentials, logout, updateTokens } from '../slices/authSlice';
 import { showToast } from '../slices/toastSlice';
@@ -214,6 +216,20 @@ export const apiSlice = createApi({
       query: () => '/api/boards',
       providesTags: ['Boards'],
     }),
+    listPublicBoards: builder.query<Paged<BoardSummaryDTO>, Partial<ListBoardsQuery>>({
+      query: (params) => {
+        const qs = new URLSearchParams();
+        if (params?.page) qs.set('page', params.page.toString());
+        if (params?.pageSize) qs.set('pageSize', params.pageSize.toString());
+        if (params?.q) qs.set('q', params.q);
+        if (params?.tags?.length) qs.set('tags', params.tags.join(','));
+        if (params?.ownerId) qs.set('ownerId', params.ownerId);
+        if (params?.sort) qs.set('sort', params.sort);
+        if (params?.direction) qs.set('direction', params.direction);
+        const query = qs.toString();
+        return `/api/boards${query ? `?${query}` : ''}`;
+      },
+    }),
   }),
 });
 
@@ -224,4 +240,6 @@ export const {
   useGetBoardsQuery,
   useForgotPasswordMutation,
   useResetPasswordMutation,
+  useListPublicBoardsQuery,
+  useLazyListPublicBoardsQuery,
 } = apiSlice;
