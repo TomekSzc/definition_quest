@@ -11,11 +11,16 @@ import { Pagination } from "@/components/ui/Pagination";
 
 const BoardsPageComponent: FC = () => {
   const { params, setQueryParams } = useQueryParams<{ q?: string; page?: string }>();
-  const { data, isFetching } = useListPublicBoardsQuery((params as unknown as Partial<ListBoardsQuery>));
+  const { data, isFetching, refetch } = useListPublicBoardsQuery((params as unknown as Partial<ListBoardsQuery>));
 
   const handleQueryChange = (val: string) => {
-    const searchQuery = val ? {q: val, page: '1'} : {};
-    setQueryParams({...params, ...searchQuery});
+
+    if (val === '') {
+      setQueryParams({ ...params, q: undefined });
+      refetch();
+    } else {
+      setQueryParams({ ...params, q: val });
+    }
   };
 
   const handlePageChange = (page: number) => {
