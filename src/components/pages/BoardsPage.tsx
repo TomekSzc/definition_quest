@@ -7,6 +7,7 @@ import { Header } from "@/components/ui/Header";
 import { useListPublicBoardsQuery } from "@/store/api/apiSlice";
 import type { ListBoardsQuery } from "@/types";
 import { Pagination } from "@/components/ui/Pagination";
+import { ProtectedRoute } from "@/components/Providers";
 
 
 const BoardsPageComponent: FC = () => {
@@ -28,7 +29,7 @@ const BoardsPageComponent: FC = () => {
   };
 
   return (
-    <>
+      <>
         <Header>
             <h1 className="text-2xl font-bold">Public Boards</h1>
         </Header>
@@ -42,7 +43,7 @@ const BoardsPageComponent: FC = () => {
         <Pagination meta={data?.meta} onPageChange={handlePageChange}/>
         </section>
         </div>
-    </>
+      </>
   );
 };
 
