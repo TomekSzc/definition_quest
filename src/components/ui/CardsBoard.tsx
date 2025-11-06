@@ -3,13 +3,13 @@ import type { PaginationMeta } from "@/types";
 import { BoardsGrid } from "./BoardsGrid";
 import type { BoardSummaryDTO } from "@/types";
 
-interface Props {
+interface ICardsBoardProps {
   boards:  BoardSummaryDTO[] | undefined;
   loading: boolean;
   meta?: PaginationMeta;
 }
 
-export const CardsBoard: FC<Props> = ({ boards, loading, meta }) => {
+export const CardsBoard: FC<ICardsBoardProps> = ({ boards, loading, meta }) => {
   if(!boards) return null;
   return (
     <>

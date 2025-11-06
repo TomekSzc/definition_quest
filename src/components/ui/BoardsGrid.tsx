@@ -3,12 +3,12 @@ import type { BoardCardVM } from "@/types";
 import { BoardCard } from "./BoardCard";
 import type { Paged, BoardSummaryDTO } from "@/types";
 
-interface Props {
+interface IBoardsGridProps {
   boards: BoardSummaryDTO[];
   loading: boolean;
 }
 
-export const BoardsGrid: FC<Props> = ({ boards, loading }) => {
+export const BoardsGrid: FC<IBoardsGridProps> = ({ boards, loading }) => {
   if (loading) {
     return <p className="py-10 text-center text-sm text-muted-foreground">Ładowanie…</p>;
   }

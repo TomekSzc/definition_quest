@@ -1,13 +1,12 @@
 import type { FC } from "react";
 import type { PaginationMeta } from "@/types";
-import { useQueryParams } from "@/hooks/useQueryParams";
 
-interface Props {
+interface IPaginationProps {
   onPageChange: (page: number) => void;
   meta?: PaginationMeta;
 }
 
-export const Pagination: FC<Props> = ({ onPageChange, meta }) => {
+export const Pagination: FC<IPaginationProps> = ({ onPageChange, meta }) => {
   if (!meta || meta.total <= meta.pageSize) return null;
   const totalPages = Math.ceil(meta.total / meta.pageSize);
 
