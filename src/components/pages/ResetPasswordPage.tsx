@@ -1,4 +1,4 @@
-import Providers from "../Providers";
+import { withProviders } from "@/components/Providers";
 import ResetPasswordForm from "../forms/ResetPasswordForm";
 import { supabaseClient } from "../../db/supabase.client";
 import { useEffect } from "react";
@@ -6,7 +6,7 @@ import { useDispatch } from "react-redux";
 import { showToast } from "../../store/slices/toastSlice";
 import type { FC } from "react";
 
-const ResetPasswordPage: FC = () => {
+const ResetPasswordPageComponent: FC = () => {
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -30,13 +30,11 @@ const ResetPasswordPage: FC = () => {
   }, [dispatch]);
 
   return (
-    <Providers>
       <div className="min-h-screen flex flex-col items-center justify-center bg-[var(--color-primary)] space-y-6">
         <h1 className="text-[36px] text-[var(--color-white)] font-bold">Definition quest</h1>
         <ResetPasswordForm />
       </div>
-    </Providers>
   );
 };
-
+export const ResetPasswordPage = withProviders(ResetPasswordPageComponent);
 export default ResetPasswordPage;
