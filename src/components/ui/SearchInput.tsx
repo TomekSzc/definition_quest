@@ -24,8 +24,8 @@ export const SearchInput: FC<ISearchInputProps> = ({ onChange }) => {
     const input = searchRef.current;
     const handleInput = () => debouncedSearch(input?.value ?? '');
 
-  input?.addEventListener('input', handleInput);
-  return () => input?.removeEventListener('input', handleInput);
+    input?.addEventListener('input', handleInput);
+    return () => input?.removeEventListener('input', handleInput);
   },[])
 
   return (
