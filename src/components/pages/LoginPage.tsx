@@ -1,11 +1,10 @@
-import Providers from "../Providers";
+import { withProviders } from "@/components/Providers";
 import { AuthForm } from "../forms/AuthForm";
 import { Routes } from "../../lib/routes";
 import type { FC } from "react";
 
-export const LoginPage: FC = () =>  {
+const LoginPageComponent: FC = () => {
   return (
-    <Providers>
       <div className="min-h-screen flex flex-col items-center justify-center bg-[var(--color-primary)] space-y-6">
         <h1 className="text-[36px] text-[var(--color-white)] font-bold">Definition quest</h1>
         <AuthForm />
@@ -16,7 +15,8 @@ export const LoginPage: FC = () =>  {
           <a href={Routes.ForgotPassword} className="underline">Zapomniałeś hasła?</a>
         </p>
       </div>
-    </Providers>
   );
-}
- export default LoginPage;
+};
+
+export const LoginPage = withProviders(LoginPageComponent);
+export default LoginPage;
