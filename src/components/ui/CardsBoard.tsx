@@ -1,18 +1,19 @@
 import type { FC } from "react";
-import type { BoardCardVM, PaginationMeta } from "@/types";
+import type { PaginationMeta } from "@/types";
 import { BoardsGrid } from "./BoardsGrid";
-import { Pagination } from "./Pagination";
+import type { BoardSummaryDTO } from "@/types";
 
 interface Props {
-  boards: BoardCardVM[];
+  boards:  BoardSummaryDTO[] | undefined;
   loading: boolean;
   meta?: PaginationMeta;
-  onPageChange: (page: number) => void;
 }
 
-export const CardsBoard: FC<Props> = ({ boards, loading, meta, onPageChange }) => (
-  <>
-    <BoardsGrid boards={boards} loading={loading} />
-    <Pagination meta={meta} onPageChange={onPageChange} />
-  </>
-);
+export const CardsBoard: FC<Props> = ({ boards, loading, meta }) => {
+  if(!boards) return null;
+  return (
+    <>
+      <BoardsGrid boards={boards} loading={loading} />
+    </>
+  )
+};

@@ -1,9 +1,10 @@
 import type { FC } from "react";
 import type { BoardCardVM } from "@/types";
 import { BoardCard } from "./BoardCard";
+import type { Paged, BoardSummaryDTO } from "@/types";
 
 interface Props {
-  boards: BoardCardVM[];
+  boards: BoardSummaryDTO[];
   loading: boolean;
 }
 

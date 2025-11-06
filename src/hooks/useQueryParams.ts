@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 /**
  * Global hook returning current URL query params and updater.
  */
+
 export function useQueryParams<T extends Record<string, string | undefined>>() {
   const getParams = (): T => {
     const searchParams = new URLSearchParams(window.location.search);
@@ -12,14 +13,8 @@ export function useQueryParams<T extends Record<string, string | undefined>>() {
     }, {} as any);
     return entries as T;
   };
-
+  
   const [params, setParamsState] = useState<T>(() => (typeof window !== 'undefined' ? getParams() : ({} as T)));
-
-  useEffect(() => {
-    const handler = () => {console.log('tomek', getParams());setParamsState(getParams())};
-    window.addEventListener('popstate', handler);
-    return () => window.removeEventListener('popstate', handler);
-  }, []);
 
   const setQueryParams = useCallback((newParams: Partial<T>, options: { replace?: boolean } = {}) => {
     const search = new URLSearchParams(window.location.search);
@@ -33,5 +28,5 @@ export function useQueryParams<T extends Record<string, string | undefined>>() {
     setParamsState(getParams());
   }, []);
 
-  return { params, setQueryParams } as const;
+  return { params, setQueryParams };
 }

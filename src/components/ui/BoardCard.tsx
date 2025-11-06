@@ -1,9 +1,10 @@
 import type { FC } from "react";
 import type { BoardCardVM } from "@/types";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import type { BoardSummaryDTO } from "@/types";
 
 interface IBoardCardProps {
-  board: BoardCardVM;
+  board: BoardSummaryDTO;
 }
 
 export const BoardCard: FC<IBoardCardProps> = ({ board }) => {

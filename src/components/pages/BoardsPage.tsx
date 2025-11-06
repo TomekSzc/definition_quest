@@ -6,14 +6,20 @@ import { CardsBoard } from "@/components/ui/CardsBoard";
 import { Header } from "@/components/ui/Header";
 import { useListPublicBoardsQuery } from "@/store/api/apiSlice";
 import type { ListBoardsQuery } from "@/types";
+import { Pagination } from "@/components/ui/Pagination";
+
 
 const BoardsPageComponent: FC = () => {
   const { params, setQueryParams } = useQueryParams<{ q?: string; page?: string }>();
   const { data, isFetching } = useListPublicBoardsQuery((params as unknown as Partial<ListBoardsQuery>));
 
-
   const handleQueryChange = (val: string) => {
-    const searchQuery = val ? {q: val} : {};
+    const searchQuery = val ? {q: val, page: '1'} : {};
+    setQueryParams({...params, ...searchQuery});
+  };
+
+  const handlePageChange = (page: number) => {
+    const searchQuery = page ? {page: String(page)} : {};
     setQueryParams({...params, ...searchQuery});
   };
 
@@ -29,6 +35,7 @@ const BoardsPageComponent: FC = () => {
         </header>
 
         <CardsBoard boards={data?.data} loading={isFetching} meta={data?.meta} />
+        <Pagination meta={data?.meta} onPageChange={handlePageChange}/>
         </section>
         </div>
     </>
