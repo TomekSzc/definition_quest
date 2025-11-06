@@ -265,8 +265,11 @@ export async function listPublicBoards(
     .eq("archived", false)
     .eq("is_public", true);
 
+  // Perform case-insensitive substring search on the title.
+  // Using ilike allows queries with single characters (e.g., "a") to match any title containing that substring.
   if (q) {
-    request = request.textSearch("search_vector", q, { type: "plain" });
+    // Wrap the query in % wildcards for substring match
+    request = request.ilike("title", `%${q}%`);
   }
 
   if (tags && tags.length) {
@@ -340,7 +343,8 @@ export async function listBoardsPlayedByUser(
     .eq("scores.user_id", userId);
 
   if (q) {
-    request = request.textSearch("search_vector", q, { type: "plain" });
+    // Case-insensitive substring match on board title
+    request = request.ilike("title", `%${q}%`);
   }
 
   if (tags && tags.length) {

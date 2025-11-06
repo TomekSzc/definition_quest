@@ -14,7 +14,6 @@ const BoardsPageComponent: FC = () => {
   const { data, isFetching, refetch } = useListPublicBoardsQuery((params as unknown as Partial<ListBoardsQuery>));
 
   const handleQueryChange = (val: string) => {
-
     if (val === '') {
       setQueryParams({ ...params, q: undefined });
       refetch();

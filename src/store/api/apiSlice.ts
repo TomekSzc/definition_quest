@@ -12,6 +12,8 @@ import type {
 } from '../../types';
 import { setCredentials, logout, updateTokens } from '../slices/authSlice';
 import { showToast } from '../slices/toastSlice';
+import { handleClientLogout } from './helpers';
+
 
 const baseQuery = fetchBaseQuery({
   baseUrl: '/',
@@ -37,7 +39,9 @@ const baseQueryWithReauth: typeof baseQuery = async (args, api, extraOptions) =>
 
     const refreshToken = (api.getState() as any).auth.refreshToken as string | null;
     if (!refreshToken) {
-      api.dispatch(logout());
+      // hit logout endpoint to invalidate any server-side session
+      await baseQuery({ url: '/api/auth/logout', method: 'POST' }, api, extraOptions);
+      handleClientLogout(api.dispatch);
       return result;
     }
 
@@ -58,7 +62,7 @@ const baseQueryWithReauth: typeof baseQuery = async (args, api, extraOptions) =>
       // retry original query with new token
       result = await baseQuery(args, api, extraOptions);
     } else {
-      api.dispatch(logout());
+      handleClientLogout(api.dispatch);
     }
   }
 
@@ -152,7 +156,7 @@ export const apiSlice = createApi({
         try {
           await queryFulfilled;
         } finally {
-          dispatch(logout());
+          handleClientLogout(dispatch);
         }
       },
     }),
