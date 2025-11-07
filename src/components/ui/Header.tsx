@@ -11,6 +11,15 @@ interface HeaderProps {
  */
 export const Header: FC<HeaderProps> = ({ className }) => {
   const { collapsed } = useSidebar();
+  // Determine title based on current pathname
+  const pathname = typeof window !== "undefined" ? window.location.pathname : "";
+  const routeTitles: Record<string, string> = {
+    "/boards": "Public Boards",
+    "/my-boards": "My Boards",
+    "/played-boards": "Played Boards",
+    "/create-board": "Create Board",
+  };
+  const title = routeTitles[pathname] ?? "Public Boards";
   // sidebar widths: collapsed w-16 (4rem) vs expanded w-64 (16rem)
   const leftPadding = collapsed ? "pl-20" : "pl-72"; // +4rem for safety (header internal px-6)
 
@@ -22,7 +31,7 @@ export const Header: FC<HeaderProps> = ({ className }) => {
         className
       )}
     >
-      <h1 className="text-2xl font-bold">Public Boards</h1>
+      <h1 className="text-2xl font-bold">{title}</h1>
     </header>
   );
 };
