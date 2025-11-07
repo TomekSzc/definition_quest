@@ -1,7 +1,9 @@
 import type { FC } from "react";
 import type { BoardSummaryDTO } from "@/types";
 import { EditIcon, DeleteIcon } from "@/assets/icons";
+import { useAppSelector } from "@/store/hooks";
 import Chip from "./Chip";
+import type { RootState } from "@/store";
 
 interface IBoardListTileProps {
     board: BoardSummaryDTO;
@@ -9,6 +11,8 @@ interface IBoardListTileProps {
 
 export const BoardListTile: FC<IBoardListTileProps> = ({ board }) => {
     const href = `/boards/${board.id}`;
+    const authUserId = useAppSelector((s: RootState) => s.auth.user?.id);
+    const canManage = authUserId && authUserId === board.ownerId;
     return (
     <a href={href} className="
     h-[60px] 
@@ -25,7 +29,7 @@ export const BoardListTile: FC<IBoardListTileProps> = ({ board }) => {
     w-full
     justify-between
     flex">
-        <div className="flex">
+        <div className="flex items-center">
             <div className="
             w-[40px] 
             h-[40px] 
@@ -57,9 +61,11 @@ export const BoardListTile: FC<IBoardListTileProps> = ({ board }) => {
                  </div>
             </div>
         </div>
-        <div className="flex items-center gap-2">
-            <EditIcon className="w-5 h-5 cursor-pointer text-[var(--color-primary)]" />
-            <DeleteIcon className="w-5 h-5 cursor-pointer text-[var(--color-primary)]" />
-        </div>
+        {canManage && (
+            <div className="flex items-center gap-2">
+              <EditIcon className="w-5 h-5 cursor-pointer text-[var(--color-primary)]" />
+              <DeleteIcon className="w-5 h-5 cursor-pointer text-[var(--color-primary)]" />
+            </div>
+          )}
     </a>)
 }
