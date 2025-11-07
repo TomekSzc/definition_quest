@@ -7,7 +7,7 @@ import type { FC } from "react";
 
 export const Toast: FC = () => {
   const dispatch = useAppDispatch();
-  const { visible, type = 'info', title, message } = useAppSelector(selectToast);
+  const { visible, type = "info", title, message } = useAppSelector(selectToast);
 
   useEffect(() => {
     if (!visible) return;
@@ -18,14 +18,14 @@ export const Toast: FC = () => {
   if (!visible) return null;
 
   const closeToast = () => {
-    dispatch(clearToast()); 
-  }
+    dispatch(clearToast());
+  };
 
   const colorMap: Record<ToastType, string> = {
-    success: 'bg-[var(--color-toast-success-bg)] text-[var(--color-toast-success-text)]',
-    error: 'bg-[var(--color-toast-error-bg)] text-[var(--color-toast-error-text)]',
-    warning: 'bg-[var(--color-toast-warning-bg)] text-[var(--color-toast-warning-text)]',
-    info: 'bg-[var(--color-toast-success-bg)] text-[var(--color-toast-success-text)]',
+    success: "bg-[var(--color-toast-success-bg)] text-[var(--color-toast-success-text)]",
+    error: "bg-[var(--color-toast-error-bg)] text-[var(--color-toast-error-text)]",
+    warning: "bg-[var(--color-toast-warning-bg)] text-[var(--color-toast-warning-text)]",
+    info: "bg-[var(--color-toast-success-bg)] text-[var(--color-toast-success-text)]",
   };
 
   return (
@@ -49,7 +49,6 @@ export const Toast: FC = () => {
       <ToastPrimitive.Viewport className="fixed bottom-4 right-4 flex flex-col gap-2 w-96 outline-none" />
     </ToastPrimitive.Provider>
   );
-}
-
+};
 
 export default Toast;

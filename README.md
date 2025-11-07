@@ -82,12 +82,14 @@ The application uses [OpenRouter.ai](https://openrouter.ai) to access multiple L
    - Add credits to your account (minimum $5 recommended)
 
 2. **Configure environment**
+
    ```bash
    # Add to your .env file
    OPENROUTER_API_KEY=sk-or-v1-...
    ```
 
 3. **Test the connection**
+
    ```bash
    # Run the test script to verify API connectivity
    $ npx tsx scripts/test-openrouter.ts
@@ -117,17 +119,17 @@ $ npm run preview
 
 ## Available Scripts
 
-| Script                    | Purpose                                                    |
-|---------------------------|------------------------------------------------------------|
-| `npm run dev`             | Start Astro in development mode with hot reloading         |
-| `npm run build`           | Generate static client & server output                     |
-| `npm run preview`         | Preview the production build locally                       |
-| `npm run astro`           | Expose the underlying Astro CLI                            |
-| `npm run lint`            | Run ESLint on the entire codebase                          |
-| `npm run lint:fix`        | Auto-fix lint issues where possible                        |
-| `npm run format`          | Format all supported files with Prettier                   |
-| `npm run test:openrouter` | Test OpenRouter API connection and functionality           |
-| `npm run test:ai-generation` | Test AI board pair generation end-to-end                |
+| Script                       | Purpose                                            |
+| ---------------------------- | -------------------------------------------------- |
+| `npm run dev`                | Start Astro in development mode with hot reloading |
+| `npm run build`              | Generate static client & server output             |
+| `npm run preview`            | Preview the production build locally               |
+| `npm run astro`              | Expose the underlying Astro CLI                    |
+| `npm run lint`               | Run ESLint on the entire codebase                  |
+| `npm run lint:fix`           | Auto-fix lint issues where possible                |
+| `npm run format`             | Format all supported files with Prettier           |
+| `npm run test:openrouter`    | Test OpenRouter API connection and functionality   |
+| `npm run test:ai-generation` | Test AI board pair generation end-to-end           |
 
 ---
 
@@ -137,11 +139,11 @@ $ npm run preview
 
 - **Board creation**  
   • Paste up to 5 000 chars of text and let AI extract up to 24 term-definition pairs  
-  • Manually add / edit / delete pairs with validation (16 / 24 cards limit)  
+  • Manually add / edit / delete pairs with validation (16 / 24 cards limit)
 - **Memory-match gameplay**  
   • Desktop-only board, select max 2 cards at a time  
   • Correct pairs disappear, timer stops when board is cleared  
-  • Page refresh resets the board & timer (anti-cheat)  
+  • Page refresh resets the board & timer (anti-cheat)
 - **User accounts** – registration & login via Supabase Auth (OAuth / JWT)
 - **Results storage** – completion times saved to Postgres
 - **Public boards** – browse, search & solve other users’ boards
@@ -186,14 +188,14 @@ POST /api/boards/:boardId/scores
 
 Saves the user’s completion time (in milliseconds) for a given board. If a record for the same user & board already exists, it is overwritten.
 
-| Status | Meaning | Body |
-|--------|---------|------|
-| 201    | Created (first score) | `{ id, elapsedMs }` |
-| 200    | Updated (score overwritten) | `{ id, elapsedMs }` |
-| 400    | Invalid input          | `{ error: "invalid_input", details }` |
-| 401    | Unauthorized           | `{ error: "unauthorized" }` |
-| 404    | Board not found / no access | `{ error: "board_not_found" }` |
-| 500    | Server error           | `{ error: "server_error" }` |
+| Status | Meaning                     | Body                                  |
+| ------ | --------------------------- | ------------------------------------- |
+| 201    | Created (first score)       | `{ id, elapsedMs }`                   |
+| 200    | Updated (score overwritten) | `{ id, elapsedMs }`                   |
+| 400    | Invalid input               | `{ error: "invalid_input", details }` |
+| 401    | Unauthorized                | `{ error: "unauthorized" }`           |
+| 404    | Board not found / no access | `{ error: "board_not_found" }`        |
+| 500    | Server error                | `{ error: "server_error" }`           |
 
 #### Request Parameters
 
@@ -203,7 +205,7 @@ Saves the user’s completion time (in milliseconds) for a given board. If a rec
 
 ```jsonc
 {
-  "elapsedMs": 93400 // positive integer > 0
+  "elapsedMs": 93400, // positive integer > 0
 }
 ```
 
@@ -219,24 +221,25 @@ POST /api/boards/:boardId/pairs
 
 Adds a new term–definition pair to the specified board level. Owner-only and only while the board has not yet reached its card limit (`card_count / 2` pairs).
 
-| Status | Meaning | Body |
-|--------|---------|------|
-| 201    | Pair created | `PairDTO` |
+| Status | Meaning                               | Body                 |
+| ------ | ------------------------------------- | -------------------- |
+| 201    | Pair created                          | `PairDTO`            |
 | 400    | Validation error / card limit reached | `{ error, message }` |
-| 401    | Unauthorized / not owner | `{ error, message }` |
-| 404    | Board not found | `{ error, message }` |
-| 409    | Duplicate term | `{ error, message }` |
-| 500    | Server error | `{ error, message }` |
+| 401    | Unauthorized / not owner              | `{ error, message }` |
+| 404    | Board not found                       | `{ error, message }` |
+| 409    | Duplicate term                        | `{ error, message }` |
+| 500    | Server error                          | `{ error, message }` |
 
 #### Request Parameters
 
 - **URL Param** `boardId` – `uuid` of the board (required)
 
 #### Request Body
+
 ```jsonc
 {
   "term": "Mitochondria",
-  "definition": "Powerhouse of the cell"
+  "definition": "Powerhouse of the cell",
 }
 ```
 
@@ -251,27 +254,27 @@ Adds a new term–definition pair to the specified board level. Owner-only and o
 GET /api/boards/played
 ```
 
-Returns a paginated list of boards (public *or* private) in which the authenticated user has at least one recorded score. Each item includes the user’s last recorded completion time (`lastTime`).
+Returns a paginated list of boards (public _or_ private) in which the authenticated user has at least one recorded score. Each item includes the user’s last recorded completion time (`lastTime`).
 
 The response type is `Paged<PlayedBoardDTO>`.
 
-| Status | Meaning | Body |
-|--------|---------|------|
-| 200    | OK                      | `Paged<BoardSummaryDTO>` |
-| 400    | Invalid query params    | `{ error: "validation_failed", details }` |
-| 401    | Unauthorized            | `{ error: "unauthorized" }` |
-| 500    | Server error            | `{ error: "server_error" }` |
+| Status | Meaning              | Body                                      |
+| ------ | -------------------- | ----------------------------------------- |
+| 200    | OK                   | `Paged<BoardSummaryDTO>`                  |
+| 400    | Invalid query params | `{ error: "validation_failed", details }` |
+| 401    | Unauthorized         | `{ error: "unauthorized" }`               |
+| 500    | Server error         | `{ error: "server_error" }`               |
 
 #### Query Parameters
 
-| Name       | Type              | Default | Notes |
-|------------|-------------------|---------|-------|
-| `page`     | `number >= 1`     | `1`     | Page number |
-| `pageSize` | `number 1–100`    | `20`    | Items per page |
-| `q`        | `string ≤ 100`    | —       | Full-text search on title |
-| `tags`     | `string`          | —       | Comma-separated list, max 10 tags |
-| `sort`     | `created \| updated \| cardCount` | `created` | Sort column |
-| `direction`| `asc \| desc`     | `desc`  | Sort order |
+| Name        | Type                              | Default   | Notes                             |
+| ----------- | --------------------------------- | --------- | --------------------------------- |
+| `page`      | `number >= 1`                     | `1`       | Page number                       |
+| `pageSize`  | `number 1–100`                    | `20`      | Items per page                    |
+| `q`         | `string ≤ 100`                    | —         | Full-text search on title         |
+| `tags`      | `string`                          | —         | Comma-separated list, max 10 tags |
+| `sort`      | `created \| updated \| cardCount` | `created` | Sort column                       |
+| `direction` | `asc \| desc`                     | `desc`    | Sort order                        |
 
 #### Headers
 
@@ -287,29 +290,29 @@ PATCH /api/boards/:boardId
 
 Partially updates board meta fields (title, public status, archived flag, tags). Owner-only.
 
-| Status | Meaning | Body |
-|--------|---------|------|
-| 200    | Updated | `BoardDetailDTO` |
+| Status | Meaning                           | Body                 |
+| ------ | --------------------------------- | -------------------- |
+| 200    | Updated                           | `BoardDetailDTO`     |
 | 400    | Validation error / archived board | `{ error, message }` |
-| 401    | Unauthorized / not owner | `{ error, message }` |
-| 404    | Board not found | `{ error, message }` |
-| 409    | Duplicate title | `{ error, message }` |
-| 500    | Server error | `{ error, message }` |
+| 401    | Unauthorized / not owner          | `{ error, message }` |
+| 404    | Board not found                   | `{ error, message }` |
+| 409    | Duplicate title                   | `{ error, message }` |
+| 500    | Server error                      | `{ error, message }` |
 
 #### Request Parameters
 
-| Name      | Type   | Required | Notes |
-|-----------|--------|----------|-------|
+| Name      | Type   | Required | Notes     |
+| --------- | ------ | -------- | --------- |
 | `boardId` | `uuid` | Yes      | URL param |
 
 #### Request Body (any combination)
 
 ```jsonc
 {
-  "title": "New title",          // optional, 1-255 chars
-  "isPublic": true,               // optional
-  "archived": false,              // optional
-  "tags": ["biology", "cells"]   // optional, ≤10 tags
+  "title": "New title", // optional, 1-255 chars
+  "isPublic": true, // optional
+  "archived": false, // optional
+  "tags": ["biology", "cells"], // optional, ≤10 tags
 }
 ```
 
@@ -326,19 +329,19 @@ DELETE /api/boards/:boardId
 
 Soft-archives a board level (sets `archived = true`). Owner-only.
 
-| Status | Meaning | Body |
-|--------|---------|------|
-| 200    | Archived | `{ message: "Board archived" }` |
-| 400    | Validation error        | `{ error, message }` |
-| 401    | Unauthorized / not owner | `{ error, message }` |
-| 404    | Board not found | `{ error, message }` |
-| 409    | Already archived | `{ error, message }` |
-| 500    | Server error | `{ error, message }` |
+| Status | Meaning                  | Body                            |
+| ------ | ------------------------ | ------------------------------- |
+| 200    | Archived                 | `{ message: "Board archived" }` |
+| 400    | Validation error         | `{ error, message }`            |
+| 401    | Unauthorized / not owner | `{ error, message }`            |
+| 404    | Board not found          | `{ error, message }`            |
+| 409    | Already archived         | `{ error, message }`            |
+| 500    | Server error             | `{ error, message }`            |
 
 #### Request Parameters
 
-| Name      | Type   | Required | Notes |
-|-----------|--------|----------|-------|
+| Name      | Type   | Required | Notes     |
+| --------- | ------ | -------- | --------- |
 | `boardId` | `uuid` | Yes      | URL param |
 
 #### Headers

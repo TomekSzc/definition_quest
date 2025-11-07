@@ -44,12 +44,7 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
 
     // 3. Service call
     const { boardId } = paramRes.data;
-    const created = await addPairToBoard(
-      locals.supabase,
-      user.id,
-      boardId,
-      bodyRes.data,
-    );
+    const created = await addPairToBoard(locals.supabase, user.id, boardId, bodyRes.data);
 
     return createSuccessResponse(created, 201);
   } catch (error: any) {

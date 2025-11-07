@@ -1,7 +1,7 @@
-import { useEffect } from 'react';
-import type { ReactNode, FC } from 'react';
-import { useAppSelector } from '@/store/hooks';
-import { protectedRoutes } from '@/lib/@routes';
+import { useEffect } from "react";
+import type { ReactNode, FC } from "react";
+import { useAppSelector } from "@/store/hooks";
+import { protectedRoutes } from "@/lib/@routes";
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -10,7 +10,7 @@ interface ProtectedRouteProps {
 export const ProtectedRoute: FC<ProtectedRouteProps> = ({ children }) => {
   const { accessToken, isAuthenticated } = useAppSelector((state) => state.auth);
 
-  const pathname = typeof window !== 'undefined' ? window.location.pathname : '/';
+  const pathname = typeof window !== "undefined" ? window.location.pathname : "/";
   const isProtected = Object.values(protectedRoutes).includes(pathname as protectedRoutes);
   const authed = Boolean(accessToken) && isAuthenticated;
 

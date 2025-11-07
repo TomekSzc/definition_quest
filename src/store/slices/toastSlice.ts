@@ -1,8 +1,8 @@
-import { createSlice } from '@reduxjs/toolkit';
-import type { PayloadAction } from '@reduxjs/toolkit';
-import type { RootState } from '../index';
+import { createSlice } from "@reduxjs/toolkit";
+import type { PayloadAction } from "@reduxjs/toolkit";
+import type { RootState } from "../index";
 
-export type ToastType = 'success' | 'error' | 'info' | 'warning';
+export type ToastType = "success" | "error" | "info" | "warning";
 
 export interface ToastState {
   type: ToastType | null;
@@ -25,16 +25,16 @@ interface ShowToastPayload {
 }
 
 const toastSlice = createSlice({
-  name: 'toast',
+  name: "toast",
   initialState,
   reducers: {
     showToast: (state, action: PayloadAction<ShowToastPayload>) => {
       state.type = action.payload.type;
       const fallback = {
-        success: 'Sukces',
-        error: 'Błąd',
-        warning: 'Uwaga',
-        info: 'Info',
+        success: "Sukces",
+        error: "Błąd",
+        warning: "Uwaga",
+        info: "Info",
       } as Record<ToastType, string>;
       state.title = action.payload.title ?? fallback[action.payload.type];
       state.message = action.payload.message;

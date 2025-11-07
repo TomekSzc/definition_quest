@@ -14,7 +14,7 @@ interface IInputProps {
   showPasswordToggle?: boolean;
 }
 
-export const FormInput:FC<IInputProps> = ({
+export const FormInput: FC<IInputProps> = ({
   name,
   label,
   register,
@@ -47,10 +47,10 @@ export const FormInput:FC<IInputProps> = ({
             onMouseDown={() => setShowPwd(true)}
             onMouseUp={() => setShowPwd(false)}
             onMouseLeave={() => setShowPwd(false)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 cursor-pointer text-[var(--color-white)]" />
+            className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 cursor-pointer text-[var(--color-white)]"
+          />
         )}
       </div>
     </Form.Field>
   );
 };
-

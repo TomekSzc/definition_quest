@@ -1,22 +1,22 @@
 import { v4 as uuid } from "uuid";
 import type { SupabaseClient } from "../../db/supabase.client";
-import type { PairDTO, PaginationMeta, BoardSummaryDTO, Paged, BoardDetailDTO, BoardMyScoreDTO, BoardViewDTO, PlayedBoardDTO } from "../../types";
+import type {
+  PairDTO,
+  PaginationMeta,
+  BoardSummaryDTO,
+  Paged,
+  BoardDetailDTO,
+  BoardMyScoreDTO,
+  BoardViewDTO,
+  PlayedBoardDTO,
+} from "../../types";
 import type { CreateBoardInput } from "../validation/boards";
 import type { ListBoardsQuery } from "../validation/boards";
 import type { Database } from "../../db/database.types";
 // Board row type corresponding to the selected columns from the `boards` table
 type BoardSelect = Pick<
   Database["public"]["Tables"]["boards"]["Row"],
-  | "id"
-  | "owner_id"
-  | "title"
-  | "card_count"
-  | "level"
-  | "is_public"
-  | "archived"
-  | "tags"
-  | "created_at"
-  | "updated_at"
+  "id" | "owner_id" | "title" | "card_count" | "level" | "is_public" | "archived" | "tags" | "created_at" | "updated_at"
 >;
 
 /**
@@ -34,10 +34,7 @@ function chunkArray<T>(arr: T[], size: number): T[][] {
  * Fetches pairs belonging to a specific board (ordered by creation time) and
  * maps them to PairDTO objects.
  */
-export async function fetchInsertedPairs(
-  supabase: SupabaseClient,
-  boardId: string,
-): Promise<PairDTO[]> {
+export async function fetchInsertedPairs(supabase: SupabaseClient, boardId: string): Promise<PairDTO[]> {
   const { data: pairRows, error } = await supabase
     .from("pairs")
     .select("id, term, definition")
@@ -62,7 +59,7 @@ export async function fetchInsertedPairs(
 export async function insertPairsForBoard(
   supabase: SupabaseClient,
   boardId: string,
-  pairs: { term: string; definition: string }[],
+  pairs: { term: string; definition: string }[]
 ): Promise<void> {
   const pairsPayload = pairs.map((p) => ({
     id: uuid(),
@@ -150,7 +147,7 @@ export async function createBoard(
 export async function createBoardNextLevel(
   supabase: SupabaseClient,
   ownerId: string,
-  command: { boardId: string; pairs: { term: string; definition: string }[] },
+  command: { boardId: string; pairs: { term: string; definition: string }[] }
 ): Promise<string> {
   const { boardId, pairs } = command;
 
@@ -236,15 +233,7 @@ export async function listPublicBoards(
   supabase: SupabaseClient,
   query: ListBoardsQuery
 ): Promise<Paged<BoardSummaryDTO>> {
-  const {
-    page,
-    pageSize,
-    q,
-    tags,
-    ownerId,
-    sort,
-    direction,
-  } = query;
+  const { page, pageSize, q, tags, ownerId, sort, direction } = query;
 
   // Mapping from API sort fields to DB column names
   const columnMap: Record<ListBoardsQuery["sort"], string> = {
@@ -258,10 +247,9 @@ export async function listPublicBoards(
 
   let request = supabase
     .from("boards")
-    .select(
-      "id, owner_id, title, card_count, level, is_public, archived, tags, created_at, updated_at",
-      { count: "exact" } 
-    )
+    .select("id, owner_id, title, card_count, level, is_public, archived, tags, created_at, updated_at", {
+      count: "exact",
+    })
     .eq("archived", false)
     .eq("is_public", true);
 
@@ -280,9 +268,7 @@ export async function listPublicBoards(
     request = request.eq("owner_id", ownerId);
   }
 
-  request = request
-    .order(columnMap[sort], { ascending: direction === "asc" })
-    .range(from, to);
+  request = request.order(columnMap[sort], { ascending: direction === "asc" }).range(from, to);
 
   const { data, error, count } = await request;
 
@@ -320,7 +306,7 @@ export async function listPublicBoards(
 export async function listBoardsPlayedByUser(
   supabase: SupabaseClient,
   userId: string,
-  query: Omit<ListBoardsQuery, "ownerId">,
+  query: Omit<ListBoardsQuery, "ownerId">
 ): Promise<Paged<PlayedBoardDTO>> {
   const { page, pageSize, q, tags, sort, direction } = query;
 
@@ -337,7 +323,7 @@ export async function listBoardsPlayedByUser(
     .from("boards")
     .select(
       "id, owner_id, title, card_count, level, is_public, archived, tags, created_at, updated_at, scores!inner(user_id, elapsed_ms)",
-      { count: "exact" },
+      { count: "exact" }
     )
     .eq("archived", false)
     .eq("scores.user_id", userId);
@@ -406,7 +392,7 @@ export async function listBoardsPlayedByUser(
 export async function fetchBoardById(
   supabase: SupabaseClient,
   boardId: string,
-  userId?: string,
+  userId?: string
 ): Promise<BoardViewDTO> {
   // Build base select with left joins
   let request = supabase
@@ -462,9 +448,7 @@ export async function fetchBoardById(
   };
 
   const myScore: BoardMyScoreDTO | undefined =
-    data.scores && data.scores.length
-      ? { lastTime: data.scores[0].elapsed_ms }
-      : undefined;
+    data.scores && data.scores.length ? { lastTime: data.scores[0].elapsed_ms } : undefined;
 
   return { ...boardDetail, myScore };
 }
@@ -478,14 +462,12 @@ export async function updateBoardMeta(
     title?: string;
     isPublic?: boolean;
     tags?: string[];
-  },
+  }
 ): Promise<string> {
   // 1. Fetch board to verify ownership and current status
   const { data: boardRow, error: selectErr } = await supabase
     .from("boards")
-    .select(
-      "id, owner_id, title, card_count, level, is_public, archived, tags, created_at, updated_at",
-    )
+    .select("id, owner_id, title, card_count, level, is_public, archived, tags, created_at, updated_at")
     .eq("id", boardId)
     .maybeSingle();
 
@@ -513,7 +495,7 @@ export async function updateBoardMeta(
       title: payload.title,
       is_public: payload.isPublic,
       tags: payload.tags,
-    }).filter(([, value]) => value !== undefined),
+    }).filter(([, value]) => value !== undefined)
   );
 
   if (Object.keys(updateColumns).length === 0) {
@@ -546,7 +528,7 @@ export async function updatePair(
   userId: string,
   boardId: string,
   pairId: string,
-  updates: { term?: string; definition?: string },
+  updates: { term?: string; definition?: string }
 ): Promise<{ id: string; term: string; definition: string }> {
   // 1. Ensure board exists and user is owner
   const { data: boardRow, error: boardErr } = await supabase
@@ -601,7 +583,7 @@ export async function removePair(
   supabase: SupabaseClient,
   userId: string,
   boardId: string,
-  pairId: string,
+  pairId: string
 ): Promise<{ id: string; boardId: string }> {
   // 1. Ensure board exists and user is owner and not archived
   const { data: boardRow, error: boardErr } = await supabase
@@ -655,7 +637,7 @@ export async function addPairToBoard(
   supabase: SupabaseClient,
   userId: string,
   boardId: string,
-  input: { term: string; definition: string },
+  input: { term: string; definition: string }
 ): Promise<{ id: string; term: string; definition: string }> {
   // 1. Ensure board exists and user is owner
   const { data: boardRow, error: boardErr } = await supabase
@@ -731,11 +713,7 @@ export async function addPairToBoard(
   };
 }
 
-export async function archiveBoard(
-  supabase: SupabaseClient,
-  userId: string,
-  boardId: string,
-): Promise<string> {
+export async function archiveBoard(supabase: SupabaseClient, userId: string, boardId: string): Promise<string> {
   // 1. Fetch board to verify ownership and status
   const { data: boardRow, error: selectErr } = await supabase
     .from("boards")

@@ -57,4 +57,3 @@ export const RefreshTokenSchema = z.object({
 });
 
 export type RefreshTokenInput = z.infer<typeof RefreshTokenSchema>;
-

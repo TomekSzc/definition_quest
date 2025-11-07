@@ -1,7 +1,9 @@
 # Changelog
 
 ## [Unreleased]
+
 ### Added
+
 - **OpenRouter AI Integration** – Full implementation of AI-powered board generation
   - `OpenRouterService` class for standardized API communication with openrouter.ai
   - Support for chat completions with JSON schema response formatting
@@ -15,7 +17,6 @@
     - `npm run test:openrouter` - API connectivity and basic functionality
     - `npm run test:ai-generation` - End-to-end board pair generation test
   - Updated README with OpenRouter configuration instructions and pricing details
-  
 - **AI Board Generation** – Real AI-powered pair extraction
   - Replaced mock `generateMockPairs()` with `generatePairsWithAI()` using OpenRouter
   - Smart prompt engineering for educational content extraction
@@ -30,12 +31,14 @@
   - Updated API reference in README.
 
 ### Changed
+
 - Updated `board-ai.service.ts` to use real OpenRouter API instead of mock data
 - Enhanced error messages with AI service error codes
 - `ai_requests.prompt_tokens` now stores total tokens (prompt + completion combined)
 - Cost calculation uses accurate OpenRouter pricing ($0.15/$0.60 per 1M tokens)
 
 ### Technical
+
 - Added dependencies: `openai`, `p-limit`, `tsx` (dev)
 - Updated `tsconfig.json` with `resolveJsonModule: true`
 - Enhanced `env.d.ts` with `OPENROUTER_API_KEY` type definition

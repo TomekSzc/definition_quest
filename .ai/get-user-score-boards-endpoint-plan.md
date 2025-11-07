@@ -1,9 +1,11 @@
 # API Endpoint Implementation Plan: GET /boards/played
 
 ## 1. Przegląd punktu końcowego
+
 Endpoint zwraca listę **publicznych** tablic (`boards`), w których zalogowany użytkownik uzyskał przynajmniej jeden wynik (`scores`). Zapewnia paginację, pełnotekstowe wyszukiwanie po tytule, filtrowanie po tagach oraz sortowanie. Dostęp wymaga uwierzytelnienia.
 
 ## 2. Szczegóły żądania
+
 - Metoda HTTP: **GET**
 - URL (zewnętrzny): `/boards/played`
 - Ścieżka w repozytorium: `src/pages/api/boards/played.ts` ⇒ finalny URL `/api/boards/played`
@@ -20,6 +22,7 @@ Endpoint zwraca listę **publicznych** tablic (`boards`), w których zalogowany 
   | `direction` | enum | `desc` | `asc | desc` | kierunek sortowania |
 
 ## 3. Wykorzystywane typy
+
 - Wejście: `ListPlayedBoardsQuery` (nowy) – `z.infer<typeof ListPlayedBoardsSchema>`
 - Wyjście: `Paged<BoardSummaryDTO>` z `src/types.ts`
 
@@ -29,15 +32,18 @@ interface PlayedBoardsResponse extends Paged<BoardSummaryDTO> {}
 ```
 
 ## 4. Szczegóły odpowiedzi
+
 - **200 OK** – `application/json`
   ```jsonc
   {
-    "data": [ /* BoardSummaryDTO[] */ ],
+    "data": [
+      /* BoardSummaryDTO[] */
+    ],
     "meta": {
       "page": 1,
       "pageSize": 20,
-      "total": 42
-    }
+      "total": 42,
+    },
   }
   ```
 - **401 Unauthorized** – brak/lub nieważny token
@@ -45,6 +51,7 @@ interface PlayedBoardsResponse extends Paged<BoardSummaryDTO> {}
 - **500 Internal Server Error** – nieoczekiwane problemy (DB, serwer)
 
 ## 5. Przepływ danych
+
 1. Middleware sprawdza autentykację i w `locals.user` ustawia użytkownika.
 2. Handler `GET /api/boards/played`:
    1. Wyciąga `user` – jeśli brak → 401.
@@ -62,6 +69,7 @@ interface PlayedBoardsResponse extends Paged<BoardSummaryDTO> {}
 4. Handler zwraca `createSuccessResponse(paged)`.
 
 ## 6. Względy bezpieczeństwa
+
 - **Autoryzacja**: Wymagany zalogowany użytkownik. Sprawdzane w handlerze i dodatkowo w RLS tabel `scores` oraz `boards`.
 - **Eksfiltracja prywatnych tablic**: Zapytanie wymusza `boards.is_public = true`, zabezpieczając przed wyciekiem niepublicznych treści.
 - **SQL Injection**: Supabase klient parametryzuje zapytania; dodatkowo Zod ogranicza długości ciągów.
@@ -69,14 +77,16 @@ interface PlayedBoardsResponse extends Paged<BoardSummaryDTO> {}
 - **Bezpieczne logowanie błędów**: nie wypisujemy danych wrażliwych. Logujemy `console.error()` analogicznie jak w istniejących endpointach.
 
 ## 7. Obsługa błędów
-| Scenariusz | Kod | Treść odpowiedzi |
-|------------|-----|------------------|
-| Nieautoryzowany dostęp | 401 | `"Unauthorized"` |
+
+| Scenariusz              | Kod | Treść odpowiedzi                                 |
+| ----------------------- | --- | ------------------------------------------------ |
+| Nieautoryzowany dostęp  | 401 | `"Unauthorized"`                                 |
 | Nieprawidłowe parametry | 400 | `{ error: "Validation failed", details: { … } }` |
-| Brak wyników | 200 | `data: [], meta.total: 0` |
-| Błąd DB/RLS | 500 | `"Internal server error"` |
+| Brak wyników            | 200 | `data: [], meta.total: 0`                        |
+| Błąd DB/RLS             | 500 | `"Internal server error"`                        |
 
 ## 8. Rozważania dotyczące wydajności
+
 - Zapytanie wykonuje **inner join** na `scores` (indeks BTREE na `scores.user_id` i `scores.board_id` już istnieje).
 - `boards` posiada indeks złożony `(is_public, archived, owner_id)` – filtr `is_public/archived` skorzysta z indeksu.
 - Paginate via `range` aby ograniczyć transfer.
@@ -84,6 +94,7 @@ interface PlayedBoardsResponse extends Paged<BoardSummaryDTO> {}
 - W przypadku duplikatów (`scores` wiele wierszy) używamy `distinct on (boards.id)` — koszt minimalny przy indeksie PK.
 
 ## 9. Etapy wdrożenia
+
 1. **Validation**
    - [ ] Dodaj `ListPlayedBoardsSchema` w `src/lib/validation/boards.ts` (kopiuj `ListBoardsSchema`, usuń `ownerId`).
 2. **Typy**

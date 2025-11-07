@@ -58,11 +58,7 @@ const ResetPasswordForm: FC = () => {
           disabled={isLoading}
         />
         <Form.Submit asChild>
-          <SubmitButton
-            idleText="Zmień hasło"
-            loadingText="Zapisywanie..."
-            isLoading={isLoading}
-          />
+          <SubmitButton idleText="Zmień hasło" loadingText="Zapisywanie..." isLoading={isLoading} />
         </Form.Submit>
       </Form.Root>
     </div>

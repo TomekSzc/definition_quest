@@ -7,7 +7,7 @@ import type { ZodError } from "zod";
 
 /**
  * Maps business error codes to HTTP responses.
- * 
+ *
  * @param errorCode - Error code from business logic
  * @returns Object with response body and status code, or null if not mapped
  */
@@ -189,7 +189,7 @@ export function getErrorMapping(errorCode: string): { response: Record<string, u
 
 /**
  * Formats Zod validation errors into a consistent format.
- * 
+ *
  * @param zodError - Zod validation error object
  * @returns Array of formatted error objects with field and message
  */
@@ -202,7 +202,7 @@ export function formatValidationErrors(zodError: ZodError) {
 
 /**
  * Helper function to create consistent error responses.
- * 
+ *
  * @param response - Error response body (object or string)
  * @param status - HTTP status code
  * @param headers - Optional headers (defaults to JSON content type)
@@ -215,53 +215,39 @@ export function createErrorResponse(
 ): Response {
   const body = typeof response === "string" ? { error: response } : response;
   const defaultHeaders = { "Content-Type": "application/json" };
-  
-  return new Response(
-    JSON.stringify(body),
-    {
-      status,
-      headers: headers || defaultHeaders,
-    }
-  );
+
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: headers || defaultHeaders,
+  });
 }
 
 /**
  * Helper function to create consistent success responses.
- * 
+ *
  * @param data - Response data
  * @param status - HTTP status code (defaults to 200)
  * @param headers - Optional headers (defaults to JSON content type)
  * @returns Response object
  */
-export function createSuccessResponse(
-  data: unknown,
-  status: number = 200,
-  headers?: HeadersInit
-): Response {
+export function createSuccessResponse(data: unknown, status = 200, headers?: HeadersInit): Response {
   const defaultHeaders = { "Content-Type": "application/json" };
-  
-  return new Response(
-    JSON.stringify(data),
-    {
-      status,
-      headers: headers || defaultHeaders,
-    }
-  );
+
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: headers || defaultHeaders,
+  });
 }
 
 /**
  * Generic API response helper (auto-detects success vs error based on status code).
- * 
+ *
  * @param data - Response data
  * @param status - HTTP status code (defaults to 200)
  * @returns Response object
  */
-export function apiResponse(
-  data: unknown,
-  status: number = 200
-): Response {
-  return status >= 400 
+export function apiResponse(data: unknown, status = 200): Response {
+  return status >= 400
     ? createErrorResponse(data as Record<string, unknown>, status)
     : createSuccessResponse(data, status);
 }
-

@@ -1,7 +1,7 @@
-import { createSlice } from '@reduxjs/toolkit';
-import type { PayloadAction } from '@reduxjs/toolkit';
-import type { AuthUserDTO } from '../../types';
-import type { RootState } from '../index';
+import { createSlice } from "@reduxjs/toolkit";
+import type { PayloadAction } from "@reduxjs/toolkit";
+import type { AuthUserDTO } from "../../types";
+import type { RootState } from "../index";
 
 export interface AuthState {
   user: AuthUserDTO | null;
@@ -29,7 +29,7 @@ interface UpdateTokensPayload {
 }
 
 const authSlice = createSlice({
-  name: 'auth',
+  name: "auth",
   initialState,
   reducers: {
     setCredentials: (state, action: PayloadAction<SetCredentialsPayload>) => {

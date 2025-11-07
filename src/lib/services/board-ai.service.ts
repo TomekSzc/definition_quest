@@ -1,9 +1,5 @@
 import type { SupabaseClient } from "../../db/supabase.client";
-import type {
-  GenerateBoardCmd,
-  BoardGenerationResultDTO,
-  GeneratedPair,
-} from "../../types";
+import type { GenerateBoardCmd, BoardGenerationResultDTO, GeneratedPair } from "../../types";
 import { createOpenRouterService } from "./openrouter.factory";
 import type { Message, JsonSchemaFormat } from "./openrouter.service";
 import { OpenRouterError } from "./openrouter.service";
@@ -11,7 +7,7 @@ import { OpenRouterError } from "./openrouter.service";
 /**
  * Service for AI-powered board generation.
  * Handles quota checking, AI pair generation, and request tracking.
- * 
+ *
  * Integrates with OpenRouter API for real-time pair generation.
  */
 
@@ -22,17 +18,14 @@ const DEFAULT_MODEL = "openai/gpt-4o-mini";
 /**
  * Checks if the user has exceeded their daily AI request quota.
  * Uses the daily_ai_usage materialized view for efficient quota checking.
- * 
+ *
  * @param supabase - Authenticated Supabase client
  * @param userId - User ID to check quota for
  * @returns true if user has quota remaining, false if exceeded
  */
-export async function checkDailyQuota(
-  supabase: SupabaseClient,
-  userId: string
-): Promise<boolean> {
-  const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-  
+export async function checkDailyQuota(supabase: SupabaseClient, userId: string): Promise<boolean> {
+  const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+
   const { data, error } = await supabase
     .from("daily_ai_usage")
     .select("cnt")
@@ -51,7 +44,7 @@ export async function checkDailyQuota(
 
 /**
  * Generates educational term-definition pairs using OpenRouter AI.
- * 
+ *
  * @param cardCount - Number of cards to generate (16 or 24)
  * @param inputText - Source text for generation
  * @param title - Board title for context
@@ -63,7 +56,7 @@ async function generatePairsWithAI(
   title: string
 ): Promise<{ pairs: GeneratedPair[]; promptTokens: number; completionTokens: number; totalTokens: number }> {
   const pairCount = cardCount / 2;
-  
+
   // Create OpenRouter service
   const service = createOpenRouterService();
 
@@ -89,37 +82,37 @@ Generate ${pairCount} term-definition pairs from the above content.`;
 
   // Define response format schema
   const responseFormat: JsonSchemaFormat = {
-    type: 'json_schema',
+    type: "json_schema",
     json_schema: {
-      name: 'GeneratedPairs',
+      name: "GeneratedPairs",
       strict: true,
       schema: {
-        type: 'object',
+        type: "object",
         properties: {
           pairs: {
-            type: 'array',
+            type: "array",
             items: {
-              type: 'object',
+              type: "object",
               properties: {
-                term: { type: 'string' },
-                definition: { type: 'string' },
+                term: { type: "string" },
+                definition: { type: "string" },
               },
-              required: ['term', 'definition'],
+              required: ["term", "definition"],
               additionalProperties: false,
             },
             minItems: pairCount,
             maxItems: pairCount,
           },
         },
-        required: ['pairs'],
+        required: ["pairs"],
         additionalProperties: false,
       },
     },
   };
 
   const messages: Message[] = [
-    { role: 'system', content: systemPrompt },
-    { role: 'user', content: userPrompt },
+    { role: "system", content: systemPrompt },
+    { role: "user", content: userPrompt },
   ];
 
   // Call OpenRouter API
@@ -132,19 +125,22 @@ Generate ${pairCount} term-definition pairs from the above content.`;
 
   // Parse and validate response
   const result = completion.json as { pairs: GeneratedPair[] };
-  
+
   if (!result.pairs || !Array.isArray(result.pairs) || result.pairs.length !== pairCount) {
-    throw new Error('AI_INVALID_RESPONSE_FORMAT');
+    throw new Error("AI_INVALID_RESPONSE_FORMAT");
   }
 
   // Validate each pair
   for (const pair of result.pairs) {
-    if (!pair.term || !pair.definition || 
-        typeof pair.term !== 'string' || 
-        typeof pair.definition !== 'string' ||
-        pair.term.trim().length === 0 ||
-        pair.definition.trim().length === 0) {
-      throw new Error('AI_INVALID_PAIR_FORMAT');
+    if (
+      !pair.term ||
+      !pair.definition ||
+      typeof pair.term !== "string" ||
+      typeof pair.definition !== "string" ||
+      pair.term.trim().length === 0 ||
+      pair.definition.trim().length === 0
+    ) {
+      throw new Error("AI_INVALID_PAIR_FORMAT");
     }
   }
 
@@ -159,25 +155,25 @@ Generate ${pairCount} term-definition pairs from the above content.`;
 /**
  * Calculates cost in USD based on OpenRouter pricing for gpt-4o-mini
  * Pricing as of 2025: $0.15 per 1M input tokens, $0.60 per 1M output tokens
- * 
+ *
  * @param promptTokens - Number of input tokens
  * @param completionTokens - Number of output tokens
  * @returns Cost in USD (rounded to 4 decimal places)
  */
 function calculateCost(promptTokens: number, completionTokens: number): number {
   const INPUT_COST_PER_1M = 0.15;
-  const OUTPUT_COST_PER_1M = 0.60;
-  
+  const OUTPUT_COST_PER_1M = 0.6;
+
   const inputCost = (promptTokens / 1_000_000) * INPUT_COST_PER_1M;
   const outputCost = (completionTokens / 1_000_000) * OUTPUT_COST_PER_1M;
-  
+
   return Math.round((inputCost + outputCost) * 10000) / 10000; // Round to 4 decimals
 }
 
 /**
  * Generates board pairs using OpenRouter AI.
  * Validates input, checks quota, creates audit record, and returns generated pairs.
- * 
+ *
  * @param supabase - Authenticated Supabase client
  * @param userId - User ID requesting generation
  * @param command - Board generation parameters (inputText, cardCount, title, etc.)
@@ -193,11 +189,11 @@ export async function generateBoardPairs(
   if (command.inputText.length > INPUT_TEXT_MAX_LENGTH) {
     throw new Error("INPUT_TEXT_TOO_LONG");
   }
-  
+
   if (command.inputText.trim().length === 0) {
     throw new Error("INPUT_TEXT_EMPTY");
   }
-  
+
   // Validate card count
   if (command.cardCount !== 16 && command.cardCount !== 24) {
     throw new Error("INVALID_CARD_COUNT");
@@ -205,7 +201,7 @@ export async function generateBoardPairs(
 
   // Check quota before processing
   const hasQuota = await checkDailyQuota(supabase, userId);
-  
+
   if (!hasQuota) {
     throw new Error("QUOTA_EXCEEDED");
   }
@@ -232,15 +228,11 @@ export async function generateBoardPairs(
 
   try {
     // Generate pairs using OpenRouter AI
-    const result = await generatePairsWithAI(
-      command.cardCount,
-      command.inputText,
-      command.title
-    );
-    
+    const result = await generatePairsWithAI(command.cardCount, command.inputText, command.title);
+
     // Calculate actual cost
     const costUsd = calculateCost(result.promptTokens, result.completionTokens);
-    
+
     // Update request status to completed with actual metrics
     const { error: updateError } = await supabase
       .from("ai_requests")
@@ -262,33 +254,27 @@ export async function generateBoardPairs(
     };
   } catch (error) {
     // Update request status to failed
-    await supabase
-      .from("ai_requests")
-      .update({ status: "failed" })
-      .eq("id", requestId);
-    
+    await supabase.from("ai_requests").update({ status: "failed" }).eq("id", requestId);
+
     // Re-throw with more context if it's an OpenRouter error
     if (error instanceof OpenRouterError) {
       throw new Error(`AI_SERVICE_ERROR: ${error.message}`);
     }
-    
+
     throw error;
   }
 }
 
 /**
  * Gets the remaining quota for a user today.
- * 
+ *
  * @param supabase - Authenticated Supabase client
  * @param userId - User ID to check
  * @returns Remaining quota count
  */
-export async function getRemainingQuota(
-  supabase: SupabaseClient,
-  userId: string
-): Promise<number> {
-  const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-  
+export async function getRemainingQuota(supabase: SupabaseClient, userId: string): Promise<number> {
+  const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+
   const { data, error } = await supabase
     .from("daily_ai_usage")
     .select("cnt")
@@ -304,4 +290,3 @@ export async function getRemainingQuota(
   const currentCount = data?.cnt ?? 0;
   return Math.max(0, DAILY_QUOTA_LIMIT - currentCount);
 }
-
