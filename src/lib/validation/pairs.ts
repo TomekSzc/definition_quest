@@ -27,11 +27,7 @@ export const PatchPairSchema = z
 export type PatchPairInput = z.infer<typeof PatchPairSchema>;
 
 export const CreatePairSchema = z.object({
-  term: z
-    .string()
-    .min(1, "Term must be at least 1 character")
-    .max(255, "Term must not exceed 255 characters")
-    .trim(),
+  term: z.string().min(1, "Term must be at least 1 character").max(255, "Term must not exceed 255 characters").trim(),
   definition: z
     .string()
     .min(1, "Definition must be at least 1 character")

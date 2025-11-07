@@ -1,6 +1,5 @@
 ---
 import "../styles/global.css";
-import Providers from "../components/Providers";
 
 interface Props {
   title?: string;
@@ -19,7 +18,7 @@ const { title = "Definition quest" } = Astro.props;
     <title>{title}</title>
   </head>
   <body>
-      <slot />
+    <slot />
   </body>
 </html>
 

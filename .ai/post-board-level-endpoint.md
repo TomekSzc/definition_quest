@@ -1,9 +1,11 @@
 # API Endpoint Implementation Plan: POST /boards/level – Create Board Next Level
 
 ## 1. Przegląd punktu końcowego
-Tworzy kolejny poziom (level) istniejącej talii fiszek (board) dla aktualnego właściciela.  Nowy rekord w `boards` dziedziczy `title`, `card_count`, `is_public`, `tags` z dotychczasowych poziomów i dostaje `level` równy `MAX(level)+1`.  W jednym żądaniu klient przekazuje pary term/definition dla całego poziomu.
+
+Tworzy kolejny poziom (level) istniejącej talii fiszek (board) dla aktualnego właściciela. Nowy rekord w `boards` dziedziczy `title`, `card_count`, `is_public`, `tags` z dotychczasowych poziomów i dostaje `level` równy `MAX(level)+1`. W jednym żądaniu klient przekazuje pary term/definition dla całego poziomu.
 
 ## 2. Szczegóły żądania
+
 - **Metoda HTTP:** POST
 - **URL:** `/boards/level`
 - **Headers:**
@@ -12,8 +14,9 @@ Tworzy kolejny poziom (level) istniejącej talii fiszek (board) dla aktualnego w
 - **Body JSON:**
   ```json
   {
-    "boardId": "<uuid>",               // wymagane
-    "pairs": [                          // wymagane – length = cardCount/2
+    "boardId": "<uuid>", // wymagane
+    "pairs": [
+      // wymagane – length = cardCount/2
       { "term": "France", "definition": "Paris" }
     ]
   }
@@ -23,22 +26,25 @@ Tworzy kolejny poziom (level) istniejącej talii fiszek (board) dla aktualnego w
   - Brak opcjonalnych
 
 ## 3. Wykorzystywane typy
-- **Command model**:  
+
+- **Command model**:
   ```ts
   export interface CreateNextLevelCmd {
     boardId: string;
-    pairs: PairCreateCmd[];   // length validated server-side
+    pairs: PairCreateCmd[]; // length validated server-side
   }
   ```
 - Re-use istniejących DTO: `PairDTO`, `BoardDetailDTO` (z `src/types.ts`).
 
 ## 4. Szczegóły odpowiedzi
+
 - **Status:** `201 Created`
 - **Body:** `BoardDetailDTO` dla nowo utworzonego poziomu (wraz z wstawionymi `pairs`).
 - **Nagłówki:**
   - `Location: /boards/<newBoardId>`
 
 ## 5. Przepływ danych
+
 1. **Auth middleware** wstrzykuje `supabase` oraz `currentUser.id` do `locals`.
 2. **Route handler**
    1. Parse & validate JSON (Zod) ➜ `CreateNextLevelCmd`.
@@ -58,27 +64,31 @@ Tworzy kolejny poziom (level) istniejącej talii fiszek (board) dla aktualnego w
    9. Złożenie obiektu `BoardDetailDTO`, status 201.
 
 ## 6. Względy bezpieczeństwa
-- **RLS**:  table `boards` – właściciel pełny dostęp; insert wymaga zgodności `owner_id` z `auth.uid()` – spełniamy.
+
+- **RLS**: table `boards` – właściciel pełny dostęp; insert wymaga zgodności `owner_id` z `auth.uid()` – spełniamy.
 - **Input sanitization**: Zod string trim, max length zgodnie z DB (np. 65535), blokada SQL-injection zapewniona przez parametrized supabase js.
 - **Rate limiting**: (do rozważenia) Cloudflare / middleware.
 
 ## 7. Obsługa błędów
-| Sytuacja | Kod | Body.example |
-|-----------------------|-----|-------------------------------|
-| Nieautoryzowany | 401 | `{ "error": "UNAUTHENTICATED" }` |
-| Board nie istnieje | 404 | `{ "error": "BOARD_NOT_FOUND" }` |
-| Brak dostępu | 401 | `{ "error": "NOT_OWNER" }` |
-| Board zarchiwizowany | 400 | `{ "error": "BOARD_ARCHIVED" }` |
+
+| Sytuacja                         | Kod | Body.example                                     |
+| -------------------------------- | --- | ------------------------------------------------ |
+| Nieautoryzowany                  | 401 | `{ "error": "UNAUTHENTICATED" }`                 |
+| Board nie istnieje               | 404 | `{ "error": "BOARD_NOT_FOUND" }`                 |
+| Brak dostępu                     | 401 | `{ "error": "NOT_OWNER" }`                       |
+| Board zarchiwizowany             | 400 | `{ "error": "BOARD_ARCHIVED" }`                  |
 | Błędne dane (np. zła liczba par) | 400 | `{ "error": "INVALID_INPUT", "details": "..." }` |
-| Duplikat term | 400 | `{ "error": "DUPLICATE_TERM" }` |
-| DB violation (unique) | 500 | `{ "error": "DB_ERROR" }` |
+| Duplikat term                    | 400 | `{ "error": "DUPLICATE_TERM" }`                  |
+| DB violation (unique)            | 500 | `{ "error": "DB_ERROR" }`                        |
 
 ## 8. Rozważania dotyczące wydajności
+
 - Jedno dodatkowe zapytanie `max(level)` jest indeksowane (`owner_id,title` w UNIQUE) – dodamy composite index `(owner_id,title,level)` jeśli zauważymy seq scan.
 - Bulk insert par w 1 request (`insertPairsForBoard`) – unika pętli.
 - Brak potrzeby kalkulacji `search_vector` – generowane przez DB.
 
 ## 9. Etapy wdrożenia
+
 1. **Typy**: dodać `CreateNextLevelCmd` do `src/types.ts`.
 2. **Walidacja**: utworzyć `src/lib/validation/board-level.ts` z Zod schema.
 3. **Service**: w `board.service.ts` dodać `createBoardNextLevel(supabase, ownerId, cmd)` korzystając z istniejących helperów.

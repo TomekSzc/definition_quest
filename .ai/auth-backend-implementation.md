@@ -7,6 +7,7 @@ Successfully implemented the complete authentication backend for Definition Ques
 ## Implemented Components
 
 ### 1. Validation Schemas (`src/lib/validation/auth.ts`)
+
 - `LoginSchema` - validates email and password for login
 - `SignUpSchema` - validates email, password, and displayName for registration
 - `ForgotPasswordSchema` - validates email for password reset request
@@ -15,12 +16,14 @@ Successfully implemented the complete authentication backend for Definition Ques
 ### 2. API Endpoints
 
 #### POST /api/auth/login
+
 - Authenticates user with email and password
 - Returns user data and session tokens
 - Handles email not confirmed error
 - Status codes: 200 (success), 400 (validation), 401 (invalid credentials), 403 (email not confirmed)
 
 #### POST /api/auth/signUp
+
 - Registers new user with email, password, and display name
 - Creates auth.users record via Supabase Auth
 - Creates user_meta record with display name
@@ -28,24 +31,28 @@ Successfully implemented the complete authentication backend for Definition Ques
 - Status codes: 201 (created), 400 (validation), 409 (email exists)
 
 #### POST /api/auth/logout
+
 - Signs out current user
 - Clears session cookies
 - Can be called without authentication
 - Status codes: 200 (success), 500 (server error)
 
 #### POST /api/auth/forgot-password
+
 - Sends password reset link to user's email
 - Always returns success (security best practice)
 - Constructs redirect URL dynamically based on request origin
 - Status codes: 200 (success), 400 (validation)
 
 #### POST /api/auth/reset-password
+
 - Resets password using token from email link
 - Token is automatically verified by Supabase (in session)
 - Requires valid reset token session
 - Status codes: 200 (success), 400 (validation), 401 (invalid/expired token)
 
 #### POST /api/auth/refresh-token
+
 - Refreshes access token using refresh token
 - Returns new access token and refresh token
 - Allows extending user session without re-login
@@ -54,6 +61,7 @@ Successfully implemented the complete authentication backend for Definition Ques
 ### 3. Error Mappings (`src/lib/utils/api-response.ts`)
 
 Added standardized error responses:
+
 - `EMAIL_ALREADY_EXISTS` - 409
 - `INVALID_CREDENTIALS` - 401
 - `EMAIL_NOT_CONFIRMED` - 403
@@ -64,6 +72,7 @@ Added standardized error responses:
 ### 4. Type Definitions (`src/types.ts`)
 
 Added Auth DTOs:
+
 - `LoginRequest`
 - `SignUpRequest`
 - `ForgotPasswordRequest`
@@ -76,6 +85,7 @@ Added Auth DTOs:
 ### 5. Middleware Updates (`src/middleware/index.ts`)
 
 Enhanced middleware to:
+
 - Always attempt authentication for API endpoints
 - Set `locals.user` if authentication succeeds (even for public endpoints)
 - Allow public endpoints to proceed without authentication
@@ -83,6 +93,7 @@ Enhanced middleware to:
 - Support both authenticated and anonymous access patterns
 
 Public endpoints:
+
 - `/api/auth/login`
 - `/api/auth/signUp`
 - `/api/auth/logout`
@@ -93,6 +104,7 @@ Public endpoints:
 ## API Contract Examples
 
 ### Login
+
 ```bash
 POST /api/auth/login
 Content-Type: application/json
@@ -119,6 +131,7 @@ Content-Type: application/json
 ```
 
 ### Sign Up
+
 ```bash
 POST /api/auth/signUp
 Content-Type: application/json
@@ -142,6 +155,7 @@ Content-Type: application/json
 ```
 
 ### Logout
+
 ```bash
 POST /api/auth/logout
 
@@ -152,6 +166,7 @@ POST /api/auth/logout
 ```
 
 ### Forgot Password
+
 ```bash
 POST /api/auth/forgot-password
 Content-Type: application/json
@@ -167,6 +182,7 @@ Content-Type: application/json
 ```
 
 ### Reset Password
+
 ```bash
 POST /api/auth/reset-password
 Content-Type: application/json
@@ -182,6 +198,7 @@ Content-Type: application/json
 ```
 
 ### Refresh Token
+
 ```bash
 POST /api/auth/refresh-token
 Content-Type: application/json
@@ -209,7 +226,7 @@ Content-Type: application/json
 3. **Error Handling**: Consistent error responses, no information leakage
 4. **Password Requirements**: Minimum 6 characters (enforced by validation)
 5. **Email Verification**: Automatic verification email sent on signup
-6. **Security Best Practices**: 
+6. **Security Best Practices**:
    - Forgot password always returns success (doesn't reveal if email exists)
    - Generic error messages for invalid credentials
 
@@ -218,6 +235,7 @@ Content-Type: application/json
 ### Manual Testing with REST Client
 
 1. **Sign Up Flow**
+
    ```bash
    POST http://localhost:4321/api/auth/signUp
    {
@@ -228,6 +246,7 @@ Content-Type: application/json
    ```
 
 2. **Login Flow**
+
    ```bash
    POST http://localhost:4321/api/auth/login
    {
@@ -237,16 +256,17 @@ Content-Type: application/json
    ```
 
 3. **Password Reset Flow**
+
    ```bash
    # Request reset
    POST http://localhost:4321/api/auth/forgot-password
    {
      "email": "test@example.com"
    }
-   
+
    # Check email for reset link
    # Click link (opens /reset-password?token=xxx&type=recovery)
-   
+
    # Reset password
    POST http://localhost:4321/api/auth/reset-password
    {
@@ -255,11 +275,13 @@ Content-Type: application/json
    ```
 
 4. **Logout Flow**
+
    ```bash
    POST http://localhost:4321/api/auth/logout
    ```
 
 5. **Refresh Token Flow**
+
    ```bash
    # First, login to get refresh token
    POST http://localhost:4321/api/auth/login
@@ -268,7 +290,7 @@ Content-Type: application/json
      "password": "test123"
    }
    # Save the refreshToken from response
-   
+
    # Use refresh token to get new access token
    POST http://localhost:4321/api/auth/refresh-token
    {
@@ -331,6 +353,7 @@ Before testing, ensure Supabase is configured:
 ## Files Created/Modified
 
 ### Created Files
+
 - `src/lib/validation/auth.ts` - Validation schemas
 - `src/pages/api/auth/login.ts` - Login endpoint
 - `src/pages/api/auth/signUp.ts` - Sign up endpoint
@@ -340,6 +363,7 @@ Before testing, ensure Supabase is configured:
 - `src/pages/api/auth/refresh-token.ts` - Refresh token endpoint
 
 ### Modified Files
+
 - `src/lib/utils/api-response.ts` - Added auth error mappings
 - `src/types.ts` - Added Auth DTOs
 - `src/middleware/index.ts` - Updated to support public auth endpoints and flexible authentication
@@ -352,4 +376,3 @@ Before testing, ensure Supabase is configured:
 - Refresh token endpoint allows extending sessions without requiring re-login
 - All endpoints follow the existing codebase patterns for consistency
 - All error handling uses throw/catch pattern for better code organization
-

@@ -10,7 +10,6 @@ export const Pagination: FC<IPaginationProps> = ({ onPageChange, meta }) => {
   if (!meta || meta.total <= meta.pageSize) return null;
   const totalPages = Math.ceil(meta.total / meta.pageSize);
 
-
   return (
     <nav className="mt-6 flex items-center justify-center gap-2 text-[var(--color-primary)]" aria-label="Paginacja">
       <button

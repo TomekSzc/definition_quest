@@ -13,7 +13,7 @@ export const prerender = false;
 
 async function handleUpsert(
   { params, request, locals }: Parameters<APIRoute>[0],
-  httpMethod: "POST" | "PATCH",
+  httpMethod: "POST" | "PATCH"
 ): Promise<Response> {
   try {
     const { boardId } = params;
@@ -42,12 +42,7 @@ async function handleUpsert(
     const { elapsedMs } = parseResult.data;
 
     // Business logic – upsert score
-    const result = await upsertScore(
-      locals.supabase,
-      user.id,
-      boardId,
-      elapsedMs,
-    );
+    const result = await upsertScore(locals.supabase, user.id, boardId, elapsedMs);
 
     let status: number;
     if (httpMethod === "POST") {
@@ -56,10 +51,7 @@ async function handleUpsert(
       // PATCH – 200 OK for both insert & update (idempotent semantics)
       status = 200;
     }
-    return createSuccessResponse(
-      { id: result.id, elapsedMs: result.elapsedMs },
-      status,
-    );
+    return createSuccessResponse({ id: result.id, elapsedMs: result.elapsedMs }, status);
   } catch (error) {
     if (error instanceof HttpError) {
       return createErrorResponse(error.response || error.message, error.status);

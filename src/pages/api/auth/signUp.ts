@@ -71,7 +71,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       // Log the error but don't fail the request
       // The user_meta record can be created later if needed
       console.error("Failed to create user_meta record:", metaError);
-      
+
       // For MVP, we continue - user can update profile later
       // For production, consider implementing rollback or webhook
     }
@@ -106,4 +106,3 @@ export const POST: APIRoute = async ({ request, locals }) => {
     return createErrorResponse("Internal server error", 500);
   }
 };
-

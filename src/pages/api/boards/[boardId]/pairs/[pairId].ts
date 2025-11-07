@@ -46,13 +46,7 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
 
     // 3. Service call
     const { boardId, pairId } = paramResult.data;
-    const updated = await updatePair(
-      locals.supabase,
-      user.id,
-      boardId,
-      pairId,
-      bodyResult.data,
-    );
+    const updated = await updatePair(locals.supabase, user.id, boardId, pairId, bodyResult.data);
 
     return createSuccessResponse(updated);
   } catch (error: any) {

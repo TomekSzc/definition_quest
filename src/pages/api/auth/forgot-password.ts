@@ -1,10 +1,6 @@
 import type { APIRoute } from "astro";
 import { ForgotPasswordSchema } from "../../../lib/validation/auth";
-import {
-  createErrorResponse,
-  createSuccessResponse,
-  formatValidationErrors,
-} from "../../../lib/utils/api-response";
+import { createErrorResponse, createSuccessResponse, formatValidationErrors } from "../../../lib/utils/api-response";
 import { HttpError, ValidationError } from "../../../lib/utils/http-error";
 
 export const prerender = false;
@@ -38,7 +34,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     // 2. Request password reset from Supabase
     // Get the origin from the request to construct the redirect URL
     const origin = new URL(request.url).origin;
-    
+
     await locals.supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${origin}/reset-password`,
     });
@@ -64,4 +60,3 @@ export const POST: APIRoute = async ({ request, locals }) => {
     return createErrorResponse("Internal server error", 500);
   }
 };
-

@@ -6,8 +6,8 @@
 
 ## 2. Routing widoku
 
-| Ścieżka | Widok | Ochrona |
-|---------|-------|---------|
+| Ścieżka   | Widok        | Ochrona          |
+| --------- | ------------ | ---------------- |
 | `/boards` | `BoardsPage` | `ProtectedRoute` |
 
 Przekierowanie w przypadku braku autentykacji: `/login?return=/boards` (po udanym logowaniu nastąpi powrót do żądanej ścieżki).
@@ -34,7 +34,7 @@ Pages (Astro)
   - Hook `useNavigate` – przekierowanie na `/login`.
 - **Obsługiwane interakcje:** Brak bezpośrednich interakcji UI; wyłącznie efekt przekierowania.
 - **Obsługiwana walidacja:**
-  - `loggedIn === true` **AND** `accessToken != null`  ⇒ renderuj `children`.
+  - `loggedIn === true` **AND** `accessToken != null` ⇒ renderuj `children`.
   - W przeciwnym razie `navigate('/login?return='+pathname)`.
 - **Typy:**
   - `ProtectedRouteProps { children: React.ReactNode }`.
@@ -70,9 +70,9 @@ Brak bezpośrednich wywołań API. Autentykacja opiera się na danych z Redux, k
 
 ## 8. Interakcje użytkownika
 
-| Akcja | Wynik |
-|-------|-------|
-| Odwiedzenie `/boards` w stanie zalogowanym | Strona z listą plansz renderuje się normalnie. |
+| Akcja                                         | Wynik                                                   |
+| --------------------------------------------- | ------------------------------------------------------- |
+| Odwiedzenie `/boards` w stanie zalogowanym    | Strona z listą plansz renderuje się normalnie.          |
 | Odwiedzenie `/boards` w stanie niezalogowanym | Automatyczne przekierowanie do `/login?return=/boards`. |
 
 ## 9. Warunki i walidacja
@@ -84,10 +84,10 @@ Walidacja wykonywana w hooku `useEffect` przy każdym renderze oraz aktualizacji
 
 ## 10. Obsługa błędów
 
-| Scenariusz | Obsługa |
-|------------|---------|
+| Scenariusz                             | Obsługa                                            |
+| -------------------------------------- | -------------------------------------------------- |
 | `auth` slice niezaładowany (undefined) | Traktować jako brak autentykacji → przekierowanie. |
-| Błąd nawigacji | Fallback – render informacyjny "Redirecting…". |
+| Błąd nawigacji                         | Fallback – render informacyjny "Redirecting…".     |
 
 ## 11. Kroki implementacji
 

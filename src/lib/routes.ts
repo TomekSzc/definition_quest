@@ -6,5 +6,3 @@ export enum Routes {
   ResetPassword = "/reset-password",
   Boards = "/boards",
 }
-
-

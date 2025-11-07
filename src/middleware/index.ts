@@ -1,5 +1,5 @@
-import { defineMiddleware } from 'astro:middleware';
-import { supabaseClient } from '../db/supabase.client.ts';
+import { defineMiddleware } from "astro:middleware";
+import { supabaseClient } from "../db/supabase.client.ts";
 
 /**
  * Public endpoints that don't require authentication.
@@ -7,19 +7,19 @@ import { supabaseClient } from '../db/supabase.client.ts';
  */
 const PUBLIC_ENDPOINTS = [
   // New auth endpoints
-  '/api/auth/login',
-  '/api/auth/signUp',
-  '/api/auth/logout',
-  '/api/auth/forgot-password',
-  '/api/auth/reset-password',
-  '/api/auth/refresh-token',
+  "/api/auth/login",
+  "/api/auth/signUp",
+  "/api/auth/logout",
+  "/api/auth/forgot-password",
+  "/api/auth/reset-password",
+  "/api/auth/refresh-token",
 ];
 
 /**
  * Checks if the given URL path is a public endpoint.
  */
 function isPublicEndpoint(pathname: string): boolean {
-  return PUBLIC_ENDPOINTS.some(endpoint => pathname.startsWith(endpoint));
+  return PUBLIC_ENDPOINTS.some((endpoint) => pathname.startsWith(endpoint));
 }
 
 /**
@@ -34,8 +34,8 @@ export const onRequest = defineMiddleware(async (context, next) => {
   context.locals.supabase = supabaseClient;
 
   // Check if this is an API endpoint (not a page or asset)
-  const isApiEndpoint = context.url.pathname.startsWith('/api/');
-  
+  const isApiEndpoint = context.url.pathname.startsWith("/api/");
+
   // For non-API requests, just continue
   if (!isApiEndpoint) {
     return next();
@@ -55,13 +55,10 @@ export const onRequest = defineMiddleware(async (context, next) => {
   // For protected endpoints, require authentication
   const isPublic = isPublicEndpoint(context.url.pathname);
   if (!isPublic && (!user || authError)) {
-    return new Response(
-      JSON.stringify({ error: "Unauthorized" }),
-      {
-        status: 401,
-        headers: { "Content-Type": "application/json" },
-      }
-    );
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 
   return next();

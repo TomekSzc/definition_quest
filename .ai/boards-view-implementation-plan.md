@@ -1,13 +1,16 @@
 # Plan implementacji widoku Public Boards
 
 ## 1. Przegląd
+
 Widok „Public Boards” umożliwia anonimowym i zalogowanym użytkownikom przeglądanie publicznie udostępnionych plansz (boards) oraz wyszukiwanie ich po tytule, tagach i autorze. Zapewnia listę kart z metadanymi, paginację oraz pole wyszukiwarki wykorzystujące komponent `SearchInput`.
 
 ## 2. Routing widoku
+
 - Ścieżka: `/boards`
 - Plik Astro: `src/pages/boards.astro`
 
 ## 3. Struktura komponentów
+
 ```
 PublicBoardsPage (route component)
 ├─ PageHeader
@@ -21,6 +24,7 @@ PublicBoardsPage (route component)
 ## 4. Szczegóły komponentów
 
 ### PublicBoardsPage
+
 - **Opis**: Kontener widoku; pobiera dane z API i zarządza stanem wyszukiwarki, paginacji oraz błędami.
 - **Elementy**: wrapper `<main>`, nagłówek, siatka kart, paginacja.
 - **Interakcje**: zmiana zapytania, zmiana strony.
@@ -29,6 +33,7 @@ PublicBoardsPage (route component)
 - **Propsy**: brak (komponent routingu).
 
 ### SearchInput (reusable – `src/components/ui/SearchInput.tsx`)
+
 - **Opis**: Komponent pola wyszukiwania z możliwością wprowadzania wielu fraz (np. tagów). Wartość to tablica `string[]`.
 - **Elementy**: `<input type="text">`, przycisk clear, lista wpisanych tagów.
 - **Interakcje**: `onChange(value: string[])`, usuwanie tagu, klawisz Enter dodaje frazę.
@@ -39,6 +44,7 @@ PublicBoardsPage (route component)
   - `onChange: (value: string[]) => void`
 
 ### BoardsGrid
+
 - **Opis**: Odpowiada za układ kart; reaguje na brak wyników.
 - **Elementy**: div grid → `BoardCard`.
 - **Interakcje**: brak (pas-through).
@@ -47,6 +53,7 @@ PublicBoardsPage (route component)
 - **Propsy**: `boards`, `loading`.
 
 ### BoardCard
+
 - **Opis**: Przedstawia pojedynczą planszę; klikalna – przejście do `/boards/[id]`.
 - **Elementy**: tytuł, autor, tagi, liczba kart, data.
 - **Interakcje**: click → nawigacja.
@@ -55,6 +62,7 @@ PublicBoardsPage (route component)
 - **Propsy**: `board: BoardCardVM`.
 
 ### Pagination
+
 - **Opis**: Kontrolka paginacji (← →, nr stron).
 - **Elementy**: przyciski, label.
 - **Interakcje**: click → `onPageChange`.
@@ -63,6 +71,7 @@ PublicBoardsPage (route component)
 - **Propsy**: `meta`, `onPageChange`.
 
 ### EmptyState
+
 - **Opis**: Pokazuje wiadomość „Brak plansz” oraz poradę.
 - **Elementy**: ikona, tekst.
 - **Interakcje**: —
@@ -71,6 +80,7 @@ PublicBoardsPage (route component)
 - **Propsy**: —
 
 ## 5. Typy
+
 ```ts
 // View-model jednej planszy
 export interface BoardCardVM {
@@ -84,7 +94,7 @@ export interface BoardCardVM {
 
 // Stan widoku
 export interface BoardsViewState {
-  query: string[];      // tablica fraz wyszukiwania
+  query: string[]; // tablica fraz wyszukiwania
   page: number;
   pageSize: number;
   loading: boolean;
@@ -101,6 +111,7 @@ export interface SearchInputProps {
 ```
 
 ## 6. Zarządzanie stanem
+
 - **Custom hook**: `usePublicBoards` (w `src/lib/hooks/usePublicBoards.ts`)
   - Wejście: `{ query: string[], page: number, pageSize: number }`
   - Wynik: `{ data, meta, loading, error, refetch }`
@@ -108,27 +119,32 @@ export interface SearchInputProps {
 - **Struktura stanu**: patrz `BoardsViewState`.
 
 ## 7. Integracja API
+
 - **Endpoint**: `GET /api/boards`
 - **Parametry**: mapowane z hooka do `ListBoardsQuery`.
 - **Typ odpowiedzi**: `Paged<BoardSummaryDTO>`.
 - **Mapowanie**: `BoardSummaryDTO` → `BoardCardVM` (formatowanie daty, nazwa autora – wymaga dodatkowego pola jeśli backend go zwraca lub placeholder „Unknown”).
 
 ## 8. Interakcje użytkownika
+
 1. Użytkownik wpisuje frazę → `SearchInput` emituje `onChange` → aktualizacja `query` → wywołanie `refetch`.
 2. Użytkownik klika numer strony → `page` update → wywołanie `refetch`.
 3. Kliknięcie `BoardCard` → przejście do `/boards/[id]`.
 
 ## 9. Warunki i walidacja
+
 - Fraza wyszukiwania ≤ 100 znaków; liczba fraz ≤ 10.
 - `page` ≥ 1; `pageSize` ∈ ⟨1,100⟩.
 - Przy wejściu na stronę parametry z URL są parsowane i walidowane – niepoprawne wartości resetowane do domyślnych.
 
 ## 10. Obsługa błędów
+
 - **Walidacja parametrów**: wyświetla toast z informacją i przywraca domyślne parametry.
 - **Błąd API (4xx/5xx/timeout)**: pokazuje `Toast` z komunikatem „Nie udało się pobrać plansz. Spróbuj ponownie.” oraz przycisk „Odśwież”.
 - **Brak wyników**: renderuje `EmptyState`.
 
 ## 11. Kroki implementacji
+
 1. **Typy**: dodaj `BoardCardVM`, `BoardsViewState`, `SearchInputProps` w `src/types.ts` lub dedykowanym module.
 2. **Komponent SearchInput**:
    - Utwórz `src/components/ui/SearchInput.tsx` z interfejsem `SearchInputProps`.
@@ -146,4 +162,5 @@ export interface SearchInputProps {
 11. **Dokumentacja**: zaktualizuj README i Storybook (jeśli obecny) o `SearchInput`.
 
 ## 12. Header komponent
+
 - Dodany komponent `Header` w `src/components/ui/Header.tsx` (100 vw, 80 px, cień). Aktualizuje strukturę widoku – `BoardsPage` będzie opakowany przez `Header` w layout.

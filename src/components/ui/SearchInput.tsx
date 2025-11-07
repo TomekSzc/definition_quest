@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { FC } from "react";
-import debounce  from "lodash.debounce";
+import debounce from "lodash.debounce";
 import { X } from "lucide-react";
 
 interface ISearchInputProps {
@@ -10,25 +10,25 @@ interface ISearchInputProps {
 
 export const SearchInput: FC<ISearchInputProps> = ({ onChange, initialValue }) => {
   const searchRef = useRef<HTMLInputElement>(null);
-  const value = searchRef.current?.value ?? '';
+  const value = searchRef.current?.value ?? "";
   const debouncedSearch = debounce(async (search: string) => {
     onChange(search);
   }, 300);
-  
+
   const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => debouncedSearch(e.target.value);
   const clearAll = () => {
-    if (searchRef.current) searchRef.current.value = '';
-    onChange('');
-  }
+    if (searchRef.current) searchRef.current.value = "";
+    onChange("");
+  };
 
   useEffect(() => {
     if (initialValue && searchRef.current) {
       searchRef.current.value = initialValue;
     }
-  },[])
+  }, []);
 
   return (
-    <div className="relative flex items-center rounded-md border border-[var(--color-primary)] bg-white px-3 py-2 focus-within:ring-2 focus-within:ring-[var(--color-primary)] w-screen h-[50px] border-2">
+    <div className="relative flex items-center rounded-md border border-[var(--color-primary)] bg-white px-3 py-2 focus-within:ring-2 focus-within:ring-[var(--color-primary)] w-full h-[50px] border-2">
       <input
         ref={searchRef}
         onChange={handleOnChange}

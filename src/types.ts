@@ -7,11 +7,7 @@
 // manually to match the public contract. Where a column is reused verbatim
 // the underlying DB column type is referenced to preserve accuracy.
 
-import type {
-  Tables,
-  TablesInsert,
-  TablesUpdate,
-} from "./db/database.types";
+import type { Tables, TablesInsert, TablesUpdate } from "./db/database.types";
 
 /**
  * Helpers ────────────────────────────────────────────────────────────────
@@ -20,9 +16,7 @@ import type {
 /** Enforce an exact set of keys – no excess properties allowed. */
 export type Strict<T extends object> = {
   [K in keyof T]: T[K];
-} & {
-  [K: string]: never;
-};
+} & Record<string, never>;
 
 /**
  * Pagination metadata returned alongside collection endpoints.
@@ -55,9 +49,7 @@ export interface UserProfileMeDTO extends PublicUserProfileDTO {
   createdAt: UserMetaRow["created_at"];
 }
 
-export type UpdateProfileCmd = Strict<
-  Partial<Pick<UserProfileMeDTO, "displayName" | "avatarUrl">>
->;
+export type UpdateProfileCmd = Strict<Partial<Pick<UserProfileMeDTO, "displayName" | "avatarUrl">>>;
 
 /**
  * Boards & Pairs ─────────────────────────────────────────────────────────
@@ -174,7 +166,7 @@ export interface AiUsageDTO {
   resetAt: string; // ISO date string when quota resets
 }
 
-export type AiRequestDTO = {
+export interface AiRequestDTO {
   id: AiRequestRow["id"];
   userId: AiRequestRow["user_id"];
   model: AiRequestRow["model"];
@@ -182,7 +174,7 @@ export type AiRequestDTO = {
   costUsd: AiRequestRow["cost_usd"];
   status: AiRequestRow["status"];
   requestedAt: AiRequestRow["requested_at"];
-};
+}
 
 export interface BoardGenerationEnqueuedDTO {
   jobId: string; // uuid from ai_requests.id

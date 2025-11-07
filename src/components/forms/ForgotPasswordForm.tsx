@@ -40,12 +40,7 @@ const ForgotPasswordForm: FC = () => {
         />
 
         <Form.Submit asChild>
-          <SubmitButton
-            idleText="Wyślij link"
-            loadingText="Wysyłanie..."
-            isLoading={isLoading}
-            disabled={isSuccess}
-          />
+          <SubmitButton idleText="Wyślij link" loadingText="Wysyłanie..." isLoading={isLoading} disabled={isSuccess} />
         </Form.Submit>
       </Form.Root>
     </div>

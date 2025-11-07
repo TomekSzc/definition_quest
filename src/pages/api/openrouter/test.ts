@@ -1,14 +1,14 @@
 /**
  * Test endpoint for OpenRouter API integration
  * GET /api/openrouter/test
- * 
+ *
  * Tests basic connectivity and model availability
  */
 
-import type { APIRoute } from 'astro';
-import { getOpenRouterService } from '@/lib/services/openrouter.factory';
-import { apiResponse } from '@/lib/utils/api-response';
-import { OpenRouterError } from '@/lib/services/openrouter.service';
+import type { APIRoute } from "astro";
+import { getOpenRouterService } from "@/lib/services/openrouter.factory";
+import { apiResponse } from "@/lib/utils/api-response";
+import { OpenRouterError } from "@/lib/services/openrouter.service";
 
 export const GET: APIRoute = async () => {
   try {
@@ -16,22 +16,22 @@ export const GET: APIRoute = async () => {
 
     // Test 1: Get available models
     const models = await service.models();
-    
+
     // Test 2: Simple chat completion
     const completion = await service.chatCompletion([
       {
-        role: 'system',
-        content: 'You are a helpful assistant. Respond in one short sentence.',
+        role: "system",
+        content: "You are a helpful assistant. Respond in one short sentence.",
       },
       {
-        role: 'user',
+        role: "user",
         content: 'Say "OpenRouter API is working correctly" if you can read this.',
       },
     ]);
 
     return apiResponse({
-      status: 'ok',
-      message: 'OpenRouter API is working correctly',
+      status: "ok",
+      message: "OpenRouter API is working correctly",
       data: {
         modelCount: models.length,
         testResponse: completion.content,
@@ -39,7 +39,7 @@ export const GET: APIRoute = async () => {
       },
     });
   } catch (error) {
-    console.error('[OpenRouter Test] Error:', error);
+    console.error("[OpenRouter Test] Error:", error);
 
     if (error instanceof OpenRouterError) {
       return apiResponse(
@@ -53,11 +53,10 @@ export const GET: APIRoute = async () => {
 
     return apiResponse(
       {
-        error: 'Failed to test OpenRouter API',
-        details: error instanceof Error ? error.message : 'Unknown error',
+        error: "Failed to test OpenRouter API",
+        details: error instanceof Error ? error.message : "Unknown error",
       },
       500
     );
   }
 };
-

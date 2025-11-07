@@ -16,7 +16,7 @@ export async function upsertScore(
   supabase: SupabaseClient,
   userId: string,
   boardId: string,
-  elapsedMs: number,
+  elapsedMs: number
 ): Promise<{ id: string; elapsedMs: number; isNew: boolean }> {
   // 1. Verify board existence & accessibility
   const { data: boardRow, error: boardError } = await supabase
@@ -67,7 +67,7 @@ export async function upsertScore(
       {
         onConflict: "user_id,board_id",
         ignoreDuplicates: false,
-      },
+      }
     )
     .select("id, elapsed_ms")
     .single();

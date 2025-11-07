@@ -1,3 +1,9 @@
 export { default as EditIcon } from "./EditIcon";
 export { default as DeleteIcon } from "./DeleteIcon";
 export { default as EyeIcon } from "./EyeIcon";
+export { default as BoardsIcon } from "./BoardsIcon";
+export { default as PlayedIcon } from "./PlayedIcon";
+export { default as PlusIcon } from "./PlusIcon";
+export { default as MenuIcon } from "./MenuIcon";
+export { default as ChevronLeftIcon } from "./ChevronLeftIcon";
+export { default as MyBoardsIcon } from "./MyBoardsIcon";

@@ -13,8 +13,8 @@ All endpoints under `/api/*` are automatically protected, except those listed in
 ```typescript
 // src/middleware/index.ts
 const PUBLIC_ENDPOINTS = [
-  '/api/auth/signIn.temporary',
-  '/api/auth/login.temporary',
+  "/api/auth/signIn.temporary",
+  "/api/auth/login.temporary",
   // Add other public endpoints here
 ];
 ```
@@ -27,14 +27,14 @@ Authenticated user is automatically added to `context.locals.user`:
 export const POST: APIRoute = async ({ locals }) => {
   // User is already authenticated by middleware
   const user = locals.user;
-  
+
   if (!user) {
     return createErrorResponse("Unauthorized", 401);
   }
 
   // Use user.id directly
   const result = await someService(locals.supabase, user.id);
-  
+
   return createSuccessResponse(result);
 };
 ```
@@ -42,6 +42,7 @@ export const POST: APIRoute = async ({ locals }) => {
 ### 3. **No Manual Auth Checks Needed**
 
 ❌ **OLD WAY** (before middleware):
+
 ```typescript
 export const POST: APIRoute = async ({ request, locals }) => {
   // Manual authentication check
@@ -51,10 +52,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
   } = await locals.supabase.auth.getUser();
 
   if (authError || !user) {
-    return new Response(
-      JSON.stringify({ error: "Unauthorized" }),
-      { status: 401, headers: { "Content-Type": "application/json" }}
-    );
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 
   // ... rest of code
@@ -62,10 +63,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
 ```
 
 ✅ **NEW WAY** (with middleware):
+
 ```typescript
 export const POST: APIRoute = async ({ locals }) => {
   const user = locals.user;
-  
+
   if (!user) {
     return createErrorResponse("Unauthorized", 401);
   }
@@ -81,9 +83,9 @@ To make an endpoint public (accessible without authentication):
 ```typescript
 // src/middleware/index.ts
 const PUBLIC_ENDPOINTS = [
-  '/api/auth/signIn.temporary',
-  '/api/auth/login.temporary',
-  '/api/boards', // Example: public boards listing
+  "/api/auth/signIn.temporary",
+  "/api/auth/login.temporary",
+  "/api/boards", // Example: public boards listing
   // Add your endpoint here
 ];
 ```
@@ -104,7 +106,7 @@ return createErrorResponse("Not found", 404);
 return createErrorResponse(
   {
     error: "validation_failed",
-    details: [{ field: "email", message: "Invalid format" }]
+    details: [{ field: "email", message: "Invalid format" }],
   },
   400
 );
@@ -130,11 +132,7 @@ return createSuccessResponse({ id: "123", name: "Board" });
 return createSuccessResponse({ id: "123" }, 201);
 
 // Custom headers
-return createSuccessResponse(
-  { data: "..." },
-  200,
-  { "Cache-Control": "max-age=3600" }
-);
+return createSuccessResponse({ data: "..." }, 200, { "Cache-Control": "max-age=3600" });
 ```
 
 ## Example: Complete Protected Endpoint
@@ -148,14 +146,14 @@ export const POST: APIRoute = async ({ request, locals }) => {
   try {
     // 1. User is already authenticated by middleware
     const user = locals.user;
-    
+
     if (!user) {
       return createErrorResponse("Unauthorized", 401);
     }
 
     // 2. Parse and validate request
     const body = await request.json();
-    
+
     // ... validation logic
 
     // 3. Execute business logic
@@ -163,7 +161,6 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     // 4. Return success
     return createSuccessResponse(result);
-    
   } catch (error) {
     console.error("Error in endpoint:", error);
     return createErrorResponse("Internal server error", 500);
@@ -176,7 +173,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
 The `user` is properly typed in `src/env.d.ts`:
 
 ```typescript
-import type { User } from '@supabase/supabase-js';
+import type { User } from "@supabase/supabase-js";
 
 declare global {
   namespace App {
@@ -196,4 +193,3 @@ declare global {
 ✅ **Maintainable**: Auth logic in one place  
 ✅ **Flexible**: Easy to add/remove public endpoints  
 ✅ **Clean**: Endpoints focus on business logic
-
