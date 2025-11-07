@@ -5,9 +5,10 @@ import { X } from "lucide-react";
 
 interface ISearchInputProps {
   onChange: (value: string) => void;
+  initialValue?: string;
 }
 
-export const SearchInput: FC<ISearchInputProps> = ({ onChange }) => {
+export const SearchInput: FC<ISearchInputProps> = ({ onChange, initialValue }) => {
   const searchRef = useRef<HTMLInputElement>(null);
   const value = searchRef.current?.value ?? '';
   const debouncedSearch = debounce(async (search: string) => {
@@ -21,17 +22,16 @@ export const SearchInput: FC<ISearchInputProps> = ({ onChange }) => {
   }
 
   useEffect(() => {
-    const input = searchRef.current;
-    const handleInput = () => debouncedSearch(input?.value ?? '');
-
-    input?.addEventListener('input', handleInput);
-    return () => input?.removeEventListener('input', handleInput);
+    if (initialValue && searchRef.current) {
+      searchRef.current.value = initialValue;
+    }
   },[])
 
   return (
     <div className="relative flex items-center rounded-md border border-[var(--color-primary)] bg-white px-3 py-2 focus-within:ring-2 focus-within:ring-[var(--color-primary)] w-screen h-[50px] border-2">
       <input
         ref={searchRef}
+        onChange={handleOnChange}
         placeholder="Szukaj..."
         aria-label="Pole wyszukiwania"
         className="w-full border-0 bg-transparent pr-8 text-sm text-[var(--color-primary)] placeholder-[var(--color-primary)] focus:outline-none"
