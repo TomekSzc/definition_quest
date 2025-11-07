@@ -16,7 +16,7 @@ export const ProtectedRoute: FC<ProtectedRouteProps> = ({ children }) => {
 
   useEffect(() => {
     if (isProtected && !authed) {
-      window.location.replace(`/login?return=${encodeURIComponent(pathname)}`);
+      window.location.replace(`/?return=${encodeURIComponent(pathname)}`);
     }
   }, [isProtected, authed, pathname]);
 
