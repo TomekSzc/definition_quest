@@ -1,9 +1,3 @@
-import Eye from "./eye.svg?url";
-import Delete from "./delete.svg?url";
-import Edit from "./edit.svg?url";
-
-export const Icons = {
-  Eye,
-  Delete,
-  Edit,
-} as const;
+export { default as EditIcon } from "./EditIcon";
+export { default as DeleteIcon } from "./DeleteIcon";
+export { default as EyeIcon } from "./EyeIcon";

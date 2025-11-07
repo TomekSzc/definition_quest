@@ -1,6 +1,7 @@
 import type { FC } from "react";
 import type { BoardSummaryDTO } from "@/types";
-import { Icons } from "@/assets/icons";
+import { EditIcon, DeleteIcon } from "@/assets/icons";
+import Chip from "./Chip";
 
 interface IBoardListTileProps {
     board: BoardSummaryDTO;
@@ -35,6 +36,7 @@ export const BoardListTile: FC<IBoardListTileProps> = ({ board }) => {
             flex 
             justify-center 
             items-center 
+            relative
             mr-2" >
                 {board.title.slice(0, 1)}        
             </div>
@@ -42,20 +44,22 @@ export const BoardListTile: FC<IBoardListTileProps> = ({ board }) => {
                 <div className="relative">
                     {board.title}
                 </div>
-                <div className="text-sm text-gray-500">Level: {board.level}</div>
+                <div className="text-sm text-gray-500 mb-1 flex gap-4">
+                    <span>Level: {board.level}</span>
+                    <div>
+                        <div className="flex flex-wrap gap-1">
+                                {board.tags && board.tags.slice(0,4).map((t) => (
+                                    <Chip key={t}>{t}</Chip>
+                                ))}
+                                {board.tags && board.tags.length > 4 && <Chip>…</Chip>}
+                        </div>
+                    </div>
+                 </div>
             </div>
         </div>
         <div className="flex items-center gap-2">
-            <img
-                src={Icons.Edit}
-                alt="Edytuj"
-                className="cursor-pointer select-none w-[20px] h-[20px] relative z-10"
-            />
-            <img
-                src={Icons.Delete}
-                alt="Usuń"
-                className="cursor-pointer select-none w-[20px] h-[20px] relative z-10"
-            />
+            <EditIcon className="w-5 h-5 cursor-pointer text-[var(--color-primary)]" />
+            <DeleteIcon className="w-5 h-5 cursor-pointer text-[var(--color-primary)]" />
         </div>
     </a>)
 }
