@@ -1,13 +1,19 @@
-# Plan implementacji widoku Public Boards
+# Plan implementacji widoków Public Boards i My Boards
 
 ## 1. Przegląd
 
 Widok „Public Boards” umożliwia anonimowym i zalogowanym użytkownikom przeglądanie publicznie udostępnionych plansz (boards) oraz wyszukiwanie ich po tytule, tagach i autorze. Zapewnia listę kart z metadanymi, paginację oraz pole wyszukiwarki wykorzystujące komponent `SearchInput`.
 
-## 2. Routing widoku
+## 2. Routing widoków
 
+Public Boards:
 - Ścieżka: `/boards`
 - Plik Astro: `src/pages/boards.astro`
+
+My Boards (widok prywatny – wymaga zalogowania):
+- Ścieżka: `/my-boards`
+- Plik Astro: `src/pages/my-boards.astro`
+- Różnica w zapytaniu: `ownerId` ustawiany na `auth.user.id` (reszta parametrów i UI takie same jak w Public Boards)
 
 ## 3. Struktura komponentów
 

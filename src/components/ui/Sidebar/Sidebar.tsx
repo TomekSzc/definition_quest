@@ -1,7 +1,7 @@
 import type { FC } from "react";
-import SidebarToggleButton from "./SidebarToggleButton";
+import { SidebarToggleButton } from "./SidebarToggleButton";
 import { useSidebar } from "@/hooks/useSidebar";
-import { NavItem } from "./NavItem";
+import { NavItem } from "@/components/ui/Sidebar/NavItem";
 import type { NavItemVM } from "@/types/sidebar";
 import { BoardsIcon, PlayedIcon, PlusIcon, MyBoardsIcon } from "@/assets/icons";
 
