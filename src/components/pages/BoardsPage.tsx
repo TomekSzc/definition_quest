@@ -10,8 +10,9 @@ import { BoardsList } from "@/components/ui/BoardsList";
 
 
 const BoardsPageComponent: FC = () => {
+  const initialParams = { pageSize: 8, page: 1 };
   const { params, setQueryParams } = useQueryParams<{ q?: string; page?: string }>();
-  const { data, isFetching, refetch } = useListPublicBoardsQuery((params as unknown as Partial<ListBoardsQuery>));
+  const { data, isFetching, refetch } = useListPublicBoardsQuery(({...initialParams, ...params} as unknown as Partial<ListBoardsQuery>));
 
   const handleQueryChange = (val: string) => {
     if (val === '') {
