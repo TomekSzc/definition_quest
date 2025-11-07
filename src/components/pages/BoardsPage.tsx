@@ -1,6 +1,7 @@
 import type { FC } from "react";
 import { withProviders } from "@/components/Providers";
 import { useQueryParams } from "@/hooks/useQueryParams";
+import { DEFAULT_PAGINATION } from "@/constants/pagination";
 import { SearchInput } from "@/components/ui/SearchInput";
 import { Header } from "@/components/ui/Header";
 import { useListPublicBoardsQuery } from "@/store/api/apiSlice";
@@ -10,7 +11,7 @@ import { BoardsList } from "@/components/ui/BoardsList";
 
 
 const BoardsPageComponent: FC = () => {
-  const initialParams = { pageSize: 8, page: 1 };
+  const initialParams = DEFAULT_PAGINATION;
   const { params, setQueryParams } = useQueryParams<{ q?: string; page?: string }>();
   const { data, isFetching, refetch } = useListPublicBoardsQuery(({...initialParams, ...params} as unknown as Partial<ListBoardsQuery>));
 
