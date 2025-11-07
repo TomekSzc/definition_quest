@@ -13,7 +13,8 @@ export const SidebarToggleButton: FC = () => {
       onClick={toggle}
       className={clsx(
         "flex items-center gap-3 rounded-md py-2 hover:bg-blue-700 hover:bg-opacity-50 transition-colors text-white w-full",
-        collapsed ? "justify-center" : "px-3"
+        collapsed ? "justify-center" : "px-3",
+        "mt-2.4",
       )}
     >
       {collapsed ? <MenuIcon className="h-5 w-5" /> : <ChevronLeftIcon className="h-5 w-5" />}
