@@ -8,6 +8,7 @@ import { useToast } from "@/store/hooks";
 import { withProviders } from "@/components/HOC/Providers";
 import { useSidebar } from "@/hooks/useSidebar";
 import type { CardVM } from "@/lib/hooks/useBoardGame";
+import { useBoardSound } from "@/hooks/useBoardSound";
 
 interface Props {
   boardId?: string;

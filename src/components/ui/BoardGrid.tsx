@@ -11,9 +11,9 @@ export default function BoardGrid({ cards, running, onCardClick }: BoardGridProp
   const someAnimating = cards.some(c => c.status === "success" || c.status === "failure");
   return (
     <div className="flex flex-wrap bg-secondary w-[calc(100%-199px)] p-[32px] min-h-[80vh] relative">
-        <div className="flex flex-wrap h-fit">
+        <div className="flex flex-wrap h-fit justify-center mx-auto">
         {cards.map((c, idx) => (
-            <Card text={c.value} status={c.status} disabled={someAnimating} onClick={() => onCardClick(idx)} />
+            <Card key={c.pairId + idx} text={c.value} status={c.status} disabled={someAnimating} onClick={() => onCardClick(idx)} />
         ))}
         </div>
         {!running && (

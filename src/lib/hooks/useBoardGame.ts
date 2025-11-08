@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { BoardViewDTO } from "../../types";
+import { useBoardSound } from "@/hooks/useBoardSound";
 
 export type CardStatus = "idle" | "selected" | "success" | "failure";
 
@@ -84,6 +85,8 @@ export function useBoardGame(
     clearTimer();
   }, [clearTimer]);
 
+  const { playSuccess, playFailure } = useBoardSound();
+
   const submitScore = useCallback(() => {
     if (!board) return;
     const elapsedMs = timeSec * 1000;
@@ -126,6 +129,7 @@ export function useBoardGame(
       const success = cards[i1].pairId === cards[i2].pairId;
       if (success) {
         setStatusMap(s => ({ ...s, [i1]: "success", [i2]: "success" }));
+        playSuccess();
         const pairId = cards[i1].pairId;
         setTimeout(() => {
           setCards(prev => {
@@ -144,6 +148,7 @@ export function useBoardGame(
         }, 500);
       } else {
         setStatusMap(s => ({ ...s, [i1]: "failure", [i2]: "failure" }));
+        playFailure();
         setTimeout(() => {
           setStatusMap(s => {
             const copy = { ...s };
@@ -155,7 +160,7 @@ export function useBoardGame(
         }, 500);
       }
     },
-    [cards, stopGame, submitScore]
+    [cards, stopGame, submitScore, callbacks]
   );
 
   // Mark card

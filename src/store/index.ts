@@ -21,19 +21,21 @@ const storage = typeof window !== "undefined" ? createWebStorage("local") : crea
 import authReducer from "./slices/authSlice";
 import toastReducer from "./slices/toastSlice";
 import uiReducer from "./slices/uiSlice";
+import soundReducer from "./slices/soundSlice";
 import { apiSlice } from "./api/apiSlice";
 
 const rootReducer = combineReducers({
   auth: authReducer,
   toast: toastReducer,
   ui: uiReducer,
+  sound: soundReducer,
   [apiSlice.reducerPath]: apiSlice.reducer,
 });
 
 const persistConfig = {
   key: "root",
   storage,
-  whitelist: ["auth", "ui"],
+  whitelist: ["auth", "ui", "sound"],
   blacklist: ["toast"],
 };
 
