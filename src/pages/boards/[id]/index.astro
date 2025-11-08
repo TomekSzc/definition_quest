@@ -1,0 +1,8 @@
+---
+import Layout from "../../../layouts/Layout.astro";
+import { BoardGamePage } from "../../../components/pages/BoardGamePage";
+---
+
+<Layout>
+  <BoardGamePage boardId={Astro.params.id as string} client:load />
+</Layout>

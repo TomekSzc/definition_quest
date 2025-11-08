@@ -5,7 +5,9 @@ import { Footer } from "../ui/Footer";
 
 export const ReactLayout = ({ children }: { children: React.ReactNode }) => {
   const pathname = typeof window !== "undefined" ? window.location.pathname : "/";
-  const isProtected = Object.values(ProtectedRoutes).includes(pathname as ProtectedRoutes);
+  console.log(pathname);
+  const isProtected = Object.values(ProtectedRoutes).includes(pathname as ProtectedRoutes) 
+  || pathname.startsWith(ProtectedRoutes.BOARDS);
 
   if (!isProtected) {
     return <>{children}</>;

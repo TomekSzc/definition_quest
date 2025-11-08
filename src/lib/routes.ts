@@ -7,6 +7,7 @@ export enum Routes {
   Boards = "/boards",
   MyBoards = "/my-boards",
   MyPlayedBoards = "/played",
+  BoardGame = "/boards/:id",
 }
 
 export enum ProtectedRoutes {

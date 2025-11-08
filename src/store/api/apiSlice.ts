@@ -10,6 +10,7 @@ import type {
   PlayedBoardDTO,
   Paged,
   ListBoardsQuery,
+  BoardViewDTO,
 } from "../../types";
 import { setCredentials, logout, updateTokens } from "../slices/authSlice";
 import { showToast } from "../slices/toastSlice";
@@ -247,6 +248,16 @@ export const apiSlice = createApi({
       },
       providesTags: ["BoardsPlayed"],
     }),
+    getBoardById: builder.query<BoardViewDTO, string>({
+      query: (id) => `/api/boards/${id}`,
+    }),
+    submitScore: builder.mutation<{ id: string; elapsedMs: number }, { boardId: string; elapsedMs: number }>({
+      query: ({ boardId, elapsedMs }) => ({
+        url: `/api/boards/${boardId}/scores`,
+        method: "POST",
+        body: { elapsedMs },
+      }),
+    }),
   }),
 });
 
@@ -261,4 +272,7 @@ export const {
   useLazyListPublicBoardsQuery,
   useListPlayedBoardsQuery,
   useLazyListPlayedBoardsQuery,
+  useGetBoardByIdQuery,
+  useLazyGetBoardByIdQuery,
+  useSubmitScoreMutation,
 } = apiSlice;
