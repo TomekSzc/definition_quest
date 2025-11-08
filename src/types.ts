@@ -75,6 +75,8 @@ export interface BoardSummaryDTO {
   tags: BoardRow["tags"];
   createdAt: BoardRow["created_at"];
   updatedAt: BoardRow["updated_at"];
+  /** Last recorded time for current user (only present in Played boards endpoint) */
+  lastTime?: ScoreRow["elapsed_ms"];
 }
 
 export interface BoardDetailDTO extends BoardSummaryDTO {
