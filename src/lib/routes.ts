@@ -6,4 +6,5 @@ export enum Routes {
   ResetPassword = "/reset-password",
   Boards = "/boards",
   MyBoards = "/my-boards",
+  MyPlayedBoards = "/played",
 }
