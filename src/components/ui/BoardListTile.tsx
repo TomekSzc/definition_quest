@@ -64,6 +64,10 @@ export const BoardListTile: FC<IBoardListTileProps> = ({ board }) => {
       </div>
       {canManage && (
         <div className="flex items-center gap-2">
+          {board?.lastTime && (<div className="text-sm text-gray-500 flex flex-col lowercase">
+            <span>Last score</span>
+            <span>{board.lastTime}ms</span>
+          </div>)}
           <EditIcon className="w-5 h-5 cursor-pointer text-[var(--color-primary)]" />
           <DeleteIcon className="w-5 h-5 cursor-pointer text-[var(--color-primary)]" />
         </div>

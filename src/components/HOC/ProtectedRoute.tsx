@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import type { ReactNode, FC } from "react";
 import { useAppSelector } from "@/store/hooks";
-import { protectedRoutes } from "@/lib/@routes";
+import { ProtectedRoutes } from "@/lib/routes";
 import { Routes } from "@/lib/routes";
 
 interface ProtectedRouteProps {
@@ -20,7 +20,7 @@ export const ProtectedRoute: FC<ProtectedRouteProps> = ({ children }) => {
     Routes.ResetPassword,
   ];
 
-  const isProtected = Object.values(protectedRoutes).includes(pathname as protectedRoutes);
+  const isProtected = Object.values(ProtectedRoutes).includes(pathname as ProtectedRoutes);
   const isAuthPage = authPages.includes(pathname as Routes);
   const authed = Boolean(accessToken) && isAuthenticated;
 

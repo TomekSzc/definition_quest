@@ -4,11 +4,12 @@ import { useSidebar } from "@/hooks/useSidebar";
 import { NavItem } from "@/components/ui/Sidebar/NavItem";
 import type { NavItemVM } from "@/types/sidebar";
 import { BoardsIcon, PlayedIcon, PlusIcon, MyBoardsIcon } from "@/assets/icons";
+import { Routes } from "@/lib/routes";
 
 const navItems: NavItemVM[] = [
-  { label: "Public Boards", route: "/boards", icon: BoardsIcon },
-  { label: "My Boards", route: "/my-boards", icon: MyBoardsIcon },
-  { label: "Played", route: "/played-boards", icon: PlayedIcon },
+  { label: "Public Boards", route: Routes.Boards, icon: BoardsIcon },
+  { label: "My Boards", route: Routes.MyBoards, icon: MyBoardsIcon },
+  { label: "Played Boards", route: Routes.MyPlayedBoards, icon: PlayedIcon },
   { label: "Create Board", route: "/create-board", icon: PlusIcon },
 ];
 

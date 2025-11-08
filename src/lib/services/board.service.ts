@@ -351,7 +351,8 @@ export async function listBoardsPlayedByUser(
 
   (data ?? []).forEach((r: any) => {
     const existing = uniqueMap.get(r.id);
-    const elapsed = r.scores?.elapsed_ms ?? null;
+    const scoresArr = Array.isArray(r.scores) ? r.scores : [];
+    const elapsed = scoresArr.length ? scoresArr[0].elapsed_ms : null;
 
     if (!existing) {
       uniqueMap.set(r.id, {

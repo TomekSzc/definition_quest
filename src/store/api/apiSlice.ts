@@ -7,6 +7,7 @@ import type {
   ForgotPasswordRequest,
   ResetPasswordRequest,
   BoardSummaryDTO,
+  PlayedBoardDTO,
   Paged,
   ListBoardsQuery,
 } from "../../types";
@@ -82,7 +83,7 @@ const baseQueryWithReauth: typeof baseQuery = async (args, api, extraOptions) =>
 export const apiSlice = createApi({
   reducerPath: "api",
   baseQuery: baseQueryWithReauth,
-  tagTypes: ["Boards", "Auth"],
+  tagTypes: ["Boards", "BoardsPlayed", "Auth"],
   endpoints: (builder) => ({
     login: builder.mutation<AuthResponse, LoginRequest>({
       query: (body) => ({
@@ -234,6 +235,18 @@ export const apiSlice = createApi({
         return `/api/boards${query ? `?${query}` : ""}`;
       },
     }),
+
+    listPlayedBoards: builder.query<Paged<PlayedBoardDTO>, Partial<ListBoardsQuery>>({
+      query: (params) => {
+        const qs = new URLSearchParams();
+        if (params?.page) qs.set("page", params.page.toString());
+        if (params?.pageSize) qs.set("pageSize", params.pageSize.toString());
+        if (params?.q) qs.set("q", params.q);
+        const query = qs.toString();
+        return `/api/boards/played${query ? `?${query}` : ""}`;
+      },
+      providesTags: ["BoardsPlayed"],
+    }),
   }),
 });
 
@@ -246,4 +259,6 @@ export const {
   useResetPasswordMutation,
   useListPublicBoardsQuery,
   useLazyListPublicBoardsQuery,
+  useListPlayedBoardsQuery,
+  useLazyListPlayedBoardsQuery,
 } = apiSlice;

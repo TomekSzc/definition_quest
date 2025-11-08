@@ -1,11 +1,11 @@
 import { Header } from "../ui/Header";
 import Sidebar from "../ui/Sidebar/Sidebar";
-import { protectedRoutes } from "@/lib/@routes";
+import { ProtectedRoutes } from "@/lib/routes";
 import { Footer } from "../ui/Footer";
 
 export const ReactLayout = ({ children }: { children: React.ReactNode }) => {
   const pathname = typeof window !== "undefined" ? window.location.pathname : "/";
-  const isProtected = Object.values(protectedRoutes).includes(pathname as protectedRoutes);
+  const isProtected = Object.values(ProtectedRoutes).includes(pathname as ProtectedRoutes);
 
   if (!isProtected) {
     return <>{children}</>;
