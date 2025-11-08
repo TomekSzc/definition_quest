@@ -8,3 +8,9 @@ export enum Routes {
   MyBoards = "/my-boards",
   MyPlayedBoards = "/played",
 }
+
+export enum ProtectedRoutes {
+  BOARDS = Routes.Boards,
+  MY_BOARDS = Routes.MyBoards,
+  MY_PLAYED_BOARDS = Routes.MyPlayedBoards,
+}
