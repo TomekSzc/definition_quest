@@ -7,12 +7,11 @@ export enum Routes {
   Boards = "/boards",
   MyBoards = "/my-boards",
   MyPlayedBoards = "/played",
-  BoardGame = "/boards/:id/play",
+  BoardGame = "/boards/:id",
 }
 
 export enum ProtectedRoutes {
   BOARDS = Routes.Boards,
   MY_BOARDS = Routes.MyBoards,
   MY_PLAYED_BOARDS = Routes.MyPlayedBoards,
-  BOARD_GAME = Routes.BoardGame,
 }

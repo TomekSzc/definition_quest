@@ -1,12 +1,13 @@
 interface GameMetaProps {
   timeSec: number;
   running: boolean;
+  canStart: boolean;
   onStart(): void;
   onStop(): void;
   onReset(): void;
 }
 
-export default function GameMeta({ timeSec, running, onStart, onStop, onReset }: GameMetaProps) {
+export default function GameMeta({ timeSec, running, canStart, onStart, onStop, onReset }: GameMetaProps) {
   const format = (sec: number) => {
     const m = Math.floor(sec / 60)
       .toString()
@@ -30,8 +31,9 @@ export default function GameMeta({ timeSec, running, onStart, onStop, onReset }:
         </button>
       ) : (
         <button
-          className="bg-green-600 text-white rounded px-4 py-2"
+          className="bg-green-600 text-white rounded px-4 py-2 disabled:opacity-50"
           onClick={onStart}
+          disabled={!canStart}
           aria-label="Start game"
         >
           Start

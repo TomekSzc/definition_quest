@@ -126,9 +126,10 @@ export function useBoardGame(
       const success = cards[i1].pairId === cards[i2].pairId;
       if (success) {
         setStatusMap(s => ({ ...s, [i1]: "success", [i2]: "success" }));
+        const pairId = cards[i1].pairId;
         setTimeout(() => {
           setCards(prev => {
-            const updated = prev.filter((_, idx) => idx !== i1 && idx !== i2);
+            const updated = prev.filter(card => card.pairId !== pairId);
             if (updated.length === 0) {
               stopGame();
               submitScore();
@@ -140,7 +141,7 @@ export function useBoardGame(
             return rest;
           });
           setSelectedIndices([]);
-        }, 3000);
+        }, 500);
       } else {
         setStatusMap(s => ({ ...s, [i1]: "failure", [i2]: "failure" }));
         setTimeout(() => {
@@ -151,7 +152,7 @@ export function useBoardGame(
             return copy;
           });
           setSelectedIndices([]);
-        }, 3000);
+        }, 500);
       }
     },
     [cards, stopGame, submitScore]

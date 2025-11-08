@@ -4,11 +4,12 @@ import type { CardStatus } from "@/lib/hooks/useBoardGame";
 interface CardProps {
   text: string;
   status: CardStatus;
+  disabled?: boolean;
   onClick(): void;
 }
 
-export default function Card({ text, status, onClick }: CardProps) {
-  const base = "cursor-pointer mx-2 bg-white text-black w-[150px] h-[100px] flex items-center justify-center rounded-md text-center p-2 text-sm font-medium select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500";
+export default function Card({ text, status, disabled, onClick }: CardProps) {
+  const base = "mb-6 cursor-pointer mx-2 bg-white text-black w-[250px] h-[200px] flex items-center justify-center rounded-md text-center p-2 text-sm font-medium select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500";
 
   const statusClasses: Record<CardStatus, string> = {
     idle: "border border-neutral-300 dark:border-neutral-600 dark:bg-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-700",
@@ -20,9 +21,10 @@ export default function Card({ text, status, onClick }: CardProps) {
   return (
     <button
       type="button"
-      onClick={onClick}
-      className={cn(base, statusClasses[status])}
+      onClick={disabled ? undefined : onClick}
+      className={cn(base, statusClasses[status], disabled && "cursor-not-allowed opacity-50")}
       aria-pressed={status === "selected"}
+      disabled={disabled}
     >
       {text}
     </button>

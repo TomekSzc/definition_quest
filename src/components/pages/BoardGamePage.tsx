@@ -7,6 +7,7 @@ import SkeletonBoard from "@/components/ui/SkeletonBoard";
 import { useToast } from "@/store/hooks";
 import { withProviders } from "@/components/HOC/Providers";
 import { useSidebar } from "@/hooks/useSidebar";
+import type { CardVM } from "@/lib/hooks/useBoardGame";
 
 interface Props {
   boardId?: string;
@@ -47,21 +48,23 @@ const BoardGamePageComponent: FC<Props> = ({ boardId }) => {
   if (error) return <p className="p-4">Board not found</p>;
 
   return (
-    <div className={`flex flex-wrap min-h-screen ${sidebarOffset}`}>
+    <div className={`flex flex-wrap  ${sidebarOffset}`}>
       {isFetching || !board ? (
         <SkeletonBoard cardCount={16} />
       ) : (
         <>
            <BoardGrid
-            cards={cards.map((c, idx) => ({
+            cards={cards.map((c: CardVM, idx: number) => ({
               ...c,
               status: statusMap[idx] ?? "idle",
             }))}
+            running={running}
             onCardClick={markCard}
           />
           <GameMeta
             timeSec={timeSec}
             running={running}
+            canStart={cards.length > 0 && !running}
             onStart={startGame}
             onStop={stopGame}
             onReset={resetGame}

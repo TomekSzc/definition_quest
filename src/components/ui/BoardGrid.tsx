@@ -3,15 +3,24 @@ import type { CardStatus, CardVM } from "@/lib/hooks/useBoardGame";
 
 interface BoardGridProps {
   cards: (CardVM & { status: CardStatus })[];
+  running: boolean;
   onCardClick(index: number): void;
 }
 
-export default function BoardGrid({ cards, onCardClick }: BoardGridProps) {
+export default function BoardGrid({ cards, running, onCardClick }: BoardGridProps) {
+  const someAnimating = cards.some(c => c.status === "success" || c.status === "failure");
   return (
-    <div className="flex flex-wrap bg-secondary w-[calc(100%-199px)] p-[32px]">
-      {cards.map((c, idx) => (
-          <Card text={c.value} status={c.status} onClick={() => onCardClick(idx)} />
-      ))}
+    <div className="flex flex-wrap bg-secondary w-[calc(100%-199px)] p-[32px] min-h-[80vh] relative">
+        <div className="flex flex-wrap h-fit">
+        {cards.map((c, idx) => (
+            <Card text={c.value} status={c.status} disabled={someAnimating} onClick={() => onCardClick(idx)} />
+        ))}
+        </div>
+        {!running && (
+          <div className="absolute inset-0 bg-white opacity-50 flex items-center justify-center text-[var(--color-primary)] text-xl font-bold select-none cursor-default">
+            {cards.length === 0 ? "Wciśnij Reset aby powtórzyć" : "Wciśnij Start aby zacząć"}
+          </div>
+        )}
     </div>
   );
 }
