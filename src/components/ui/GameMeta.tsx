@@ -1,7 +1,8 @@
+import type { FC } from "react";
 import { VolumeOnIcon, VolumeOffIcon } from "@/assets/icons";
 import { useBoardSound } from "@/hooks/useBoardSound";
 
-interface GameMetaProps {
+interface IGameMetaProps {
   timeSec: number;
   running: boolean;
   canStart: boolean;
@@ -10,7 +11,7 @@ interface GameMetaProps {
   onReset(): void;
 }
 
-export default function GameMeta({ timeSec, running, canStart, onStart, onStop, onReset }: GameMetaProps) {
+export const GameMeta: FC<IGameMetaProps> = ({ timeSec, running, canStart, onStart, onStop, onReset }) => {
   const { soundOn, handleSound } = useBoardSound();
 
   const format = (sec: number) => {
@@ -60,3 +61,5 @@ export default function GameMeta({ timeSec, running, canStart, onStart, onStop, 
     </aside>
   );
 }
+
+export default GameMeta;

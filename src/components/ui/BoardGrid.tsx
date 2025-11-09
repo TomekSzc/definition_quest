@@ -1,13 +1,14 @@
+import type { FC } from "react";
 import Card from "./Card";
 import type { CardStatus, CardVM } from "@/hooks/useBoardGame";
 
-interface BoardGridProps {
+interface IBoardGridProps {
   cards: (CardVM & { status: CardStatus })[];
   running: boolean;
   onCardClick(index: number): void;
 }
 
-export default function BoardGrid({ cards, running, onCardClick }: BoardGridProps) {
+export const BoardGrid: FC<IBoardGridProps> = ({ cards, running, onCardClick }) => {
   const someAnimating = cards.some(c => c.status === "success" || c.status === "failure");
   return (
     <div className="flex flex-wrap bg-secondary w-[calc(100%-199px)] p-[32px] min-h-[80vh] relative">
@@ -24,3 +25,5 @@ export default function BoardGrid({ cards, running, onCardClick }: BoardGridProp
     </div>
   );
 }
+
+export default BoardGrid;

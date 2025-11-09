@@ -1,14 +1,15 @@
+import type { FC } from "react";
 import { cn } from "@/lib/utils";
 import type { CardStatus } from "@/hooks/useBoardGame";
 
-interface CardProps {
+interface ICardProps {
   text: string;
   status: CardStatus;
   disabled?: boolean;
   onClick(): void;
 }
 
-export default function Card({ text, status, disabled, onClick }: CardProps) {
+export const Card: FC<ICardProps> = ({ text, status, disabled, onClick }) => {
   const base = "mb-6 cursor-pointer mx-2 bg-white text-black w-[250px] h-[200px] flex items-center justify-center rounded-md text-center p-2 text-sm font-medium select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500";
 
   const statusClasses: Record<CardStatus, string> = {
@@ -30,3 +31,5 @@ export default function Card({ text, status, disabled, onClick }: CardProps) {
     </button>
   );
 }
+
+export default Card;
