@@ -10,9 +10,12 @@ interface IGameMetaProps {
   onStart(): void;
   onStop(): void;
   onReset(): void;
+  levels?: number[];
+  currentLevel?: number;
+  navigateToLevel?: (level: number) => void;
 }
 
-export const GameMeta: FC<IGameMetaProps> = ({ timeSec, running, canStart, lastScore, onStart, onStop, onReset }) => {
+export const GameMeta: FC<IGameMetaProps> = ({ timeSec, running, canStart, lastScore, onStart, onStop, onReset, levels = [], currentLevel, navigateToLevel }) => {
   const { soundOn, handleSound } = useBoardSound();
 
   const format = (sec: number) => {
@@ -25,7 +28,7 @@ export const GameMeta: FC<IGameMetaProps> = ({ timeSec, running, canStart, lastS
   };
 
   return (
-    <aside className="fixed right-0 bottom-14 w-[200px] shrink-0 border-l border-neutral-200 dark:border-neutral-700 p-4 flex flex-col gap-4">
+    <aside className="fixed right-0 bottom-23 w-[200px] shrink-0 p-4 flex flex-col gap-4">
       <div className="flex justify-center">
         <button className="self-end mb-2 cursor-pointer" onClick={handleSound} aria-label="Toggle sound">
           {soundOn ? <VolumeOnIcon className="w-6 h-6" /> : <VolumeOffIcon className="w-6 h-6" />}
@@ -41,7 +44,7 @@ export const GameMeta: FC<IGameMetaProps> = ({ timeSec, running, canStart, lastS
       )}
       {running ? (
         <button
-          className="bg-red-600 text-white rounded px-4 py-2 disabled:opacity-50"
+          className="cursor-pointer bg-red-600 text-white rounded px-4 py-2 disabled:opacity-50"
           onClick={onStop}
           aria-label="Stop game"
         >
@@ -49,7 +52,7 @@ export const GameMeta: FC<IGameMetaProps> = ({ timeSec, running, canStart, lastS
         </button>
       ) : (
         <button
-          className="bg-green-600 text-white rounded px-4 py-2 disabled:opacity-50"
+          className="cursor-pointer bg-green-600 text-white rounded px-4 py-2 disabled:opacity-50"
           onClick={onStart}
           disabled={!canStart}
           aria-label="Start game"
@@ -58,13 +61,30 @@ export const GameMeta: FC<IGameMetaProps> = ({ timeSec, running, canStart, lastS
         </button>
       )}
       <button
-        className="border border-neutral-400 rounded px-4 py-2 disabled:opacity-50"
+        className="cursor-pointer border border-neutral-400 rounded px-4 py-2 disabled:opacity-50"
         onClick={onReset}
         disabled={running === false && timeSec === 0}
         aria-label="Reset game"
       >
         Reset
       </button>
+      {levels.length > 1 && (
+        <>
+          <div className="text-center font-semibold">Poziomy</div>
+          <div className="flex flex-wrap gap-2 justify-center mt-2">
+          {levels.map((l: number) => (
+            <button
+              key={l}
+              className="cursor-pointer border border-neutral-400 rounded px-2 py-1 text-sm disabled:opacity-50"
+              disabled={l === currentLevel}
+              onClick={() => navigateToLevel?.(l)}
+            >
+              {l}
+            </button>
+          ))}
+          </div>
+        </>
+      )}
     </aside>
   );
 }
