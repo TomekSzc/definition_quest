@@ -2,6 +2,7 @@ import type { FC } from "react";
 import { useGetBoardByIdQuery, useSubmitScoreMutation } from "@/store/api/apiSlice";
 import { useBoardGame } from "@/hooks/useBoardGame";
 import GameMeta from "@/components/ui/GameMeta";
+import { useLevels } from "@/hooks/useLevels";
 import BoardGrid from "@/components/ui/BoardGrid";
 import SkeletonBoard from "@/components/ui/SkeletonBoard";
 import { useToast } from "@/store/hooks";
@@ -19,6 +20,9 @@ const BoardGamePageComponent: FC<IBoardGamePageComponentProps> = ({ boardId }) =
 
   const { data: board, isFetching, error } = useGetBoardByIdQuery(boardId);
   const [submitScore] = useSubmitScoreMutation();
+
+  // Levels hook
+  const { levels, currentLevel, navigateToLevel } = useLevels(boardId, board?.title || "");
 
   const onGameFinish = async (elapsedMs: number) => {
     try {
@@ -60,6 +64,9 @@ const BoardGamePageComponent: FC<IBoardGamePageComponentProps> = ({ boardId }) =
             }))}
             running={running}
             onCardClick={markCard}
+            levels={levels.map(l=>l.level)}
+            currentLevel={currentLevel}
+            navigateToLevel={navigateToLevel}
           />
           <GameMeta
             timeSec={timeSec}
@@ -69,6 +76,9 @@ const BoardGamePageComponent: FC<IBoardGamePageComponentProps> = ({ boardId }) =
             onStart={startGame}
             onStop={stopGame}
             onReset={resetGame}
+            levels={levels.map(l => l.level)}
+            currentLevel={currentLevel}
+            navigateToLevel={navigateToLevel}
           />
         </>
       )}

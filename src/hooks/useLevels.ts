@@ -41,7 +41,13 @@ export function useLevels(boardId: string, boardTitle: string): UseLevelsResult 
 
   // 3. Normalise/ sort levels
   const levels = useMemo<BoardSummaryDTO[]>(() => {
-    return (pagedData?.data || []).sort((a, b) => a.level - b.level);
+    const map = new Map<number, BoardSummaryDTO>();
+    (pagedData?.data ?? []).forEach(b => {
+      if (!map.has(b.level)) {
+        map.set(b.level, b);
+      }
+    });
+    return Array.from(map.values()).sort((a, b) => a.level - b.level);
   }, [pagedData]);
 
   // 4. Track current level based on boardId

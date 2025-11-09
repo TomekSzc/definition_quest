@@ -10,9 +10,12 @@ interface IGameMetaProps {
   onStart(): void;
   onStop(): void;
   onReset(): void;
+  levels?: number[];
+  currentLevel?: number;
+  navigateToLevel?: (level: number) => void;
 }
 
-export const GameMeta: FC<IGameMetaProps> = ({ timeSec, running, canStart, lastScore, onStart, onStop, onReset }) => {
+export const GameMeta: FC<IGameMetaProps> = ({ timeSec, running, canStart, lastScore, onStart, onStop, onReset, levels = [], currentLevel, navigateToLevel }) => {
   const { soundOn, handleSound } = useBoardSound();
 
   const format = (sec: number) => {
@@ -65,6 +68,20 @@ export const GameMeta: FC<IGameMetaProps> = ({ timeSec, running, canStart, lastS
       >
         Reset
       </button>
+      {levels.length > 1 && (
+        <div className="flex flex-wrap gap-2 justify-center mt-2">
+          {levels.map(l => (
+            <button
+              key={l}
+              className="border border-neutral-400 rounded px-2 py-1 text-sm disabled:opacity-50"
+              disabled={l === currentLevel}
+              onClick={() => navigateToLevel?.(l)}
+            >
+              {l}
+            </button>
+          ))}
+        </div>
+      )}
     </aside>
   );
 }
