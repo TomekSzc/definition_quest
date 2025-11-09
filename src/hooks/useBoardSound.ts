@@ -3,10 +3,12 @@ import { toggleSound } from "@/store/slices/soundSlice";
 
 let successAudio: HTMLAudioElement | undefined;
 let failureAudio: HTMLAudioElement | undefined;
+let fanfareAudio: HTMLAudioElement | undefined;
 
 if (typeof window !== "undefined") {
   successAudio = new Audio("/sounds/success.mp3");
   failureAudio = new Audio("/sounds/failure.mp3");
+  fanfareAudio = new Audio("/sounds/fanfare.mp3");
 }
 
 export function useBoardSound() {
@@ -19,7 +21,10 @@ export function useBoardSound() {
   const playFailure = () => {
     if (soundOn && failureAudio) failureAudio.play().catch(() => {});
   };
+  const playFanfare = () => {
+    if (soundOn && fanfareAudio) fanfareAudio.play().catch(() => {});
+  };
   const handleSound = () => dispatch(toggleSound());
 
-  return { soundOn, playSuccess, playFailure, handleSound } as const;
+  return { soundOn, playSuccess, playFailure, playFanfare, handleSound } as const;
 }

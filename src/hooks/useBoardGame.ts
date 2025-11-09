@@ -85,7 +85,7 @@ export function useBoardGame(
     clearTimer();
   }, [clearTimer]);
 
-  const { playSuccess, playFailure } = useBoardSound();
+  const { playSuccess, playFailure, playFanfare } = useBoardSound();
 
   const submitScore = useCallback(() => {
     if (!board) return;
@@ -135,6 +135,7 @@ export function useBoardGame(
           setCards(prev => {
             const updated = prev.filter(card => card.pairId !== pairId);
             if (updated.length === 0) {
+              playFanfare();
               stopGame();
               submitScore();
             }
@@ -160,7 +161,7 @@ export function useBoardGame(
         }, 500);
       }
     },
-    [cards, stopGame, submitScore, playSuccess, playFailure]
+    [cards, stopGame, submitScore, playSuccess, playFailure, playFanfare]
   );
 
   // Mark card
