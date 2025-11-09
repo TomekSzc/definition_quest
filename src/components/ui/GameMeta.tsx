@@ -23,9 +23,11 @@ export default function GameMeta({ timeSec, running, canStart, onStart, onStop, 
 
   return (
     <aside className="fixed right-0 bottom-14 w-[200px] shrink-0 border-l border-neutral-200 dark:border-neutral-700 p-4 flex flex-col gap-4">
-      <button className="self-end mb-2 cursor-pointer" onClick={handleSound} aria-label="Toggle sound">
-        {soundOn ? <VolumeOnIcon className="w-6 h-6" /> : <VolumeOffIcon className="w-6 h-6" />}
-      </button>
+      <div className="flex justify-center">
+        <button className="self-end mb-2 cursor-pointer" onClick={handleSound} aria-label="Toggle sound">
+          {soundOn ? <VolumeOnIcon className="w-6 h-6" /> : <VolumeOffIcon className="w-6 h-6" />}
+        </button>
+      </div>
       <div className="text-center text-3xl font-mono" aria-live="polite">
         {format(timeSec)}
       </div>

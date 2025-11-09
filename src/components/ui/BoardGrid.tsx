@@ -1,5 +1,5 @@
 import Card from "./Card";
-import type { CardStatus, CardVM } from "@/lib/hooks/useBoardGame";
+import type { CardStatus, CardVM } from "@/hooks/useBoardGame";
 
 interface BoardGridProps {
   cards: (CardVM & { status: CardStatus })[];

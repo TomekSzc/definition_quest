@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import type { CardStatus } from "@/lib/hooks/useBoardGame";
+import type { CardStatus } from "@/hooks/useBoardGame";
 
 interface CardProps {
   text: string;

@@ -1,13 +1,12 @@
 import type { FC } from "react";
 import { useGetBoardByIdQuery, useSubmitScoreMutation } from "@/store/api/apiSlice";
-import { useBoardGame } from "@/lib/hooks/useBoardGame";
+import { useBoardGame } from "@/hooks/useBoardGame";
 import GameMeta from "@/components/ui/GameMeta";
 import BoardGrid from "@/components/ui/BoardGrid";
 import SkeletonBoard from "@/components/ui/SkeletonBoard";
 import { useToast } from "@/store/hooks";
 import { withProviders } from "@/components/HOC/Providers";
 import { useSidebar } from "@/hooks/useSidebar";
-import type { CardVM } from "@/lib/hooks/useBoardGame";
 import { useBoardSound } from "@/hooks/useBoardSound";
 
 interface Props {
@@ -55,7 +54,7 @@ const BoardGamePageComponent: FC<Props> = ({ boardId }) => {
       ) : (
         <>
            <BoardGrid
-            cards={cards.map((c: CardVM, idx: number) => ({
+            cards={cards.map((c, idx) => ({
               ...c,
               status: statusMap[idx] ?? "idle",
             }))}

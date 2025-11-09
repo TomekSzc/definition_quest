@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { BoardViewDTO } from "../../types";
-import { useBoardSound } from "@/hooks/useBoardSound";
+import type { BoardViewDTO } from "../types";
+import { useBoardSound } from "./useBoardSound";
 
 export type CardStatus = "idle" | "selected" | "success" | "failure";
 
@@ -160,7 +160,7 @@ export function useBoardGame(
         }, 500);
       }
     },
-    [cards, stopGame, submitScore, callbacks]
+    [cards, stopGame, submitScore, playSuccess, playFailure]
   );
 
   // Mark card
@@ -204,3 +204,4 @@ export function useBoardGame(
     markCard,
   };
 }
+
