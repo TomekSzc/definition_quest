@@ -1,4 +1,5 @@
 import type { FC } from "react";
+import { useMemo } from "react";
 import { ChevronLeftIcon } from "@/assets/icons";
 
 // Mapping of known static routes to their display titles
@@ -18,6 +19,26 @@ export const Breadcrumbs: FC = () => {
   const isBoardDetail = /^\/boards\/[^/]+$/.test(pathname);
   const title = routeTitles[pathname] ?? "Public Boards";
 
+  const prevTitle = useMemo(() => {
+    if (typeof document === "undefined" || typeof window === "undefined") {
+      return routeTitles["/boards"];
+    }
+
+    try {
+      const ref = document.referrer;
+      if (!ref) return routeTitles["/boards"];
+
+      const refUrl = new URL(ref);
+      if (refUrl.origin !== window.location.origin) {
+        return routeTitles["/boards"];
+      }
+
+      return routeTitles[refUrl.pathname] ?? routeTitles["/boards"];
+    } catch {
+      return routeTitles["/boards"]; // malformed referrer
+    }
+  }, []);
+
   const handleBack = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
     if (typeof window !== "undefined") {
@@ -33,7 +54,7 @@ export const Breadcrumbs: FC = () => {
         className="flex items-center text-2xl font-bold cursor-pointer select-none"
       >
         <ChevronLeftIcon className="h-6 w-6 mr-2" />
-        <span>{routeTitles["/boards"]}</span>
+        <span>{prevTitle}</span>
         <span className="mx-2">/</span>
         <span>Play</span>
       </a>
