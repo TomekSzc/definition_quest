@@ -10,7 +10,7 @@ const navItems: NavItemVM[] = [
   { label: "Public Boards", route: Routes.Boards, icon: BoardsIcon },
   { label: "My Boards", route: Routes.MyBoards, icon: MyBoardsIcon },
   { label: "Played Boards", route: Routes.MyPlayedBoards, icon: PlayedIcon },
-  { label: "Create Board", route: "/create-board", icon: PlusIcon },
+  { label: "Utwórz tablicę", route: "/boards/create", icon: PlusIcon },
 ];
 
 export const Sidebar: FC = () => {

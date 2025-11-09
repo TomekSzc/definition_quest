@@ -11,6 +11,10 @@ import type {
   Paged,
   ListBoardsQuery,
   BoardViewDTO,
+  CreateBoardCmd,
+  BoardDetailDTO,
+  GenerateBoardCmd,
+  BoardGenerationResultDTO,
 } from "../../types";
 import { setCredentials, logout, updateTokens } from "../slices/authSlice";
 import { showToast } from "../slices/toastSlice";
@@ -258,6 +262,21 @@ export const apiSlice = createApi({
         body: { elapsedMs },
       }),
     }),
+    createBoard: builder.mutation<BoardDetailDTO[], CreateBoardCmd>({
+      query: (body) => ({
+        url: "/api/boards",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Boards"],
+    }),
+    generatePairs: builder.mutation<BoardGenerationResultDTO, GenerateBoardCmd>({
+      query: (body) => ({
+        url: "/api/boards/generate",
+        method: "POST",
+        body,
+      }),
+    }),
   }),
 });
 
@@ -275,4 +294,6 @@ export const {
   useGetBoardByIdQuery,
   useLazyGetBoardByIdQuery,
   useSubmitScoreMutation,
+  useCreateBoardMutation,
+  useGeneratePairsMutation,
 } = apiSlice;

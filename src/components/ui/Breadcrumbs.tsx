@@ -7,7 +7,7 @@ const routeTitles: Record<string, string> = {
   "/boards": "Public Boards",
   "/my-boards": "My Boards",
   "/played-boards": "Played Boards",
-  "/create-board": "Create Board",
+  "/boards/create": "Utwórz tablicę",
   "/played": "Played Boards",
 };
 
