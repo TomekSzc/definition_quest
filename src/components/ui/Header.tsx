@@ -1,6 +1,7 @@
 import type { FC, ReactNode } from "react";
 import clsx from "clsx";
 import { useSidebar } from "@/hooks/useSidebar";
+import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
 
 interface HeaderProps {
   className?: string;
@@ -18,9 +19,9 @@ export const Header: FC<HeaderProps> = ({ className }) => {
     "/my-boards": "My Boards",
     "/played-boards": "Played Boards",
     "/create-board": "Create Board",
+    "/played": "Played Boards",
   };
-  const title = routeTitles[pathname] ?? "Public Boards";
-  // sidebar widths: collapsed w-16 (4rem) vs expanded w-64 (16rem)
+
   const leftPadding = collapsed ? "pl-20" : "pl-72"; // +4rem for safety (header internal px-6)
 
   return (
@@ -31,7 +32,7 @@ export const Header: FC<HeaderProps> = ({ className }) => {
         className
       )}
     >
-      <h1 className="text-2xl font-bold">{title}</h1>
+      <Breadcrumbs />
     </header>
   );
 };
