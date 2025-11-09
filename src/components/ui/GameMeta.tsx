@@ -28,7 +28,7 @@ export const GameMeta: FC<IGameMetaProps> = ({ timeSec, running, canStart, lastS
   };
 
   return (
-    <aside className="fixed right-0 bottom-14 w-[200px] shrink-0 p-4 flex flex-col gap-4">
+    <aside className="fixed right-0 bottom-23 w-[200px] shrink-0 p-4 flex flex-col gap-4">
       <div className="flex justify-center">
         <button className="self-end mb-2 cursor-pointer" onClick={handleSound} aria-label="Toggle sound">
           {soundOn ? <VolumeOnIcon className="w-6 h-6" /> : <VolumeOffIcon className="w-6 h-6" />}

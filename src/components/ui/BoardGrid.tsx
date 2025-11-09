@@ -23,23 +23,27 @@ export const BoardGrid: FC<IBoardGridProps> = ({ cards, running, onCardClick, le
         ))}
         </div>
         {!running && (
-          <div className="absolute inset-0 bg-white opacity-50 flex flex-col items-center justify-center text-[var(--color-primary)] text-xl font-bold select-none cursor-default space-y-4">
-            <span>{cards.length === 0 ? "Wciśnij Reset aby powtórzyć" : "Wciśnij Start aby zacząć"}</span>
-            {cards.length === 0 && (
-              <div className="flex gap-4 text-base">
-                {hasPrev && (
-                  <button className="bg-neutral-200 hover:bg-neutral-300 px-3 py-1 rounded" onClick={() => navigateToLevel?.(currentLevel! - 1)}>
-                    Poprzedni level
-                  </button>
+          <>
+            <div className="absolute inset-0 bg-white opacity-50 flex flex-col items-center justify-center text-[var(--color-primary)] text-xl font-bold select-none cursor-default space-y-4">
+              <span>{cards.length === 0 ? "Wciśnij Reset aby powtórzyć" : "Wciśnij Start aby zacząć"}</span>
+            </div>
+            <div className="absolute left-0 right-0 top-[60%] m-auto flex justify-center">  
+              {cards.length === 0 && (
+                  <div className="flex gap-4 text-base">
+                    {hasPrev && (
+                      <button className="cursor-pointer bg-[var(--color-primary)] text-white hover:bg-neutral-300 px-3 py-1 rounded" onClick={() => navigateToLevel?.(currentLevel! - 1)}>
+                        Poprzedni level
+                      </button>
+                    )}
+                    {hasNext && (
+                      <button className="cursor-pointer bg-[var(--color-primary)] text-white hover:bg-neutral-300 px-3 py-1 rounded" onClick={() => navigateToLevel?.(currentLevel! + 1)}>
+                        Następny level
+                      </button>
+                    )}
+                  </div>
                 )}
-                {hasNext && (
-                  <button className="bg-neutral-200 hover:bg-neutral-300 px-3 py-1 rounded" onClick={() => navigateToLevel?.(currentLevel! + 1)}>
-                    Następny level
-                  </button>
-                )}
-              </div>
-            )}
-          </div>
+            </div>
+          </>
         )}
     </div>
   );
