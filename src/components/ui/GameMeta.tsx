@@ -6,12 +6,13 @@ interface IGameMetaProps {
   timeSec: number;
   running: boolean;
   canStart: boolean;
+  lastScore?: number;
   onStart(): void;
   onStop(): void;
   onReset(): void;
 }
 
-export const GameMeta: FC<IGameMetaProps> = ({ timeSec, running, canStart, onStart, onStop, onReset }) => {
+export const GameMeta: FC<IGameMetaProps> = ({ timeSec, running, canStart, lastScore, onStart, onStop, onReset }) => {
   const { soundOn, handleSound } = useBoardSound();
 
   const format = (sec: number) => {
@@ -19,7 +20,8 @@ export const GameMeta: FC<IGameMetaProps> = ({ timeSec, running, canStart, onSta
       .toString()
       .padStart(2, "0");
     const s = (sec % 60).toString().padStart(2, "0");
-    return `${m}:${s}`;
+    const h = Math.floor(sec / 3600).toString().padStart(2, "0");
+    return `${h}:${m}:${s}`;
   };
 
   return (
@@ -32,6 +34,11 @@ export const GameMeta: FC<IGameMetaProps> = ({ timeSec, running, canStart, onSta
       <div className="text-center text-3xl font-mono" aria-live="polite">
         {format(timeSec)}
       </div>
+      {lastScore !== undefined && (
+        <div className="text-center text-sm mt-2">
+          Ostatni wynik: {format(Math.floor(lastScore / 1000))}
+        </div>
+      )}
       {running ? (
         <button
           className="bg-red-600 text-white rounded px-4 py-2 disabled:opacity-50"

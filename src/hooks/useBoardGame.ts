@@ -15,6 +15,7 @@ export interface GameState {
   selectedIndices: number[];
   timeSec: number;
   running: boolean;
+  lastScore?: number;
 }
 
 export interface UseBoardGame {
@@ -55,6 +56,9 @@ export function useBoardGame(
   const [selectedIndices, setSelectedIndices] = useState<number[]>([]);
   const [timeSec, setTimeSec] = useState(0);
   const [running, setRunning] = useState(false);
+  const [lastScore, setLastScore] = useState<number | undefined>(
+    board?.myScore?.lastTime
+  );
 
   const timerRef = useRef<number | null>(null);
   const gameStartRef = useRef<number | null>(null);
@@ -136,6 +140,7 @@ export function useBoardGame(
             const updated = prev.filter(card => card.pairId !== pairId);
             if (updated.length === 0) {
               playFanfare();
+              setLastScore(timeSec * 1000);
               stopGame();
               submitScore();
             }
@@ -198,6 +203,7 @@ export function useBoardGame(
       statusMap,
       timeSec,
       running,
+      lastScore,
     },
     startGame,
     stopGame,
