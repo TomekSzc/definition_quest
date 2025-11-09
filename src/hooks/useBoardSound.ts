@@ -15,15 +15,24 @@ export function useBoardSound() {
   const soundOn = useAppSelector((s: any) => s.sound?.soundOn ?? true);
   const dispatch = useAppDispatch();
 
-  const playSuccess = () => {
-    if (soundOn && successAudio) successAudio.play().catch(() => {});
+  const stopAll = () => {
+    [successAudio, failureAudio, fanfareAudio].forEach(a => {
+      if (a && !a.paused) {
+        a.pause();
+        a.currentTime = 0;
+      }
+    });
   };
-  const playFailure = () => {
-    if (soundOn && failureAudio) failureAudio.play().catch(() => {});
+
+  const play = (audio?: HTMLAudioElement) => {
+    if (!soundOn || !audio) return;
+    stopAll();
+    audio.play().catch(() => {});
   };
-  const playFanfare = () => {
-    if (soundOn && fanfareAudio) fanfareAudio.play().catch(() => {});
-  };
+
+  const playSuccess = () => play(successAudio);
+  const playFailure = () => play(failureAudio);
+  const playFanfare = () => play(fanfareAudio);
   const handleSound = () => dispatch(toggleSound());
 
   return { soundOn, playSuccess, playFailure, playFanfare, handleSound } as const;
