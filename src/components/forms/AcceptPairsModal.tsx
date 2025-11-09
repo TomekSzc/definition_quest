@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/Dialog";
 import { Button } from "@/components/ui/Button";
 
 interface AcceptPairsModalProps {
@@ -23,7 +23,7 @@ const AcceptPairsModal: React.FC<AcceptPairsModalProps> = ({ pairs, onAccept, on
           {pairs.map((p, idx) => (
             <label key={idx} className="flex items-start gap-2">
               <input type="checkbox" checked={selected[idx]} onChange={() => toggle(idx)} />
-              <span>
+              <span className="text-black">
                 <strong>{p.term}</strong> – {p.definition}
               </span>
             </label>

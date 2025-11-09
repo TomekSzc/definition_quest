@@ -4,15 +4,20 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { CreateBoardSchema } from "@/lib/validation/boards";
 import type { CreateBoardInput } from "@/lib/validation/boards";
-import { Button } from "@/components/ui/Button";
-import { useCreateBoardMutation } from "@/store/api/apiSlice";
+import { Button } from "@/components/ui/button";
 import TagsInput from "./TagsInput";
 import CardCountToggle from "./CardCountToggle";
 import PairFormRow from "./PairFormRow";
 import { useToast } from "@/store/hooks";
 import { Routes } from "@/lib/routes";
 
+export type SubmitFn = (payload: any) => Promise<any>;
+
 export type CreateBoardFormValues = z.infer<typeof CreateBoardSchema>;
+
+interface ICreateBoardForm {
+  submitFn: SubmitFn;
+}
 
 const defaultValues: CreateBoardFormValues = {
   title: "",
@@ -26,9 +31,8 @@ export interface CreateBoardFormHandle {
   addPairs: (pairs: { term: string; definition: string }[]) => void;
 }
 
-const CreateBoardForm = forwardRef<CreateBoardFormHandle>((props, ref) => {
+const CreateBoardForm = forwardRef<CreateBoardFormHandle, ICreateBoardForm>(({ submitFn }, ref) => {
   const { showToast } = useToast();
-  const [createBoard] = useCreateBoardMutation();
 
   const {
     register,
@@ -59,7 +63,7 @@ const CreateBoardForm = forwardRef<CreateBoardFormHandle>((props, ref) => {
 
   const onSubmit = async (values: CreateBoardFormValues) => {
     try {
-      await createBoard(values as any).unwrap();
+      await submitFn(values as any);
       showToast({ type: "success", title: "Sukces", message: "Tablica utworzona" });
       window.location.href = Routes.MyBoards;
     } catch (e) {
