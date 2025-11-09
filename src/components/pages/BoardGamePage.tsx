@@ -1,20 +1,19 @@
 import type { FC } from "react";
 import { useGetBoardByIdQuery, useSubmitScoreMutation } from "@/store/api/apiSlice";
-import { useBoardGame } from "@/lib/hooks/useBoardGame";
+import { useBoardGame } from "@/hooks/useBoardGame";
 import GameMeta from "@/components/ui/GameMeta";
 import BoardGrid from "@/components/ui/BoardGrid";
 import SkeletonBoard from "@/components/ui/SkeletonBoard";
 import { useToast } from "@/store/hooks";
 import { withProviders } from "@/components/HOC/Providers";
 import { useSidebar } from "@/hooks/useSidebar";
-import type { CardVM } from "@/lib/hooks/useBoardGame";
 import { useBoardSound } from "@/hooks/useBoardSound";
 
-interface Props {
+interface IBoardGamePageComponentProps {
   boardId?: string;
 }
 
-const BoardGamePageComponent: FC<Props> = ({ boardId }) => {
+const BoardGamePageComponent: FC<IBoardGamePageComponentProps> = ({ boardId }) => {
   const { showToast } = useToast();
   if (!boardId) return <p className="p-4">Brak identyfikatora planszy</p>;
 
@@ -37,7 +36,7 @@ const BoardGamePageComponent: FC<Props> = ({ boardId }) => {
   const sidebarOffset = collapsed ? "ml-16" : "ml-64";
 
   const {
-    state: { cards, statusMap, timeSec, running },
+    state: { cards, statusMap, timeSec, running, lastScore },
     startGame,
     stopGame,
     resetGame,
@@ -55,7 +54,7 @@ const BoardGamePageComponent: FC<Props> = ({ boardId }) => {
       ) : (
         <>
            <BoardGrid
-            cards={cards.map((c: CardVM, idx: number) => ({
+            cards={cards.map((c, idx) => ({
               ...c,
               status: statusMap[idx] ?? "idle",
             }))}
@@ -66,6 +65,7 @@ const BoardGamePageComponent: FC<Props> = ({ boardId }) => {
             timeSec={timeSec}
             running={running}
             canStart={cards.length > 0 && !running}
+            lastScore={lastScore ?? board.myScore?.lastTime}
             onStart={startGame}
             onStop={stopGame}
             onReset={resetGame}
