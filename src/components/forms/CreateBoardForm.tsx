@@ -58,10 +58,9 @@ const CreateBoardForm = forwardRef<CreateBoardFormHandle>((props, ref) => {
 
   const onSubmit = async (values: CreateBoardFormValues) => {
     try {
-      const dto: CreateBoardInput = values;
-      const res = await createBoard(dto as any).unwrap();
+      await createBoard(values as any).unwrap();
       showToast({ type: "success", title: "Sukces", message: "Tablica utworzona" });
-      window.location.href = `/boards/${res[0].id}`;
+      window.location.href = `/boards/${values.id}`;
     } catch (e) {
       showToast({ type: "error", title: "Błąd", message: "Nie udało się utworzyć tablicy" });
     }

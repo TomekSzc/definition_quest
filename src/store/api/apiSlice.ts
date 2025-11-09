@@ -262,13 +262,28 @@ export const apiSlice = createApi({
         body: { elapsedMs },
       }),
     }),
-    createBoard: builder.mutation<BoardDetailDTO[], CreateBoardCmd>({
+    createBoard: builder.mutation<BoardDetailDTO[] | null, CreateBoardCmd>({
       query: (body) => ({
         url: "/api/boards",
         method: "POST",
         body,
       }),
       invalidatesTags: ["Boards"],
+      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+          dispatch(
+            showToast({ type: "success", title: "Sukces", message: "Tablica utworzona" })
+          );
+          if (data && data.length) {
+            window.location.href = `/boards/${data[0].id}`;
+          }
+        } catch (err: any) {
+          dispatch(
+            showToast({ type: "error", title: "Błąd", message: err?.error?.data?.message || "Nie udało się utworzyć tablicy" })
+          );
+        }
+      },
     }),
     generatePairs: builder.mutation<BoardGenerationResultDTO, GenerateBoardCmd>({
       query: (body) => ({
