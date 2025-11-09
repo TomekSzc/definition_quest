@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useGeneratePairsMutation } from "@/store/api/apiSlice";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/store/hooks";
 import AcceptPairsModal from "./AcceptPairsModal";

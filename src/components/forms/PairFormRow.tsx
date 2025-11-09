@@ -1,6 +1,6 @@
 import React from "react";
 import type { UseFormRegister, FieldError } from "react-hook-form";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button";
 import type { CreateBoardFormValues } from "./CreateBoardForm";
 
 interface PairFormRowProps {

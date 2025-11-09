@@ -4,12 +4,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { CreateBoardSchema } from "@/lib/validation/boards";
 import type { CreateBoardInput } from "@/lib/validation/boards";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button";
 import { useCreateBoardMutation } from "@/store/api/apiSlice";
 import TagsInput from "./TagsInput";
 import CardCountToggle from "./CardCountToggle";
 import PairFormRow from "./PairFormRow";
 import { useToast } from "@/store/hooks";
+import { Routes } from "@/lib/routes";
 
 export type CreateBoardFormValues = z.infer<typeof CreateBoardSchema>;
 
@@ -60,7 +61,7 @@ const CreateBoardForm = forwardRef<CreateBoardFormHandle>((props, ref) => {
     try {
       await createBoard(values as any).unwrap();
       showToast({ type: "success", title: "Sukces", message: "Tablica utworzona" });
-      window.location.href = `/boards/${values.id}`;
+      window.location.href = Routes.MyBoards;
     } catch (e) {
       showToast({ type: "error", title: "Błąd", message: "Nie udało się utworzyć tablicy" });
     }

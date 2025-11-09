@@ -70,7 +70,7 @@ Requirements:
 - Definitions should be 5-15 words: clear, concise explanations
 - Focus on the most important concepts from the text
 - Ensure variety - avoid repetitive or overlapping concepts
-- Use language that matches the input text (Polish or English), if you dont know which one, use Polish
+- Use language that matches the input text (Polish), if you dont know which one, use Polish
 - Definitions must be self-contained and understandable without context`;
 
   const userPrompt = `Title: ${title}
