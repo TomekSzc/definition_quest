@@ -1,5 +1,5 @@
 import React from "react";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/ToggleGroup/Toggle-group";
 
 interface CardCountToggleProps {
   value: 16 | 24;
@@ -9,7 +9,7 @@ interface CardCountToggleProps {
 const CardCountToggle: React.FC<CardCountToggleProps> = ({ value, onChange }) => {
   return (
     <div>
-      <label className="block text-sm font-medium mb-1">Liczba kart</label>
+      <label className="block text-sm font-bold mb-1 text-[var(--color-primary)]">Liczba kart</label>
       <ToggleGroup
         type="single"
         value={value.toString()}

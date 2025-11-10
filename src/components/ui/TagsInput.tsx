@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import type { KeyboardEvent } from "react";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@/components/ui/Badge";
 import CloseIcon from "@/assets/icons/CloseIcon";
 
 interface TagsInputProps {
@@ -34,20 +34,20 @@ const TagsInput: React.FC<TagsInputProps> = ({ value = [], onChange, error }) =>
 
   return (
     <div>
-      <label className="block text-sm font-medium mb-1">Tagi (max 10)</label>
+      <label className="block text-sm font-bold mb-1 text-[var(--color-primary)]">Tagi (max 10)</label>
       <div className="flex flex-wrap gap-2 mb-2">
         {value.map((tag) => (
-          <Badge key={tag} variant="secondary" className="flex items-center gap-1">
+          <Badge key={tag} className="flex items-center gap-1 bg-[var(--color-primary)] text-white">
             {tag}
             <CloseIcon
-              className="w-3 h-3 cursor-pointer"
+              className="w-4 h-4 cursor-pointer font-bold"
               onClick={() => removeTag(tag)}
             />
           </Badge>
         ))}
       </div>
       <input
-        className={`w-full px-3 py-2 border rounded bg-background text-foreground ${error ? "border-red-500" : "border-input"}`}
+        className={`w-full px-3 py-2 border rounded bg-background text-foreground ${error ? "border-red-500" : "border-[var(--color-primary)]"}`}
         value={input}
         onChange={(e) => setInput(e.target.value)}
         onKeyDown={handleKeyDown}
