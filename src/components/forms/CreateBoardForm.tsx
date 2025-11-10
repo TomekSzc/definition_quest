@@ -115,7 +115,7 @@ const CreateBoardForm = forwardRef<CreateBoardFormHandle, ICreateBoardForm>(({ s
           variant="secondary"
           onClick={() => append({ term: "", definition: "" })}
           disabled={fields.length >= 100}
-          className="cursor-pointer"
+            className="cursor-pointer font-bold border-2 border-[var(--color-primary)] text-[var(--color-primary)] hover:bg-[var(--color-primary)] hover:text-white"
         >
           + Dodaj parę
         </Button>

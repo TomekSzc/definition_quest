@@ -32,7 +32,12 @@ const PairFormRow: FC<IPairFormRowProps> = ({ index, register, errors, onRemove 
         />
         {errors?.definition && <p className="text-red-500 text-xs">{errors.definition.message}</p>}
       </div>
-      <Button type="button" variant="destructive" onClick={onRemove} className="self-center h-9">
+      <Button
+        type="button"
+        variant="destructive"
+        onClick={onRemove}
+        className="self-center h-9 w-9 flex items-center justify-center cursor-pointer font-bold text-lg"
+      >
         ×
       </Button>
     </div>
