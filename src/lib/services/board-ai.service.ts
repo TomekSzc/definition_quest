@@ -55,7 +55,7 @@ async function generatePairsWithAI(
   inputText: string,
   title: string
 ): Promise<{ pairs: GeneratedPair[]; promptTokens: number; completionTokens: number; totalTokens: number }> {
-  const pairCount = cardCount / 2;
+  const MAX_PAIRS = 50;
 
   // Create OpenRouter service
   const service = createOpenRouterService();
@@ -65,7 +65,7 @@ async function generatePairsWithAI(
 Your task is to analyze provided text and extract the most important concepts as term-definition pairs for a memory matching game.
 
 Requirements:
-- Extract exactly ${pairCount} pairs
+- Extract up to ${MAX_PAIRS} pairs (return as many high-quality pairs as possible, not exceeding this limit)
 - Terms should be 1-4 words: key concepts, names, or technical terms
 - Definitions should be 5-15 words: clear, concise explanations
 - Focus on the most important concepts from the text
@@ -78,7 +78,7 @@ Requirements:
 Input text:
 ${inputText}
 
-Generate ${pairCount} term-definition pairs from the above content.`;
+Generate term-definition pairs (max ${MAX_PAIRS}) from the above content.`;
 
   // Define response format schema
   const responseFormat: JsonSchemaFormat = {
@@ -100,8 +100,8 @@ Generate ${pairCount} term-definition pairs from the above content.`;
               required: ["term", "definition"],
               additionalProperties: false,
             },
-            minItems: pairCount,
-            maxItems: pairCount,
+            minItems: 1,
+            maxItems: MAX_PAIRS,
           },
         },
         required: ["pairs"],
@@ -126,7 +126,7 @@ Generate ${pairCount} term-definition pairs from the above content.`;
   // Parse and validate response
   const result = completion.json as { pairs: GeneratedPair[] };
 
-  if (!result.pairs || !Array.isArray(result.pairs) || result.pairs.length !== pairCount) {
+  if (!result.pairs || !Array.isArray(result.pairs) || result.pairs.length === 0 || result.pairs.length > MAX_PAIRS) {
     throw new Error("AI_INVALID_RESPONSE_FORMAT");
   }
 

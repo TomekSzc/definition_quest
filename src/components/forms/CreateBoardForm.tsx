@@ -9,6 +9,9 @@ import CardCountToggle from "../ui/ToggleGroup/CardCountToggle";
 import PairFormRow from "./PairFormRow";
 import { useToast } from "@/store/hooks";
 import { Routes } from "@/lib/routes";
+import PairForm from "./PairForm";
+import { useAppDispatch } from "@/store/hooks";
+import { setLoading } from "@/store/slices/uiSlice";
 
 export type SubmitFn = (payload: any) => Promise<any>;
 
@@ -31,12 +34,14 @@ export interface CreateBoardFormHandle {
 }
 
 const CreateBoardForm = forwardRef<CreateBoardFormHandle, ICreateBoardForm>(({ submitFn }, ref) => {
+  const dispatch = useAppDispatch();
   const { showToast } = useToast();
 
   const {
     register,
     control,
     handleSubmit,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<CreateBoardFormValues>({
     resolver: zodResolver(CreateBoardSchema),
@@ -60,12 +65,15 @@ const CreateBoardForm = forwardRef<CreateBoardFormHandle, ICreateBoardForm>(({ s
   useImperativeHandle(ref, () => ({ addPairs: appendPairs }));
 
   const onSubmit = async (values: CreateBoardFormValues) => {
+    dispatch(setLoading(true));
     try {
       await submitFn(values as any);
       showToast({ type: "success", title: "Sukces", message: "Tablica utworzona" });
+      dispatch(setLoading(false));
       window.location.href = Routes.MyBoards;
     } catch (e) {
       showToast({ type: "error", title: "Błąd", message: "Nie udało się utworzyć tablicy" });
+      dispatch(setLoading(false));
     }
   };
 
@@ -98,15 +106,13 @@ const CreateBoardForm = forwardRef<CreateBoardFormHandle, ICreateBoardForm>(({ s
       {/* Pairs Field Array */}
       <div className="space-y-4">
         <h3 className="font-semibold text-[var(--color-primary)]">Pary termin – definicja</h3>
-        {fields.map((field: { id: string }, index: number) => (
-          <PairFormRow
-            key={field.id}
-            index={index}
-            register={register}
-            errors={errors.pairs?.[index]}
-            onRemove={() => remove(index)}
-          />
-        ))}
+        <PairForm
+          fields={fields}
+          errors={errors.pairs as any}
+          register={register}
+          remove={remove}
+          cardCount={watch("cardCount") as 16 | 24}
+        />
         {errors.pairs && typeof errors.pairs.message === "string" && (
           <p className="text-red-500 text-xs">{errors.pairs.message}</p>
         )}
