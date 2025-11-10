@@ -33,8 +33,8 @@ const BoardsPlayedPageComponent: FC = () => {
   const boardsForList = data?.data as BoardSummaryDTO[] | undefined;
 
   return (
-    <div className="min-h-screen bg-secondary">
-      <section className="container mx-auto max-w-6xl px-4 py-8">
+    <div className="min-h-[85vh] bg-secondary">
+      <section className="container mx-auto max-w-6xl px-4 py-8 pl-[80px]">
         <div className="mb-6 relative">
           <SearchInput onChange={handleQueryChange} initialValue={params.q} />
         </div>

@@ -14,7 +14,7 @@ const CreateBoardPageComponent: FC = () => {
   const formRef = useRef<CreateBoardFormHandle>(null);
 
   return (
-    <div className="flex flex-wrap justify-center p-4 gap-8 bg-secondary relative">
+    <div className="flex flex-wrap justify-center p-4 gap-8 bg-secondary relative min-h-[85vh] pl-[80px]">
       <LoaderOverlay />
       <div className="flex-1 min-w-[320px] max-w-3xl">
         <CreateBoardForm ref={formRef} submitFn={createBoard} />
