@@ -1,5 +1,5 @@
 import React from "react";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/ToggleGroup/Toggle-group";
 
 interface CardCountToggleProps {
   value: 16 | 24;
