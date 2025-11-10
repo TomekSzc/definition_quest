@@ -34,7 +34,7 @@ const TagsInput: React.FC<TagsInputProps> = ({ value = [], onChange, error }) =>
 
   return (
     <div>
-      <label className="block text-sm font-medium mb-1 text-[var(--color-primary)]">Tagi (max 10)</label>
+      <label className="block text-sm font-bold mb-1 text-[var(--color-primary)]">Tagi (max 10)</label>
       <div className="flex flex-wrap gap-2 mb-2">
         {value.map((tag) => (
           <Badge key={tag} variant="secondary" className="flex items-center gap-1">

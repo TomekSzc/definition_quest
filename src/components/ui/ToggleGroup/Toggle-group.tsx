@@ -6,7 +6,7 @@ export const ToggleGroup = ToggleGroupPrimitive.Root;
 export const ToggleGroupItem = ({ className, ...props }: ToggleGroupPrimitive.ToggleGroupItemProps) => (
   <ToggleGroupPrimitive.Item
     className={cn(
-      "px-4 py-2 border rounded-md text-sm data-[state=on]:bg-primary data-[state=off]:text-[var(--color-primary)] data-[state=on]:text-primary-foreground transition-colors cursor-pointer",
+      "px-4 py-2 border rounded-md text-sm font-bold data-[state=on]:bg-[var(--color-primary)] data-[state=off]:text-[var(--color-primary)] data-[state=on]:text-white transition-colors cursor-pointer",
       className
     )}
     {...props}

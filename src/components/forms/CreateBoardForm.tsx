@@ -70,10 +70,10 @@ const CreateBoardForm = forwardRef<CreateBoardFormHandle, ICreateBoardForm>(({ s
   };
 
   return (
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 py-10">
       {/* Title */}
       <div>
-        <label className="block text-sm text-[var(--color-primary)] font-medium mb-1">Tytuł tablicy</label>
+        <label className="block text-sm text-[var(--color-primary)] font-bold mb-1">Tytuł tablicy</label>
         <input
           {...register("title")}
           className={`w-full px-3 py-2 border rounded bg-background text-foreground ${errors.title ? "border-red-500" : "border-[var(--color-primary)]"}`}
@@ -123,7 +123,7 @@ const CreateBoardForm = forwardRef<CreateBoardFormHandle, ICreateBoardForm>(({ s
 
       {/* Submit */}
       <div className="pt-4">
-        <Button type="submit" disabled={isSubmitting}>
+        <Button type="submit" disabled={isSubmitting} className="font-bold bg-[var(--color-primary)] text-white cursor-pointer">
           Utwórz tablicę
         </Button>
       </div>

@@ -1,6 +1,7 @@
 import { type FC, useRef } from "react";
 import { withProviders } from "@/components/HOC/Providers";
 import CreateBoardForm, { type CreateBoardFormHandle } from "@/components/forms/CreateBoardForm";
+import LoaderOverlay from "@/components/ui/LoaderOverlay";
 import GeneratePairsByAI from "@/components/forms/GeneratePairsByAI";
 import { useCreateBoardMutation } from "@/store/api/apiSlice";
 
@@ -13,7 +14,8 @@ const CreateBoardPageComponent: FC = () => {
   const formRef = useRef<CreateBoardFormHandle>(null);
 
   return (
-    <div className="flex flex-wrap justify-center p-4 gap-8 bg-secondary">
+    <div className="flex flex-wrap justify-center p-4 gap-8 bg-secondary relative">
+      <LoaderOverlay />
       <div className="flex-1 min-w-[320px] max-w-3xl">
         <CreateBoardForm ref={formRef} submitFn={createBoard} />
       </div>
