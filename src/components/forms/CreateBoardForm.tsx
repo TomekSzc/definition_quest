@@ -75,10 +75,10 @@ const CreateBoardForm = forwardRef<CreateBoardFormHandle, ICreateBoardForm>(({ s
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       {/* Title */}
       <div>
-        <label className="block text-sm font-medium mb-1">Tytuł tablicy</label>
+        <label className="block text-sm text-[var(--color-primary)] font-medium mb-1">Tytuł tablicy</label>
         <input
           {...register("title")}
-          className={`w-full px-3 py-2 border rounded bg-background text-foreground ${errors.title ? "border-red-500" : "border-input"}`}
+          className={`w-full px-3 py-2 border rounded bg-background text-foreground ${errors.title ? "border-red-500" : "border-[var(--color-primary)]"}`}
         />
         {errors.title && <p className="text-red-500 text-xs mt-1">{errors.title.message}</p>}
       </div>
@@ -99,7 +99,7 @@ const CreateBoardForm = forwardRef<CreateBoardFormHandle, ICreateBoardForm>(({ s
 
       {/* Pairs Field Array */}
       <div className="space-y-4">
-        <h3 className="font-semibold">Pary termin – definicja</h3>
+        <h3 className="font-semibold text-[var(--color-primary)]">Pary termin – definicja</h3>
         {fields.map((field, index) => (
           <PairFormRow
             key={field.id}

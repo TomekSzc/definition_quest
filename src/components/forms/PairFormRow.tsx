@@ -20,7 +20,7 @@ const PairFormRow: React.FC<PairFormRowProps> = ({ index, register, errors, onRe
         <input
           placeholder="Term"
           {...register(`pairs.${index}.term` as const)}
-          className={`w-full px-3 py-2 border rounded bg-background text-foreground ${errors?.term ? "border-red-500" : "border-input"}`}
+          className={`w-full px-3 py-2 border rounded bg-background text-foreground ${errors?.term ? "border-red-500" : "border-[var(--color-primary)]"}`}
         />
         {errors?.term && <p className="text-red-500 text-xs">{errors.term.message}</p>}
       </div>
@@ -28,7 +28,7 @@ const PairFormRow: React.FC<PairFormRowProps> = ({ index, register, errors, onRe
         <input
           placeholder="Definition"
           {...register(`pairs.${index}.definition` as const)}
-          className={`w-full px-3 py-2 border rounded bg-background text-foreground ${errors?.definition ? "border-red-500" : "border-input"}`}
+          className={`w-full px-3 py-2 border rounded bg-background text-foreground ${errors?.definition ? "border-red-500" : "border-[var(--color-primary)]"}`}
         />
         {errors?.definition && <p className="text-red-500 text-xs">{errors.definition.message}</p>}
       </div>

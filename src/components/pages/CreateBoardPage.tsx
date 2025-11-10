@@ -1,4 +1,4 @@
-import React from "react";
+import { type FC, useRef } from "react";
 import { withProviders } from "@/components/HOC/Providers";
 import CreateBoardForm, { type CreateBoardFormHandle } from "@/components/forms/CreateBoardForm";
 import GeneratePairsByAI from "@/components/forms/GeneratePairsByAI";
@@ -8,12 +8,12 @@ import { useCreateBoardMutation } from "@/store/api/apiSlice";
  * Page component rendered inside create.astro island.
  * Handles layout offsets and groups form + AI panel.
  */
-const CreateBoardPageComponent: React.FC = () => {
+const CreateBoardPageComponent: FC = () => {
   const [createBoard] = useCreateBoardMutation();
-  const formRef = React.useRef<CreateBoardFormHandle>(null);
+  const formRef = useRef<CreateBoardFormHandle>(null);
 
   return (
-    <div className="flex flex-wrap ml-64 p-4 gap-8">
+    <div className="flex flex-wrap justify-center p-4 gap-8 bg-secondary">
       <div className="flex-1 min-w-[320px] max-w-3xl">
         <CreateBoardForm ref={formRef} submitFn={createBoard} />
       </div>

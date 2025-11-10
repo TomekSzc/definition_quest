@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useGeneratePairsMutation } from "@/store/api/apiSlice";
 import { Button } from "@/components/ui/Button";
-import { Textarea } from "@/components/ui/textarea";
+import { Textarea } from "@/components/ui/Textarea";
 import { useToast } from "@/store/hooks";
 import AcceptPairsModal from "./AcceptPairsModal";
 import type { CreateBoardFormHandle } from "./CreateBoardForm";
@@ -32,8 +32,8 @@ const GeneratePairsByAI: React.FC<Props> = ({ formRef }) => {
   };
 
   return (
-    <div className="p-4 border rounded bg-muted">
-      <h3 className="font-semibold mb-2">Generuj pary AI</h3>
+    <div className="p-4 border rounded bg-[var(--color-primary)] fixed right-0 top-0 w-[350px] h-full border-0">
+      <h3 className="font-semibold mb-2 pt-20">Generuj pary AI</h3>
       <Textarea
         value={inputText}
         onChange={(e) => setInputText(e.target.value)}
