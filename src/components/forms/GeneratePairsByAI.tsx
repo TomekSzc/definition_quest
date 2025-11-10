@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { type FC, type RefObject, useState } from "react";
 import { useGeneratePairsMutation } from "@/store/api/apiSlice";
 import { Button } from "@/components/ui/Button";
 import { Textarea } from "@/components/ui/Textarea";
@@ -6,11 +6,11 @@ import { useToast } from "@/store/hooks";
 import AcceptPairsModal from "./AcceptPairsModal";
 import type { CreateBoardFormHandle } from "./CreateBoardForm";
 
-interface Props {
-  formRef: React.RefObject<CreateBoardFormHandle | null>;
+interface IGeneratePairsByAIProps {
+  formRef: RefObject<CreateBoardFormHandle | null>;
 }
 
-const GeneratePairsByAI: React.FC<Props> = ({ formRef }) => {
+const GeneratePairsByAI: FC<IGeneratePairsByAIProps> = ({ formRef }) => {
   const [inputText, setInputText] = useState("");
   const [generatePairs, { isLoading }] = useGeneratePairsMutation();
   const { showToast } = useToast();

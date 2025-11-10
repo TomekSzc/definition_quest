@@ -3,8 +3,7 @@ import { useForm, useFieldArray, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { CreateBoardSchema } from "@/lib/validation/boards";
-import type { CreateBoardInput } from "@/lib/validation/boards";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button";
 import TagsInput from "../ui/TagsInput";
 import CardCountToggle from "../ui/ToggleGroup/CardCountToggle";
 import PairFormRow from "./PairFormRow";
@@ -39,7 +38,6 @@ const CreateBoardForm = forwardRef<CreateBoardFormHandle, ICreateBoardForm>(({ s
     control,
     handleSubmit,
     formState: { errors, isSubmitting },
-    watch,
   } = useForm<CreateBoardFormValues>({
     resolver: zodResolver(CreateBoardSchema),
     defaultValues,
@@ -100,7 +98,7 @@ const CreateBoardForm = forwardRef<CreateBoardFormHandle, ICreateBoardForm>(({ s
       {/* Pairs Field Array */}
       <div className="space-y-4">
         <h3 className="font-semibold text-[var(--color-primary)]">Pary termin – definicja</h3>
-        {fields.map((field, index) => (
+        {fields.map((field: { id: string }, index: number) => (
           <PairFormRow
             key={field.id}
             index={index}

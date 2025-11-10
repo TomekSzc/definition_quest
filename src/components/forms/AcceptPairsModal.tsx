@@ -1,18 +1,19 @@
-import React, { useState } from "react";
+import { type FC, useState } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/Dialog";
 import { Button } from "@/components/ui/Button";
+import type { GeneratedPair } from "@/types";
 
-interface AcceptPairsModalProps {
-  pairs: { term: string; definition: string }[];
-  onAccept: (selected: { term: string; definition: string }[]) => void;
+interface IAcceptPairsModalProps {
+  pairs: GeneratedPair[];
+  onAccept: (selected: GeneratedPair[]) => void;
   onCancel: () => void;
 }
 
-const AcceptPairsModal: React.FC<AcceptPairsModalProps> = ({ pairs, onAccept, onCancel }) => {
-  const [selected, setSelected] = useState(() => pairs.map(() => true));
+const AcceptPairsModal: FC<IAcceptPairsModalProps> = ({ pairs, onAccept, onCancel }) => {
+  const [selected, setSelected] = useState<boolean[]>(() => pairs.map(() => true));
 
   const toggle = (idx: number) => {
-    setSelected((prev) => prev.map((v, i) => (i === idx ? !v : v)));
+    setSelected((prev: boolean[]) => prev.map((v: boolean, i: number) => (i === idx ? !v : v)));
   };
 
   return (
@@ -20,7 +21,7 @@ const AcceptPairsModal: React.FC<AcceptPairsModalProps> = ({ pairs, onAccept, on
       <DialogContent className="max-h-[80vh] overflow-y-auto">
         <DialogTitle>Wybierz pary do dodania</DialogTitle>
         <div className="space-y-2 my-4">
-          {pairs.map((p, idx) => (
+          {pairs.map((p: GeneratedPair, idx: number) => (
             <label key={idx} className="flex items-start gap-2">
               <input type="checkbox" checked={selected[idx]} onChange={() => toggle(idx)} />
               <span className="text-black">

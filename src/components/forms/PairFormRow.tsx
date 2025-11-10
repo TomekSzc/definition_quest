@@ -1,9 +1,9 @@
-import React from "react";
+import { type FC } from "react";
 import type { UseFormRegister, FieldError } from "react-hook-form";
 import { Button } from "@/components/ui/Button";
 import type { CreateBoardFormValues } from "./CreateBoardForm";
 
-interface PairFormRowProps {
+interface IPairFormRowProps {
   index: number;
   register: UseFormRegister<CreateBoardFormValues>;
   errors?: {
@@ -13,7 +13,7 @@ interface PairFormRowProps {
   onRemove: () => void;
 }
 
-const PairFormRow: React.FC<PairFormRowProps> = ({ index, register, errors, onRemove }) => {
+const PairFormRow: FC<IPairFormRowProps> = ({ index, register, errors, onRemove }) => {
   return (
     <div className="flex gap-2 items-start">
       <div className="flex-1">
