@@ -84,6 +84,7 @@ const CreateBoardForm = forwardRef<CreateBoardFormHandle, ICreateBoardForm>(({ s
         <label className="block text-sm text-[var(--color-primary)] font-bold mb-1">Tytuł tablicy</label>
         <input
           {...register("title")}
+          placeholder="Dodaj tytuł"
           className={`w-full px-3 py-2 border rounded bg-background text-foreground ${errors.title ? "border-red-500" : "border-[var(--color-primary)]"}`}
         />
         {errors.title && <p className="text-red-500 text-xs mt-1">{errors.title.message}</p>}

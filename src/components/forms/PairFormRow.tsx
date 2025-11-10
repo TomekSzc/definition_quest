@@ -18,7 +18,7 @@ const PairFormRow: FC<IPairFormRowProps> = ({ index, register, errors, onRemove 
     <div className="flex gap-2 items-start">
       <div className="flex-1">
         <input
-          placeholder="Term"
+          placeholder="Słowo"
           {...register(`pairs.${index}.term` as const)}
           className={`w-full px-3 py-2 border rounded bg-background text-foreground ${errors?.term ? "border-red-500" : "border-[var(--color-primary)]"}`}
         />
@@ -26,7 +26,7 @@ const PairFormRow: FC<IPairFormRowProps> = ({ index, register, errors, onRemove 
       </div>
       <div className="flex-1">
         <input
-          placeholder="Definition"
+          placeholder="Definicja"
           {...register(`pairs.${index}.definition` as const)}
           className={`w-full px-3 py-2 border rounded bg-background text-foreground ${errors?.definition ? "border-red-500" : "border-[var(--color-primary)]"}`}
         />
