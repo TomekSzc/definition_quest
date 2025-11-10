@@ -18,12 +18,17 @@ const AcceptPairsModal: FC<IAcceptPairsModalProps> = ({ pairs, onAccept, onCance
 
   return (
     <Dialog open onOpenChange={onCancel}>
-      <DialogContent className="max-h-[80vh] overflow-y-auto">
-        <DialogTitle>Wybierz pary do dodania</DialogTitle>
+      <DialogContent className="max-h-[80vh] overflow-y-auto border-3 border-[var(--color-primary)]">
+        <DialogTitle className="text-[var(--color-primary)]">Wybierz pary do dodania</DialogTitle>
         <div className="space-y-2 my-4">
           {pairs.map((p: GeneratedPair, idx: number) => (
-            <label key={idx} className="flex items-start gap-2">
-              <input type="checkbox" checked={selected[idx]} onChange={() => toggle(idx)} />
+            <label key={idx} className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={selected[idx]}
+                onChange={() => toggle(idx)}
+                className="h-5 w-5 cursor-pointer accent-[var(--color-primary)]"
+              />
               <span className="text-black">
                 <strong>{p.term}</strong> – {p.definition}
               </span>
@@ -31,12 +36,13 @@ const AcceptPairsModal: FC<IAcceptPairsModalProps> = ({ pairs, onAccept, onCance
           ))}
         </div>
         <div className="flex justify-end gap-2">
-          <Button variant="secondary" onClick={onCancel}>
+          <Button variant="secondary" onClick={onCancel} className="cursor-pointer font-bold">
             Anuluj
           </Button>
           <Button
             onClick={() => onAccept(pairs.filter((_, i) => selected[i]))}
             disabled={!selected.some(Boolean)}
+            className="cursor-pointer font-bold bg-[var(--color-primary)] text-white"
           >
             Akceptuj
           </Button>
