@@ -22,7 +22,6 @@ export const Sidebar: FC = () => {
   const clickedOutside = useClickOutside<HTMLDivElement>(asideRef);
 
   useEffect(() => {
-    console.log(!collapsed, clickedOutside)
     if (!collapsed && clickedOutside) {
       set(true);
     }
