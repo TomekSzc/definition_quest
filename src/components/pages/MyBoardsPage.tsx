@@ -34,7 +34,7 @@ const MyBoardsPageComponent: FC = () => {
 
   return (
     <div className="min-h-[85vh] bg-secondary">
-      <section className="container mx-auto max-w-6xl px-4 py-8 pl-[80px]">
+      <section className="container mx-auto max-w-6xl px-4 py-8 md:pl-[80px]">
         <div className="mb-6 relative">
           <SearchInput onChange={handleQueryChange} initialValue={params.q} />
         </div>

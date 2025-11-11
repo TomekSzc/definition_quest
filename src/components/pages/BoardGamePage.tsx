@@ -8,7 +8,6 @@ import SkeletonBoard from "@/components/ui/SkeletonBoard";
 import { useToast } from "@/store/hooks";
 import { withProviders } from "@/components/HOC/Providers";
 import { useSidebar } from "@/hooks/useSidebar";
-import { useBoardSound } from "@/hooks/useBoardSound";
 
 interface IBoardGamePageComponentProps {
   boardId?: string;
