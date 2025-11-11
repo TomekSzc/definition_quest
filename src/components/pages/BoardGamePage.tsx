@@ -37,7 +37,7 @@ const BoardGamePageComponent: FC<IBoardGamePageComponentProps> = ({ boardId }) =
     showToast({ type: "warning", title: "Czas", message: "Czas minął" });
 
   const { collapsed } = useSidebar();
-  const sidebarOffset = collapsed ? "ml-16" : "ml-64";
+  const sidebarOffset = collapsed ? "ml-0 md:ml-11" : "ml-64";
 
   const {
     state: { cards, statusMap, timeSec, running, lastScore },

@@ -40,7 +40,7 @@ const GeneratePairsByAI: FC<IGeneratePairsByAIProps> = ({ formRef }) => {
 
   return (
     <div
-      className="fixed bottom-0 left-0 w-full p-4 border-0 bg-[var(--color-primary)] md:top-0 md:right-0 md:left-auto md:w-[350px] md:h-full"
+      className="fixed bottom-0 left-0 w-full p-4 border-0 bg-[var(--color-primary)] md:top-0 md:right-0 md:left-auto md:w-[250px] lg:w-[350px] md:h-full"
     >
       <h3 className="font-semibold mb-2 md:pt-20">Generuj pary AI</h3>
       <Textarea
