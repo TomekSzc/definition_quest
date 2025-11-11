@@ -23,7 +23,7 @@ const BoardTitleInput: React.FC<Props> = ({ value, onSave }) => {
   };
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2 pr-2">
       {isEditing ? (
         <>
           <input

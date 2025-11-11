@@ -68,7 +68,14 @@ export const BoardListTile: FC<IBoardListTileProps> = ({ board }) => {
             <span>Last score</span>
             <span>{board.lastTime}ms</span>
           </div>)}
-          <EditIcon className="w-5 h-5 cursor-pointer text-[var(--color-primary)]" />
+          <EditIcon
+            className="w-5 h-5 cursor-pointer text-[var(--color-primary)]"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              window.location.href = `/boards/${board.id}/edit`;
+            }}
+          />
           <DeleteIcon className="w-5 h-5 cursor-pointer text-[var(--color-primary)]" />
         </div>
       )}
