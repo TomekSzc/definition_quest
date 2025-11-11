@@ -8,7 +8,6 @@ import SkeletonBoard from "@/components/ui/SkeletonBoard";
 import { useToast } from "@/store/hooks";
 import { withProviders } from "@/components/HOC/Providers";
 import { useSidebar } from "@/hooks/useSidebar";
-import { useBoardSound } from "@/hooks/useBoardSound";
 
 interface IBoardGamePageComponentProps {
   boardId?: string;
@@ -37,7 +36,7 @@ const BoardGamePageComponent: FC<IBoardGamePageComponentProps> = ({ boardId }) =
     showToast({ type: "warning", title: "Czas", message: "Czas minął" });
 
   const { collapsed } = useSidebar();
-  const sidebarOffset = collapsed ? "ml-16" : "ml-64";
+  const sidebarOffset = collapsed ? "ml-0 md:ml-11" : "ml-64";
 
   const {
     state: { cards, statusMap, timeSec, running, lastScore },

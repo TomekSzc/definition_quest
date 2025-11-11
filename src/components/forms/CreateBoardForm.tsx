@@ -78,7 +78,10 @@ const CreateBoardForm = forwardRef<CreateBoardFormHandle, ICreateBoardForm>(({ s
   };
 
   return (
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 py-10">
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="space-y-6 py-10 pb-60 md:pb-10"
+      >
       {/* Title */}
       <div>
         <label className="block text-sm text-[var(--color-primary)] font-bold mb-1">Tytuł tablicy</label>

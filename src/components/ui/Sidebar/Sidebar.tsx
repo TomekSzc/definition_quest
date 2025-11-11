@@ -1,6 +1,8 @@
 import type { FC } from "react";
+import { useRef, useEffect } from "react";
 import { SidebarToggleButton } from "./SidebarToggleButton";
 import { useSidebar } from "@/hooks/useSidebar";
+import { useClickOutside } from "@/hooks/useClickOutside";
 import { NavItem } from "@/components/ui/Sidebar/NavItem";
 import type { NavItemVM } from "@/types/sidebar";
 import { BoardsIcon, PlayedIcon, PlusIcon, MyBoardsIcon } from "@/assets/icons";
@@ -14,13 +16,24 @@ const navItems: NavItemVM[] = [
 ];
 
 export const Sidebar: FC = () => {
-  const { collapsed } = useSidebar();
+  const { collapsed, set } = useSidebar();
+  const asideRef = useRef<HTMLDivElement>(null);
+
+  const clickedOutside = useClickOutside<HTMLDivElement>(asideRef);
+
+  useEffect(() => {
+    console.log(!collapsed, clickedOutside)
+    if (!collapsed && clickedOutside) {
+      set(true);
+    }
+  }, [clickedOutside]);
 
   return (
     <aside
+      ref={asideRef}
       className={
         collapsed
-          ? "fixed left-0 top-0 z-40 h-full w-16 bg-[var(--color-primary)] text-white transition-all duration-200"
+          ? "fixed left-[-50px] md:left-0 top-0 z-40 h-full bg-[var(--color-primary)] text-white transition-all duration-200"
           : "fixed left-0 top-0 z-40 h-full w-64 bg-[var(--color-primary)] text-white transition-all duration-200"
       }
       aria-expanded={!collapsed}

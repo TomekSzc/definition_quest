@@ -7,6 +7,7 @@ import AcceptPairsModal from "./AcceptPairsModal";
 import type { CreateBoardFormHandle } from "./CreateBoardForm";
 import { useAppDispatch } from "@/store/hooks";
 import { setLoading } from "@/store/slices/uiSlice";
+import { BP } from "@/constants/breakpoints";
 
 interface IGeneratePairsByAIProps {
   formRef: RefObject<CreateBoardFormHandle | null>;
@@ -38,8 +39,10 @@ const GeneratePairsByAI: FC<IGeneratePairsByAIProps> = ({ formRef }) => {
   };
 
   return (
-    <div className="p-4 border rounded bg-[var(--color-primary)] fixed right-0 top-0 w-[350px] h-full border-0">
-      <h3 className="font-semibold mb-2 pt-20">Generuj pary AI</h3>
+    <div
+      className="fixed bottom-0 left-0 w-full p-4 border-0 bg-[var(--color-primary)] md:top-0 md:right-0 md:left-auto md:w-[250px] lg:w-[350px] md:h-full"
+    >
+      <h3 className="font-semibold mb-2 md:pt-20">Generuj pary AI</h3>
       <Textarea
         value={inputText}
         onChange={(e) => setInputText(e.target.value)}
@@ -52,12 +55,12 @@ const GeneratePairsByAI: FC<IGeneratePairsByAIProps> = ({ formRef }) => {
           }
         }}
         placeholder="Wklej tekst (≤ 5000 znaków)"
-        className="mb-2"
+        className={`mb-2 min-h-[60px] ${BP.tablet}:min-h-[80px] px-2 py-1 ${BP.tablet}:px-3 ${BP.tablet}:py-2 text-sm ${BP.tablet}:text-base`}
       />
       <Button
         onClick={handleGenerate}
         disabled={isLoading || !inputText.trim()}
-        className="w-full cursor-pointer font-bold border-3 border-white bg-transparent hover:bg-black hover:border-black"
+        className={`w-full cursor-pointer font-bold border-3 border-white bg-transparent hover:bg-black hover:border-black py-1 ${BP.tablet}:py-2 text-sm ${BP.tablet}:text-base`}
       >
         {isLoading ? "Generuję..." : "Generuj"}
       </Button>
