@@ -51,7 +51,7 @@ export const Breadcrumbs: FC = () => {
       <a
         href="#"
         onClick={handleBack}
-        className="flex items-center text-2xl font-bold cursor-pointer select-none"
+        className="text-[16px] text-[24px] flex items-center text-2xl font-bold cursor-pointer select-none"
       >
         <ChevronLeftIcon className="h-6 w-6 mr-2" />
         <span>{prevTitle}</span>
