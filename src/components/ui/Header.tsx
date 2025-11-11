@@ -1,7 +1,8 @@
-import type { FC, ReactNode } from "react";
+import type { FC } from "react";
 import clsx from "clsx";
 import { useSidebar } from "@/hooks/useSidebar";
 import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
+import { MenuIcon } from "@/assets/icons";
 
 interface HeaderProps {
   className?: string;
@@ -11,16 +12,8 @@ interface HeaderProps {
  * Full-width application header (80 px height, bottom shadow).
  */
 export const Header: FC<HeaderProps> = ({ className }) => {
-  const { collapsed } = useSidebar();
+  const { collapsed, toggle } = useSidebar();
   // Determine title based on current pathname
-  const pathname = typeof window !== "undefined" ? window.location.pathname : "";
-  const routeTitles: Record<string, string> = {
-    "/boards": "Public Boards",
-    "/my-boards": "My Boards",
-    "/played-boards": "Played Boards",
-    "/boards/create": "Utwórz tablicę",
-    "/played": "Played Boards",
-  };
 
   const leftPadding = collapsed ? "pl-20" : "pl-72"; // +4rem for safety (header internal px-6)
 
@@ -32,6 +25,9 @@ export const Header: FC<HeaderProps> = ({ className }) => {
         className
       )}
     >
+      <button className="absolute left-5" onClick={toggle}>
+        <MenuIcon className="h-5 w-5" />
+      </button>
       <Breadcrumbs />
     </header>
   );

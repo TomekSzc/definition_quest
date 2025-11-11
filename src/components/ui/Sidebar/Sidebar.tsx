@@ -20,7 +20,7 @@ export const Sidebar: FC = () => {
     <aside
       className={
         collapsed
-          ? "fixed left-0 top-0 z-40 h-full w-16 bg-[var(--color-primary)] text-white transition-all duration-200"
+          ? "fixed left-[-50px] md:left-0 top-0 z-40 h-full bg-[var(--color-primary)] text-white transition-all duration-200"
           : "fixed left-0 top-0 z-40 h-full w-64 bg-[var(--color-primary)] text-white transition-all duration-200"
       }
       aria-expanded={!collapsed}
