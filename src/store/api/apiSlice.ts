@@ -15,6 +15,9 @@ import type {
   BoardDetailDTO,
   GenerateBoardCmd,
   BoardGenerationResultDTO,
+  PatchBoardCmd,
+  PairDTO,
+  PairUpdateCmd,
 } from "../../types";
 import { setCredentials, logout, updateTokens } from "../slices/authSlice";
 import { showToast } from "../slices/toastSlice";
@@ -292,6 +295,22 @@ export const apiSlice = createApi({
         body,
       }),
     }),
+    updateBoardMeta: builder.mutation<BoardDetailDTO, { id: string; payload: PatchBoardCmd }>({
+      query: ({ id, payload }) => ({
+        url: `/api/boards/${id}`,
+        method: "PATCH",
+        body: payload,
+      }),
+      invalidatesTags: (result, error, { id }) => [{ type: "Boards", id }],
+    }),
+    updatePair: builder.mutation<PairDTO, { boardId: string; pairId: string; payload: PairUpdateCmd }>({
+      query: ({ boardId, pairId, payload }) => ({
+        url: `/api/boards/${boardId}/pairs/${pairId}`,
+        method: "PATCH",
+        body: payload,
+      }),
+      invalidatesTags: (result, error, { boardId }) => [{ type: "Boards", id: boardId }],
+    }),
   }),
 });
 
@@ -311,4 +330,6 @@ export const {
   useSubmitScoreMutation,
   useCreateBoardMutation,
   useGeneratePairsMutation,
+  useUpdateBoardMetaMutation,
+  useUpdatePairMutation,
 } = apiSlice;

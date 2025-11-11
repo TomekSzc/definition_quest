@@ -1,0 +1,10 @@
+---
+import React from "react";
+import Layout from "@/layouts/Layout.astro";
+import EditBoardPage from "@/components/pages/EditBoardPage";
+const { id } = Astro.params;
+---
+
+<Layout>
+  <EditBoardPage boardId={id} client:load />
+</Layout>
