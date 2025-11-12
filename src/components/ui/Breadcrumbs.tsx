@@ -16,7 +16,9 @@ const routeTitles: Record<string, string> = {
  */
 export const Breadcrumbs: FC = () => {
   const pathname = typeof window !== "undefined" ? window.location.pathname : "";
-  const isBoardDetail = /^\/boards\/[^/]+$/.test(pathname);
+  const boardMatch = pathname.match(/^\/boards\/([^/]+)(?:\/(edit))?$/);
+  const isBoardDetail = Boolean(boardMatch);
+  const isEdit = boardMatch?.[2] === "edit";
   const title = routeTitles[pathname] ?? "Public Boards";
 
   const prevTitle = useMemo(() => {
@@ -56,7 +58,7 @@ export const Breadcrumbs: FC = () => {
         <ChevronLeftIcon className="h-6 w-6 mr-2" />
         <span>{prevTitle}</span>
         <span className="mx-2">/</span>
-        <span>Play</span>
+        <span>{isEdit ? "Edit" : "Play"}</span>
       </a>
     );
   }
