@@ -7,5 +7,7 @@ export { default as PlusIcon } from "./PlusIcon";
 export { default as MenuIcon } from "./MenuIcon";
 export { default as ChevronLeftIcon } from "./ChevronLeftIcon";
 export { default as MyBoardsIcon } from "./MyBoardsIcon";
+export { default as XIcon } from "./XIcon";
+export { default as CheckIcon } from "./CheckIcon";
 export * from "./VolumeOnIcon";
 export * from "./VolumeOffIcon";

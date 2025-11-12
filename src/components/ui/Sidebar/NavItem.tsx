@@ -26,8 +26,8 @@ export const NavItem: FC<NavItemProps> = ({ item }) => {
     <a
       href={isActive ? undefined : item.route}
       className={clsx(
-        "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-        collapsed && "justify-center px-0",
+        "flex items-center gap-3 rounded-md px-3 py-2 transition-colors",
+        collapsed ? "justify-center text-sm font-normal" : "text-sm font-bold",
         isActive
           ? "bg-blue-700 bg-opacity-60 cursor-default pointer-events-none"
           : "hover:bg-blue-700 hover:bg-opacity-50"

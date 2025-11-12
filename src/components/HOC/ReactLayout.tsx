@@ -16,7 +16,7 @@ export const ReactLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <>
       <Sidebar />
-      <div className="flex flex-col overflow-x-hidden">
+      <div className="flex flex-col overflow-x-hidden pt-[60px] md:pt-[80px] bg-secondary">
         <Header />
         <div>{children}</div>
         <Footer />

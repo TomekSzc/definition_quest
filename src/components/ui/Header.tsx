@@ -15,12 +15,12 @@ export const Header: FC<HeaderProps> = ({ className }) => {
   const { collapsed, toggle } = useSidebar();
   // Determine title based on current pathname
 
-  const leftPadding = collapsed ? "pl-20" : "pl-72"; // +4rem for safety (header internal px-6)
-
+  const leftPadding = collapsed ? "pl-13" : "pl-72"; // +4rem for safety (header internal px-6)
+  const breadCrumbsVisible = !collapsed ? "hidden md:block" : "block";
   return (
     <header
       className={clsx(
-        "w-full h-[60px] md:h-[80px] flex items-center px-6 shadow-md bg-[var(--color-primary)] transition-all duration-200",
+        "w-full z-[1] fixed top-0 h-[60px] flex items-center px-6 shadow-md bg-[var(--color-primary)] transition-all duration-200",
         leftPadding,
         className
       )}
@@ -28,7 +28,9 @@ export const Header: FC<HeaderProps> = ({ className }) => {
       <button className="absolute left-5" onClick={toggle}>
         <MenuIcon className="h-5 w-5" />
       </button>
-      <Breadcrumbs />
+      <div className={breadCrumbsVisible}>
+        <Breadcrumbs />
+      </div>
     </header>
   );
 };
