@@ -17,20 +17,15 @@ export const BoardListTile: FC<IBoardListTileProps> = ({ board }) => {
     <a
       href={href}
       className="
-    h-[60px] 
-    text-[var(--color-primary)] 
-    border 
-    border-[var(--color-primary)] 
-    rounded-[5px] 
-    flex items-center 
-    p-2 mb-3 
-    bg-white 
-    font-bold
-    capitalize
-    cursor-pointer 
-    w-full
-    justify-between
-    flex"
+    h-[60px]
+    text-[var(--color-primary)]
+    border border-[var(--color-primary)]
+    rounded-[5px]
+    flex items-center
+    p-2 mb-3
+    bg-white hover:bg-[var(--color-primary)]/10
+    font-bold capitalize
+    cursor-pointer w-full justify-between flex transition-colors"
     >
       <div className="flex items-center">
         <div
