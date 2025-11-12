@@ -20,7 +20,7 @@ export const Header: FC<HeaderProps> = ({ className }) => {
   return (
     <header
       className={clsx(
-        "w-full h-[60px] md:h-[80px] flex items-center px-6 shadow-md bg-[var(--color-primary)] transition-all duration-200",
+        "w-full z-[1] fixed top-0 h-[60px] flex items-center px-6 shadow-md bg-[var(--color-primary)] transition-all duration-200",
         leftPadding,
         className
       )}

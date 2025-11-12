@@ -28,7 +28,7 @@ export const GameMeta: FC<IGameMetaProps> = ({ timeSec, running, canStart, lastS
   };
 
   return (
-    <aside className="fixed bottom-0 left-0 w-full p-4 shrink-0 flex flex-row justify-center md:flex-col gap-4 bg-[var(--color-primary)] md:top-[80px] md:right-0 md:left-auto md:bottom-auto md:w-[199px]">
+    <aside className="fixed bottom-0 left-0 w-full p-4 shrink-0 flex flex-row justify-center md:flex-col gap-4 bg-[var(--color-primary)] md:top-[0px] md:right-0 md:left-auto md:bottom-auto md:w-[199px] md:h-full md:justify-start md:pt-[80px]">
       <div className="flex justify-center">
         <button className="self-end mb-2 cursor-pointer" onClick={handleSound} aria-label="Toggle sound">
           {soundOn ? <VolumeOnIcon className="w-6 h-6" /> : <VolumeOffIcon className="w-6 h-6" />}
@@ -52,7 +52,7 @@ export const GameMeta: FC<IGameMetaProps> = ({ timeSec, running, canStart, lastS
         </button>
       ) : (
         <button
-          className="cursor-pointer bg-green-600 text-white rounded px-4 py-2 disabled:opacity-50"
+          className="cursor-pointer bg-green-600 text-white rounded px-4 py-2 disabled:opacity-50 font-bold hover:bg-white hover:text-[var(--color-primary)]"
           onClick={onStart}
           disabled={!canStart}
           aria-label="Start game"
@@ -61,7 +61,7 @@ export const GameMeta: FC<IGameMetaProps> = ({ timeSec, running, canStart, lastS
         </button>
       )}
       <button
-        className="cursor-pointer border border-neutral-400 rounded px-4 py-2 disabled:opacity-50"
+        className="cursor-pointer border-2 border-white rounded px-4 py-2 font-bold disabled:opacity-50 hover:bg-white hover:text-[var(--color-primary)]"
         onClick={onReset}
         disabled={running === false && timeSec === 0}
         aria-label="Reset game"
