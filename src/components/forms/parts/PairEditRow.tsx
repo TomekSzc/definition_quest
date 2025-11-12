@@ -50,10 +50,10 @@ const PairEditRow: React.FC<Props> = ({ pair, onSave }) => {
             placeholder="Definicja"
           />
           <div className="flex gap-2 justify-end">
-            <Button size="icon" variant="ghost" onClick={handleConfirm}>
+            <Button size="icon" variant="ghost" className="cursor-pointer" onClick={handleConfirm}>
               <CheckIcon className="w-5 h-5 text-green-600" />
             </Button>
-            <Button size="icon" variant="ghost" onClick={reset}>
+            <Button size="icon" variant="ghost" className="cursor-pointer" onClick={reset}>
               <XIcon className="w-5 h-5 text-red-600" />
             </Button>
           </div>
@@ -66,7 +66,7 @@ const PairEditRow: React.FC<Props> = ({ pair, onSave }) => {
               <p className="text-sm break-words mt-1 opacity-80">{pair.definition}</p>
             </div>
             <Button size="icon" variant="ghost" onClick={() => setIsEditing(true)}>
-              <EditIcon className="w-5 h-5" />
+              <EditIcon className="w-5 h-5 cursor-pointer" />
             </Button>
           </div>
         </>

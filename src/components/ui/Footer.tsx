@@ -18,7 +18,7 @@ export const Footer: FC<FooterProps> = ({ className }) => {
   return (
     <footer
       className={clsx(
-        "w-full h-[60px] flex items-center px-6 shadow-inner bg-[var(--color-primary)] text-sm transition-all duration-200",
+        "w-full h-[60px] justify-center flex items-center px-6 shadow-inner bg-[var(--color-primary)] text-sm transition-all duration-200",
         leftPadding,
         className
       )}

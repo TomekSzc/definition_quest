@@ -57,10 +57,13 @@ const EditBoardForm: FC<Props> = ({ board, onRefresh }) => {
       <BoardTitleInput value={vm.title} onSave={handleTitleSave} />
       <PairEditList pairs={vm.pairs} cardCount={board.cardCount} onSave={handlePairSave} />
       <div className="flex justify-between pt-10">
-        <Button variant="secondary" onClick={() => history.back()}>
+        <Button
+          onClick={() => history.back()}
+          className="cursor-pointer bg-[var(--color-primary)] text-white font-bold hover:bg-white hover:text-[var(--color-primary)] border-2 border-[var(--color-primary)]"
+        >
           Powrót
         </Button>
-        <Button disabled>Dodaj level</Button>
+        <Button disabled className="cursor-pointer">Dodaj level</Button>
       </div>
     </div>
   );

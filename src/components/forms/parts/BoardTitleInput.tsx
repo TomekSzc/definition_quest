@@ -32,10 +32,10 @@ const BoardTitleInput: React.FC<Props> = ({ value, onSave }) => {
             onChange={(e) => setDraft(e.target.value)}
             maxLength={255}
           />
-          <Button size="icon" variant="ghost" onClick={handleConfirm}>
+          <Button size="icon" variant="ghost" className="cursor-pointer" onClick={handleConfirm}>
             <CheckIcon className="w-5 h-5 text-green-600" />
           </Button>
-          <Button size="icon" variant="ghost" onClick={handleCancel}>
+          <Button size="icon" variant="ghost" className="cursor-pointer" onClick={handleCancel}>
             <XIcon className="w-5 h-5 text-red-600" />
           </Button>
         </>
@@ -43,7 +43,7 @@ const BoardTitleInput: React.FC<Props> = ({ value, onSave }) => {
         <>
           <h2 className="text-xl font-bold flex-1 break-words">{value}</h2>
           <Button size="icon" variant="ghost" onClick={() => setIsEditing(true)}>
-            <EditIcon className="w-5 h-5" />
+            <EditIcon className="w-5 h-5 cursor-pointer" />
           </Button>
         </>
       )}
