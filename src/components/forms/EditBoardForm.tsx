@@ -1,13 +1,22 @@
 import type { FC } from "react";
 import { useState } from "react";
-import type { BoardViewDTO, EditBoardVM, PatchBoardCmd, PairUpdateCmd, PairDTO } from "@/types";
+import type { BoardViewDTO, PatchBoardCmd, PairUpdateCmd, PairDTO } from "@/types";
 import BoardTitleInput from "./parts/BoardTitleInput";
 import PairEditList from "./parts/PairEditList";
 import { useUpdateBoardMetaMutation, useUpdatePairMutation } from "@/store/api/apiSlice";
 import { useToast } from "@/store/hooks";
 import { Button } from "@/components/ui/Button";
 
-interface Props {
+interface EditBoardVM {
+  id: string;
+  title: string;
+  pairs: PairDTO[];
+  tags: string[];
+  isPublic: boolean;
+  archived: boolean;
+}
+
+interface IEditBoardForm {
   board: BoardViewDTO;
   onRefresh: () => void;
 }
@@ -21,7 +30,7 @@ const mapToVM = (data: BoardViewDTO): EditBoardVM => ({
   archived: data.archived,
 });
 
-const EditBoardForm: FC<Props> = ({ board, onRefresh }) => {
+const EditBoardForm: FC<IEditBoardForm> = ({ board, onRefresh }) => {
   const [vm, setVm] = useState<EditBoardVM>(() => mapToVM(board));
   const [updateMeta] = useUpdateBoardMetaMutation();
   const [updatePair] = useUpdatePairMutation();
@@ -31,7 +40,7 @@ const EditBoardForm: FC<Props> = ({ board, onRefresh }) => {
     if (title === vm.title) return;
     try {
       await updateMeta({ id: vm.id, payload: { title } as PatchBoardCmd }).unwrap();
-      setVm((prev) => ({ ...prev, title }));
+      setVm((prev: EditBoardVM) => ({ ...prev, title }));
       showToast({ type: "success", title: "Zapisano", message: "Tytuł zaktualizowany" });
       onRefresh();
     } catch (e: any) {
@@ -42,9 +51,9 @@ const EditBoardForm: FC<Props> = ({ board, onRefresh }) => {
   const handlePairSave = async (pairId: string, patch: PairUpdateCmd) => {
     try {
       const updated = await updatePair({ boardId: vm.id, pairId, payload: patch }).unwrap();
-      setVm((prev) => ({
+      setVm((prev: EditBoardVM) => ({
         ...prev,
-        pairs: prev.pairs.map((p) => (p.id === updated.id ? updated : p)),
+        pairs: prev.pairs.map((p: PairDTO) => (p.id === updated.id ? updated : p)),
       }));
       showToast({ type: "success", title: "Zapisano", message: "Para zaktualizowana" });
     } catch (e: any) {

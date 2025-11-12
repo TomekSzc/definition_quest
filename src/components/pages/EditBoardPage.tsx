@@ -6,9 +6,11 @@ import EditBoardForm from "@/components/forms/EditBoardForm";
 import { showToast } from "@/store/slices/toastSlice";
 import { useAppDispatch } from "@/store/hooks";
 
-interface Props { boardId: string }
+interface IEditBoardPageProps extends Record<string, unknown> {
+  boardId: string;
+}
 
-const EditBoardPageComponent: FC<Props> = ({ boardId }) => {
+const EditBoardPageComponent: FC<IEditBoardPageProps> = ({ boardId }) => {
   const dispatch = useAppDispatch();
   const { board, isLoading, isError, error, refresh } = useBoard(boardId);
 
@@ -30,6 +32,6 @@ const EditBoardPageComponent: FC<Props> = ({ boardId }) => {
   );
 };
 
-export const EditBoardPage = withProviders(EditBoardPageComponent);
+export const EditBoardPage = withProviders<IEditBoardPageProps>(EditBoardPageComponent);
 
 export default EditBoardPage;

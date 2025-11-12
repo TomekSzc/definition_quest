@@ -3,13 +3,13 @@ import type { PairDTO, PairUpdateCmd } from "@/types";
 import PairEditRow from "./PairEditRow";
 import { useToast } from "@/store/hooks";
 
-interface Props {
+interface IPairEditListProps {
   pairs: PairDTO[];
-  cardCount: 16 | 24;
+  cardCount: number;
   onSave: (pairId: string, patch: PairUpdateCmd) => void;
 }
 
-const PairEditList: FC<Props> = ({ pairs, cardCount, onSave }) => {
+const PairEditList: FC<IPairEditListProps> = ({ pairs, cardCount, onSave }) => {
   const { showToast } = useToast();
 
   if (pairs.length > cardCount / 2) {
@@ -22,7 +22,7 @@ const PairEditList: FC<Props> = ({ pairs, cardCount, onSave }) => {
 
   return (
     <div className="space-y-4">
-      {pairs.map((pair) => (
+      {pairs.map((pair: PairDTO) => (
         <PairEditRow key={pair.id} pair={pair} onSave={onSave} />
       ))}
     </div>

@@ -2,12 +2,12 @@ import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { CheckIcon, XIcon, EditIcon } from "@/assets/icons";
 
-interface Props {
+interface IBoardTitleInputProps {
   value: string;
   onSave: (title: string) => void;
 }
 
-const BoardTitleInput: React.FC<Props> = ({ value, onSave }) => {
+const BoardTitleInput: React.FC<IBoardTitleInputProps> = ({ value, onSave }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [draft, setDraft] = useState(value);
 
