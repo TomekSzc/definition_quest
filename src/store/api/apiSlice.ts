@@ -18,6 +18,7 @@ import type {
   PatchBoardCmd,
   PairDTO,
   PairUpdateCmd,
+  PairCreateCmd,
 } from "../../types";
 import { setCredentials, logout, updateTokens } from "../slices/authSlice";
 import { showToast } from "../slices/toastSlice";
@@ -311,6 +312,14 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: (result, error, { boardId }) => [{ type: "Boards", id: boardId }],
     }),
+    addLevel: builder.mutation<BoardDetailDTO, { boardId: string; pairs: PairCreateCmd[] }>({
+      query: (body) => ({
+        url: "/api/boards/level",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: (result, error, { boardId }) => [{ type: "Boards", id: boardId }],
+    }),
   }),
 });
 
@@ -332,4 +341,5 @@ export const {
   useGeneratePairsMutation,
   useUpdateBoardMetaMutation,
   useUpdatePairMutation,
+  useAddLevelMutation,
 } = apiSlice;

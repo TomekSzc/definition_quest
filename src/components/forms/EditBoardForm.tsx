@@ -72,7 +72,11 @@ const EditBoardForm: FC<IEditBoardForm> = ({ board, onRefresh }) => {
         >
           Powrót
         </Button>
-        <Button disabled className="cursor-pointer">Dodaj level</Button>
+        <a href={`/boards/${vm.id}/add-level`} className="cursor-pointer">
+          <Button className="cursor-pointer bg-[var(--color-primary)] text-white font-bold hover:bg-white hover:text-[var(--color-primary)] border-2 border-[var(--color-primary)]">
+            Dodaj level
+          </Button>
+        </a>
       </div>
     </div>
   );
