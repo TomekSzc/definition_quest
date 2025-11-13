@@ -3,6 +3,7 @@ import { useState } from "react";
 import type { BoardViewDTO, PatchBoardCmd, PairUpdateCmd, PairDTO } from "@/types";
 import BoardTitleInput from "./parts/BoardTitleInput";
 import PairEditList from "./parts/PairEditList";
+import AddPairsForm from "./parts/AddPairsForm";
 import { useUpdateBoardMetaMutation, useUpdatePairMutation } from "@/store/api/apiSlice";
 import { useToast } from "@/store/hooks";
 import { Button } from "@/components/ui/Button";
@@ -64,7 +65,23 @@ const EditBoardForm: FC<IEditBoardForm> = ({ board, onRefresh }) => {
   return (
     <div className="w-full max-w-3xl space-y-6 py-10">
       <BoardTitleInput value={vm.title} onSave={handleTitleSave} />
-      <PairEditList pairs={vm.pairs} cardCount={board.cardCount} onSave={handlePairSave} />
+      <PairEditList
+        boardId={vm.id}
+        pairs={vm.pairs}
+        cardCount={board.cardCount}
+        onSave={handlePairSave}
+        onDelete={(pairId: string) => {
+          setVm((prev) => ({ ...prev, pairs: prev.pairs.filter((p) => p.id !== pairId) }));
+        }}
+      />
+
+      {/* Add new pairs */}
+      <AddPairsForm
+        boardId={vm.id}
+        existingCount={vm.pairs.length}
+        cardCount={board.cardCount}
+        onPairAdded={(newPair) => setVm((prev) => ({ ...prev, pairs: [...prev.pairs, newPair] }))}
+      />
       <div className="flex justify-between pt-10">
         <Button
           onClick={() => history.back()}

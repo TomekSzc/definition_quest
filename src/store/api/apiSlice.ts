@@ -320,6 +320,21 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: (result, error, { boardId }) => [{ type: "Boards", id: boardId }],
     }),
+    addPair: builder.mutation<PairDTO, { boardId: string; pair: PairCreateCmd }>({
+      query: ({ boardId, pair }) => ({
+        url: `/api/boards/${boardId}/pairs`,
+        method: "POST",
+        body: pair,
+      }),
+      invalidatesTags: (result, error, { boardId }) => [{ type: "Boards", id: boardId }],
+    }),
+    deletePair: builder.mutation<{ id: string; boardId: string; message: string }, { boardId: string; pairId: string }>({
+      query: ({ boardId, pairId }) => ({
+        url: `/api/boards/${boardId}/pairs/${pairId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: (result, error, { boardId }) => [{ type: "Boards", id: boardId }],
+    }),
   }),
 });
 
@@ -341,5 +356,7 @@ export const {
   useGeneratePairsMutation,
   useUpdateBoardMetaMutation,
   useUpdatePairMutation,
+  useAddPairMutation,
+  useDeletePairMutation,
   useAddLevelMutation,
 } = apiSlice;
