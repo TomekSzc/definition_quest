@@ -30,8 +30,8 @@ export const DialogContent = React.forwardRef<React.ElementRef<typeof DialogPrim
         {...props}
       >
         {children}
-        <DialogPrimitive.Close className="absolute top-4 right-4 focus:outline-none">
-          <CloseIcon className="w-5 h-5" />
+        <DialogPrimitive.Close className="absolute top-4 right-4 focus:outline-none cursor-pointer">
+          <CloseIcon className="w-6 h-6" />
         </DialogPrimitive.Close>
       </DialogPrimitive.Content>
     </DialogPortal>
