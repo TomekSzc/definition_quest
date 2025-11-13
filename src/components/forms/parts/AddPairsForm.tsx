@@ -50,7 +50,7 @@ const AddPairsForm: React.FC<AddPairsFormProps> = ({ boardId, existingCount, car
   return (
     <>
       {draftPairs.map((draft, idx) => (
-        <div key={idx} className="flex gap-2 items-start border rounded p-3 bg-background">
+        <div key={idx} className="flex flex-wrap gap-2 items-start border rounded p-3 bg-background">
           <input
             className="flex-1 px-3 py-2 border rounded bg-background text-foreground border-[var(--color-primary)]"
             placeholder="Słowo"
