@@ -10,10 +10,12 @@ import { setLoading } from "@/store/slices/uiSlice";
 import { BP } from "@/constants/breakpoints";
 
 interface IGeneratePairsByAIProps {
-  formRef: RefObject<CreateBoardFormHandle | null>;
+  formRef?: RefObject<CreateBoardFormHandle | null>; // backward compat
+  remainingSlots?: number;
+  onAdd?: (pairs: { term: string; definition: string }[]) => void;
 }
 
-const GeneratePairsByAI: FC<IGeneratePairsByAIProps> = ({ formRef }) => {
+const GeneratePairsByAI: FC<IGeneratePairsByAIProps> = ({ formRef, remainingSlots, onAdd }) => {
   const dispatch = useAppDispatch();
   const [inputText, setInputText] = useState("");
   const [generatePairs, { isLoading }] = useGeneratePairsMutation();
@@ -33,7 +35,11 @@ const GeneratePairsByAI: FC<IGeneratePairsByAIProps> = ({ formRef }) => {
   };
 
   const handleAccept = (selected: { term: string; definition: string }[]) => {
-    formRef.current?.addPairs(selected);
+    if (onAdd) {
+      onAdd(selected);
+    } else if (formRef?.current) {
+      formRef.current.addPairs(selected);
+    }
     setPairs(null);
     setInputText("");
   };
@@ -59,7 +65,7 @@ const GeneratePairsByAI: FC<IGeneratePairsByAIProps> = ({ formRef }) => {
       />
       <Button
         onClick={handleGenerate}
-        disabled={isLoading || !inputText.trim()}
+        disabled={isLoading || !inputText.trim() || (remainingSlots !== undefined && remainingSlots <= 0)}
         className={`w-full cursor-pointer font-bold border-3 border-white bg-transparent hover:bg-black hover:border-black py-1 ${BP.tablet}:py-2 text-sm ${BP.tablet}:text-base`}
       >
         {isLoading ? "Generuję..." : "Generuj"}
