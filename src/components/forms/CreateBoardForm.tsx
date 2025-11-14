@@ -78,10 +78,7 @@ const CreateBoardForm = forwardRef<CreateBoardFormHandle, ICreateBoardForm>(({ s
   };
 
   return (
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        className="space-y-6 py-10 pb-60 md:pb-10"
-      >
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 py-10 pb-60 md:pb-10">
       {/* Title */}
       <div>
         <label className="block text-sm text-[var(--color-primary)] font-bold mb-1">Tytuł tablicy</label>
@@ -101,11 +98,7 @@ const CreateBoardForm = forwardRef<CreateBoardFormHandle, ICreateBoardForm>(({ s
       />
 
       {/* Card Count Toggle */}
-      <Controller
-        control={control}
-        name="cardCount"
-        render={({ field }) => <CardCountToggle {...field} />}
-      />
+      <Controller control={control} name="cardCount" render={({ field }) => <CardCountToggle {...field} />} />
 
       {/* Pairs Field Array */}
       <div className="space-y-4">
@@ -125,7 +118,7 @@ const CreateBoardForm = forwardRef<CreateBoardFormHandle, ICreateBoardForm>(({ s
           variant="secondary"
           onClick={() => append({ term: "", definition: "" })}
           disabled={fields.length >= 100}
-            className="cursor-pointer font-bold border-2 border-[var(--color-primary)] text-[var(--color-primary)] hover:bg-[var(--color-primary)] hover:text-white"
+          className="cursor-pointer font-bold border-2 border-[var(--color-primary)] text-[var(--color-primary)] hover:bg-[var(--color-primary)] hover:text-white"
         >
           + Dodaj parę
         </Button>
@@ -133,7 +126,11 @@ const CreateBoardForm = forwardRef<CreateBoardFormHandle, ICreateBoardForm>(({ s
 
       {/* Submit */}
       <div className="pt-4">
-        <Button type="submit" disabled={isSubmitting} className="font-bold bg-[var(--color-primary)] text-white cursor-pointer">
+        <Button
+          type="submit"
+          disabled={isSubmitting}
+          className="font-bold bg-[var(--color-primary)] text-white cursor-pointer"
+        >
           Utwórz tablicę
         </Button>
       </div>

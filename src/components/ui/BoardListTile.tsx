@@ -4,6 +4,8 @@ import { EditIcon, DeleteIcon } from "@/assets/icons";
 import { useAppSelector } from "@/store/hooks";
 import Chip from "./Chip";
 import type { RootState } from "@/store";
+import { useState } from "react";
+import { DeleteBoardDialog } from "./DeleteBoardDialog";
 
 interface IBoardListTileProps {
   board: BoardSummaryDTO;
@@ -13,6 +15,7 @@ export const BoardListTile: FC<IBoardListTileProps> = ({ board }) => {
   const href = `/boards/${board.id}`;
   const authUserId = useAppSelector((s: RootState) => s.auth.user?.id);
   const canManage = authUserId && authUserId === board.ownerId;
+  const [showDelete, setShowDelete] = useState(false);
   return (
     <a
       href={href}
@@ -59,21 +62,36 @@ export const BoardListTile: FC<IBoardListTileProps> = ({ board }) => {
       </div>
       {canManage && (
         <div className="flex items-center gap-2">
-          {board?.lastTime && (<div className="text-sm text-gray-500 flex flex-col lowercase">
-            <span>Last score</span>
-            <span>{board.lastTime}ms</span>
-          </div>)}
+          {board?.lastTime && (
+            <div className="text-sm text-gray-500 flex flex-col lowercase">
+              <span>Last score</span>
+              <span>{board.lastTime}ms</span>
+            </div>
+          )}
           <EditIcon
-            className="w-5 h-5 cursor-pointer text-[var(--color-primary)]"
+            className="w-[30px] h-[30px] cursor-pointer text-[var(--color-primary)] hover:bg-[var(--color-primary)] hover:text-white rounded p-1 transition-colors"
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
               window.location.href = `/boards/${board.id}/edit`;
             }}
           />
-          <DeleteIcon className="w-5 h-5 cursor-pointer text-[var(--color-primary)]" />
+          <DeleteIcon
+            className="w-[30px] h-[30px] cursor-pointer text-[var(--color-primary)] hover:bg-red-500 hover:text-white rounded p-1 transition-colors"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setShowDelete(true);
+            }}
+          />
         </div>
       )}
+      <DeleteBoardDialog
+        boardId={board.id}
+        isVisible={showDelete}
+        onSubmit={() => window.location.reload()}
+        onClose={() => setShowDelete(false)}
+      />
     </a>
   );
 };

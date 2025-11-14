@@ -24,15 +24,8 @@ const PairForm: FC<PairFormProps> = ({ fields, errors = [], register, remove, ca
         const isFirstInLevel = index % maxPerLevel === 0;
         return (
           <div key={field.id}>
-            {isFirstInLevel && (
-              <div className="font-bold text-[var(--color-primary)]">Level: {levelIndex + 1}</div>
-            )}
-            <PairFormRow
-              index={index}
-              register={register}
-              errors={errors[index]}
-              onRemove={() => remove(index)}
-            />
+            {isFirstInLevel && <div className="font-bold text-[var(--color-primary)]">Level: {levelIndex + 1}</div>}
+            <PairFormRow index={index} register={register} errors={errors[index]} onRemove={() => remove(index)} />
           </div>
         );
       })}

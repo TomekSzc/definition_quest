@@ -6,9 +6,9 @@ Widok „Played Boards” prezentuje listę publicznych plansz (boards), w któr
 
 ## 2. Routing widoku
 
-| Ścieżka URL | Komponent strony | Dostęp |
-|-------------|-----------------|--------|
-| `/boards/played` | `BoardsPlayedPage` | wymagane logowanie (middleware)
+| Ścieżka URL      | Komponent strony   | Dostęp                          |
+| ---------------- | ------------------ | ------------------------------- |
+| `/boards/played` | `BoardsPlayedPage` | wymagane logowanie (middleware) |
 
 > Middleware `authRedirect` (już używany w projekcie) powinien przekierować niezalogowanych użytkowników na `/login`.
 
@@ -32,7 +32,7 @@ BoardsPlayedPage
 - **Obsługiwane interakcje**:
   - wpisanie frazy w `SearchInput` (debounce 300 ms) ➜ aktualizacja `q` i reset `page=1`.
   - kliknięcie numeru strony ➜ aktualizacja `page`.
-- **Walidacja**: 
+- **Walidacja**:
   - `q`: max 100 znaków (zgodnie ze schematem backendu)
   - `page`: ≥ 1 (hook `useQueryParams` zapewnia liczbę całkowitą; fallback = 1).
 - **Typy**: `PlayedBoardsQuery` (alias `ListPlayedBoardsQuery` bez `ownerId`), `Paged<PlayedBoardDTO>`.
@@ -69,11 +69,12 @@ Jeśli w przyszłości wymagane będzie sortowanie / filtrowanie po tagach, zost
 
 ## 7. Integracja API
 
-| Hook | HTTP | URL | Request Query | Response |
-|------|------|-----|---------------|----------|
-| `useListPlayedBoardsQuery` | GET | `/api/boards/played` | `PlayedBoardsQuery` | `Paged<PlayedBoardDTO>` |
+| Hook                       | HTTP | URL                  | Request Query       | Response                |
+| -------------------------- | ---- | -------------------- | ------------------- | ----------------------- |
+| `useListPlayedBoardsQuery` | GET  | `/api/boards/played` | `PlayedBoardsQuery` | `Paged<PlayedBoardDTO>` |
 
 Implementacja w pliku `src/store/api/apiSlice.ts`:
+
 ```ts
 builder.query<Paged<PlayedBoardDTO>, Partial<PlayedBoardsQuery>>({
   query: (params) => ({
@@ -86,11 +87,11 @@ builder.query<Paged<PlayedBoardDTO>, Partial<PlayedBoardsQuery>>({
 
 ## 8. Interakcje użytkownika
 
-| Akcja | Opis | Efekt |
-|-------|------|-------|
+| Akcja                          | Opis                                        | Efekt                                     |
+| ------------------------------ | ------------------------------------------- | ----------------------------------------- |
 | Wpisanie tekstu w wyszukiwarkę | debounce 300 ms ➜ aktualizacja query-string | lista przeładowuje się, `page` reset do 1 |
-| Zmiana strony | kliknięcie w `Pagination` | nowa strona, scroll do topu listy |
-| Kliknięcie karty | przejście do `/boards/[id]` | widok gry w trybie read-only |
+| Zmiana strony                  | kliknięcie w `Pagination`                   | nowa strona, scroll do topu listy         |
+| Kliknięcie karty               | przejście do `/boards/[id]`                 | widok gry w trybie read-only              |
 
 ## 9. Warunki i walidacja
 
@@ -101,10 +102,10 @@ builder.query<Paged<PlayedBoardDTO>, Partial<PlayedBoardsQuery>>({
 
 ## 10. Obsługa błędów
 
-| Scenariusz | UI |
-|------------|----|
-| 401 Unauthorized | globalny interceptor przekierowuje na `/login` + toast „Zaloguj się ponownie”. |
-| 400 Validation | pokazuje stan pustej listy + toast „Nieprawidłowe parametry wyszukiwania”. |
+| Scenariusz              | UI                                                                              |
+| ----------------------- | ------------------------------------------------------------------------------- |
+| 401 Unauthorized        | globalny interceptor przekierowuje na `/login` + toast „Zaloguj się ponownie”.  |
+| 400 Validation          | pokazuje stan pustej listy + toast „Nieprawidłowe parametry wyszukiwania”.      |
 | 500 Server Error / Sieć | komponent `BoardsPlayedList` renderuje `ErrorState` z opcją „Spróbuj ponownie”. |
 
 Retry w RTK Query (exponential backoff) można zostawić na wartościach domyślnych.
@@ -119,10 +120,9 @@ Retry w RTK Query (exponential backoff) można zostawić na wartościach domyśl
    2. Usunięto kroki tworzenia nowych list/kart – pozostają istniejące reużywalne komponenty.
 5. **UI tweaks**: Tailwind klasa dla sekcji czasu (`text-primary/80 text-sm`).
 6. **Middleware**: upewnij się, że `authRedirect` obejmuje `/boards/played`.
-7. **Testy manualne**: 
+7. **Testy manualne**:
    - brak wyników
    - paginacja
    - różne wartości `lastTime`
 8. **Dokumentacja**: aktualizacja README (lista stron) oraz Storybook dla `BoardCardPlayed`.
 9. **Code Review / QA**: lint, unit tests (jeśli istnieją), deploy na staging.
-

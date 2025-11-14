@@ -6,6 +6,9 @@ import { useClickOutside } from "@/hooks/useClickOutside";
 import { NavItem } from "@/components/ui/Sidebar/NavItem";
 import type { NavItemVM } from "@/types/sidebar";
 import { BoardsIcon, PlayedIcon, PlusIcon, MyBoardsIcon } from "@/assets/icons";
+import { PowerIcon } from "@/assets/icons";
+import { useLogoutMutation } from "@/store/api/apiSlice";
+import { clsx } from "clsx";
 import { Routes } from "@/lib/routes";
 
 const navItems: NavItemVM[] = [
@@ -18,6 +21,7 @@ const navItems: NavItemVM[] = [
 export const Sidebar: FC = () => {
   const { collapsed, set } = useSidebar();
   const asideRef = useRef<HTMLDivElement>(null);
+  const [logout] = useLogoutMutation();
 
   const clickedOutside = useClickOutside<HTMLDivElement>(asideRef);
 
@@ -43,6 +47,17 @@ export const Sidebar: FC = () => {
           {navItems.map((item) => (
             <NavItem key={item.route} item={item} />
           ))}
+          {/* Logout item at bottom */}
+          <button
+            onClick={() => logout()}
+            className={clsx(
+              "mt-5 flex items-center gap-3 w-full text-sm font-bold px-3 py-2 text-red-500 hover:bg-red-500 hover:text-white transition-colors",
+              collapsed ? "justify-center" : ""
+            )}
+          >
+            <PowerIcon className="h-5 w-5" />
+            {!collapsed && <span>Log out</span>}
+          </button>
         </nav>
       </div>
     </aside>

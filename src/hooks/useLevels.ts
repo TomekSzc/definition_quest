@@ -36,13 +36,13 @@ export function useLevels(boardId: string, boardTitle: string): UseLevelsResult 
     userId && boardTitle
       ? { ownerId: userId, q: boardTitle, page: 1, pageSize: 100 }
       : // When userId undefined, skip query by passing undefined (RTK Query convention)
-        (undefined as any),
+        (undefined as any)
   );
 
   // 3. Normalise/ sort levels
   const levels = useMemo<BoardSummaryDTO[]>(() => {
     const map = new Map<number, BoardSummaryDTO>();
-    (pagedData?.data ?? []).forEach(b => {
+    (pagedData?.data ?? []).forEach((b) => {
       if (!map.has(b.level)) {
         map.set(b.level, b);
       }
@@ -67,7 +67,7 @@ export function useLevels(boardId: string, boardTitle: string): UseLevelsResult 
         window.location.href = `/boards/${target.id}`;
       }
     },
-    [levels],
+    [levels]
   );
 
   return { levels, currentLevel, navigateToLevel, loading: isFetching, error };

@@ -4,12 +4,14 @@ import PairEditRow from "./PairEditRow";
 import { useToast } from "@/store/hooks";
 
 interface IPairEditListProps {
+  boardId: string;
   pairs: PairDTO[];
   cardCount: number;
   onSave: (pairId: string, patch: PairUpdateCmd) => void;
+  onDelete: (pairId: string) => void;
 }
 
-const PairEditList: FC<IPairEditListProps> = ({ pairs, cardCount, onSave }) => {
+const PairEditList: FC<IPairEditListProps> = ({ boardId, pairs, cardCount, onSave, onDelete }) => {
   const { showToast } = useToast();
 
   if (pairs.length > cardCount / 2) {
@@ -23,7 +25,7 @@ const PairEditList: FC<IPairEditListProps> = ({ pairs, cardCount, onSave }) => {
   return (
     <div className="space-y-4">
       {pairs.map((pair: PairDTO) => (
-        <PairEditRow key={pair.id} pair={pair} onSave={onSave} />
+        <PairEditRow key={pair.id} pair={pair} boardId={boardId} onSave={onSave} onDelete={onDelete} />
       ))}
     </div>
   );

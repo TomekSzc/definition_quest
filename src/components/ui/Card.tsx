@@ -10,7 +10,8 @@ interface ICardProps {
 }
 
 export const Card: FC<ICardProps> = ({ text, status, disabled, onClick }) => {
-  const base = "mb-6 cursor-pointer mx-2 bg-white text-black w-[250px] h-[200px] flex items-center justify-center rounded-md text-center p-2 text-sm font-medium select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500";
+  const base =
+    "mb-6 cursor-pointer mx-2 bg-white text-black w-[250px] h-[200px] flex items-center justify-center rounded-md text-center p-2 text-sm font-medium select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500";
 
   const statusClasses: Record<CardStatus, string> = {
     idle: "border border-neutral-300 dark:border-neutral-600 dark:bg-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-700",
@@ -30,6 +31,6 @@ export const Card: FC<ICardProps> = ({ text, status, disabled, onClick }) => {
       {text}
     </button>
   );
-}
+};
 
 export default Card;

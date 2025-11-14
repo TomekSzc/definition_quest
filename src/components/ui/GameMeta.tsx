@@ -15,7 +15,18 @@ interface IGameMetaProps {
   navigateToLevel?: (level: number) => void;
 }
 
-export const GameMeta: FC<IGameMetaProps> = ({ timeSec, running, canStart, lastScore, onStart, onStop, onReset, levels = [], currentLevel, navigateToLevel }) => {
+export const GameMeta: FC<IGameMetaProps> = ({
+  timeSec,
+  running,
+  canStart,
+  lastScore,
+  onStart,
+  onStop,
+  onReset,
+  levels = [],
+  currentLevel,
+  navigateToLevel,
+}) => {
   const { soundOn, handleSound } = useBoardSound();
 
   const format = (sec: number) => {
@@ -23,7 +34,9 @@ export const GameMeta: FC<IGameMetaProps> = ({ timeSec, running, canStart, lastS
       .toString()
       .padStart(2, "0");
     const s = (sec % 60).toString().padStart(2, "0");
-    const h = Math.floor(sec / 3600).toString().padStart(2, "0");
+    const h = Math.floor(sec / 3600)
+      .toString()
+      .padStart(2, "0");
     return `${h}:${m}:${s}`;
   };
 
@@ -72,21 +85,21 @@ export const GameMeta: FC<IGameMetaProps> = ({ timeSec, running, canStart, lastS
         <>
           <div className="text-center font-semibold">Poziomy</div>
           <div className="flex flex-wrap gap-2 justify-center mt-2">
-          {levels.map((l: number) => (
-            <button
-              key={l}
-              className="cursor-pointer border border-neutral-400 rounded px-2 py-1 text-sm disabled:opacity-50"
-              disabled={l === currentLevel}
-              onClick={() => navigateToLevel?.(l)}
-            >
-              {l}
-            </button>
-          ))}
+            {levels.map((l: number) => (
+              <button
+                key={l}
+                className="cursor-pointer border border-neutral-400 rounded px-2 py-1 text-sm disabled:opacity-50"
+                disabled={l === currentLevel}
+                onClick={() => navigateToLevel?.(l)}
+              >
+                {l}
+              </button>
+            ))}
           </div>
         </>
       )}
     </aside>
   );
-}
+};
 
 export default GameMeta;
