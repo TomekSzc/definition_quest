@@ -42,7 +42,7 @@ export const GET: APIRoute = async ({ params, locals }) => {
     const board = await fetchBoardById(locals.supabase, id, userId);
 
     return createSuccessResponse(board);
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (error instanceof ValidationError) {
       return createErrorResponse(error.response, error.status);
     }
@@ -50,7 +50,9 @@ export const GET: APIRoute = async ({ params, locals }) => {
     if (error instanceof Error) {
       if (error.message === "BOARD_NOT_FOUND" || error.message === "BOARD_PRIVATE") {
         const map = getErrorMapping(error.message);
-        return createErrorResponse(map!.response, map!.status);
+        if (map) {
+          return createErrorResponse(map.response, map.status);
+        }
       }
       const mapping = getErrorMapping(error.message);
       if (mapping) {
@@ -58,7 +60,6 @@ export const GET: APIRoute = async ({ params, locals }) => {
       }
     }
 
-    console.error("Error in GET /api/boards/:id:", error);
     return createErrorResponse("Internal server error", 500);
   }
 };
@@ -97,7 +98,7 @@ export const PATCH: APIRoute = async ({ params, locals, request }) => {
     const message = await updateBoardMeta(locals.supabase, userId, id, payload);
 
     return createSuccessResponse({ message });
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (error instanceof ValidationError) {
       return createErrorResponse(error.response, error.status);
     }
@@ -113,7 +114,6 @@ export const PATCH: APIRoute = async ({ params, locals, request }) => {
       }
     }
 
-    console.error("Error in PATCH /api/boards/:id:", error);
     return createErrorResponse("Internal server error", 500);
   }
 };
@@ -144,7 +144,7 @@ export const DELETE: APIRoute = async ({ params, locals }) => {
     const message = await archiveBoard(locals.supabase, userId, id);
 
     return createSuccessResponse({ message });
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (error instanceof ValidationError) {
       return createErrorResponse(error.response, error.status);
     }
@@ -160,7 +160,6 @@ export const DELETE: APIRoute = async ({ params, locals }) => {
       }
     }
 
-    console.error("Error in DELETE /api/boards/:id:", error);
     return createErrorResponse("Internal server error", 500);
   }
 };

@@ -9,8 +9,11 @@ interface CardCountToggleProps {
 const CardCountToggle: React.FC<CardCountToggleProps> = ({ value, onChange }) => {
   return (
     <div>
-      <label className="block text-sm font-bold mb-1 text-[var(--color-primary)]">Liczba kart</label>
+      <label htmlFor="cardCount" className="block text-sm font-bold mb-1 text-[var(--color-primary)]">
+        Liczba kart
+      </label>
       <ToggleGroup
+        id="cardCount"
         type="single"
         value={value.toString()}
         onValueChange={(v) => {

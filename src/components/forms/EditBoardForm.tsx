@@ -44,8 +44,9 @@ const EditBoardForm: FC<IEditBoardForm> = ({ board, onRefresh }) => {
       setVm((prev: EditBoardVM) => ({ ...prev, title }));
       showToast({ type: "success", title: "Zapisano", message: "Tytuł zaktualizowany" });
       onRefresh();
-    } catch (e: any) {
-      showToast({ type: "error", title: "Błąd", message: e.data?.error || "Nie udało się zapisać" });
+    } catch (e: unknown) {
+      const apiError = (e as { data?: { error?: string } } | undefined)?.data?.error;
+      showToast({ type: "error", title: "Błąd", message: apiError || "Nie udało się zapisać" });
     }
   };
 
@@ -57,8 +58,9 @@ const EditBoardForm: FC<IEditBoardForm> = ({ board, onRefresh }) => {
         pairs: prev.pairs.map((p: PairDTO) => (p.id === updated.id ? updated : p)),
       }));
       showToast({ type: "success", title: "Zapisano", message: "Para zaktualizowana" });
-    } catch (e: any) {
-      showToast({ type: "error", title: "Błąd", message: e.data?.error || "Nie udało się zapisać" });
+    } catch (e: unknown) {
+      const apiError = (e as { data?: { error?: string } } | undefined)?.data?.error;
+      showToast({ type: "error", title: "Błąd", message: apiError || "Nie udało się zapisać" });
     }
   };
 

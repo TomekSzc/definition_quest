@@ -64,7 +64,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         data: {
           user: {
             id: authData.user.id,
-            email: authData.user.email!,
+            email: authData.user.email,
           },
           session: {
             accessToken: authData.session.access_token,
@@ -75,7 +75,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       },
       200
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (error instanceof ValidationError) {
       return createErrorResponse(error.response, error.status);
     }

@@ -29,7 +29,7 @@ export const Sidebar: FC = () => {
     if (!collapsed && clickedOutside) {
       set(true);
     }
-  }, [clickedOutside]);
+  }, [clickedOutside, collapsed, set]);
 
   return (
     <aside
@@ -39,17 +39,16 @@ export const Sidebar: FC = () => {
           ? "fixed left-[-50px] md:left-0 top-0 z-40 h-full bg-[var(--color-primary)] text-white transition-all duration-200"
           : "fixed left-0 top-0 z-40 h-full w-64 bg-[var(--color-primary)] text-white transition-all duration-200"
       }
-      aria-expanded={!collapsed}
     >
       <div className="flex flex-col h-full py-4 space-y-1">
         <SidebarToggleButton />
-        <nav className="flex-1 space-y-1" role="menu">
+        <nav className="flex-1 space-y-1">
           {navItems.map((item) => (
             <NavItem key={item.route} item={item} />
           ))}
           {/* Logout item at bottom */}
           <button
-            onClick={() => logout()}
+            onClick={() => logout(undefined)}
             className={clsx(
               "mt-5 flex items-center gap-3 w-full text-sm font-bold px-3 py-2 text-red-500 hover:bg-red-500 hover:text-white transition-colors",
               collapsed ? "justify-center" : ""

@@ -7,7 +7,7 @@ function createNoopStorage() {
     getItem() {
       return Promise.resolve(null);
     },
-    setItem(_k: string, v: any) {
+    setItem(_k: string, v: string) {
       return Promise.resolve(v);
     },
     removeItem() {

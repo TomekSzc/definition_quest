@@ -145,8 +145,8 @@ export function useBoardGame(
             return updated;
           });
           setStatusMap((s) => {
-            const { [i1]: _, [i2]: __, ...rest } = s;
-            return rest;
+            const rest = Object.fromEntries(Object.entries(s).filter(([k]) => k !== String(i1) && k !== String(i2)));
+            return rest as typeof s;
           });
           setSelectedIndices([]);
         }, 500);
@@ -155,10 +155,8 @@ export function useBoardGame(
         playFailure();
         setTimeout(() => {
           setStatusMap((s) => {
-            const copy = { ...s };
-            delete copy[i1];
-            delete copy[i2];
-            return copy;
+            const rest = Object.fromEntries(Object.entries(s).filter(([k]) => k !== String(i1) && k !== String(i2)));
+            return rest as typeof s;
           });
           setSelectedIndices([]);
         }, 500);

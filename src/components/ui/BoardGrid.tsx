@@ -45,16 +45,22 @@ export const BoardGrid: FC<IBoardGridProps> = ({
               <div className="flex gap-4 text-base">
                 {hasPrev && (
                   <button
-                    className="cursor-pointer bg-[var(--color-primary)] text-white hover:bg-neutral-300 px-3 py-1 rounded"
-                    onClick={() => navigateToLevel?.(currentLevel! - 1)}
+                    className="cursor-pointer bg-[var(--color-primary)] text-white hover:bg-neutral-300 px-3 py-1 rounded disabled:opacity-50"
+                    disabled={currentLevel === undefined}
+                    onClick={() => {
+                      if (currentLevel !== undefined) navigateToLevel?.(currentLevel - 1);
+                    }}
                   >
                     Poprzedni level
                   </button>
                 )}
                 {hasNext && (
                   <button
-                    className="cursor-pointer bg-[var(--color-primary)] text-white hover:bg-neutral-300 px-3 py-1 rounded"
-                    onClick={() => navigateToLevel?.(currentLevel! + 1)}
+                    className="cursor-pointer bg-[var(--color-primary)] text-white hover:bg-neutral-300 px-3 py-1 rounded disabled:opacity-50"
+                    disabled={currentLevel === undefined}
+                    onClick={() => {
+                      if (currentLevel !== undefined) navigateToLevel?.(currentLevel + 1);
+                    }}
                   >
                     Następny level
                   </button>

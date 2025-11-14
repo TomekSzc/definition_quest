@@ -1,4 +1,5 @@
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import type { RootState } from "@/store/index";
 import { toggleSound } from "@/store/slices/soundSlice";
 
 let successAudio: HTMLAudioElement | undefined;
@@ -12,7 +13,7 @@ if (typeof window !== "undefined") {
 }
 
 export function useBoardSound() {
-  const soundOn = useAppSelector((s: any) => s.sound?.soundOn ?? true);
+  const soundOn = useAppSelector((s: RootState) => s.sound.soundOn ?? true);
   const dispatch = useAppDispatch();
 
   const stopAll = () => {
@@ -27,7 +28,9 @@ export function useBoardSound() {
   const play = (audio?: HTMLAudioElement) => {
     if (!soundOn || !audio) return;
     stopAll();
-    audio.play().catch(() => {});
+    audio.play().catch(() => {
+      /* playback error ignored */
+    });
   };
 
   const playSuccess = () => play(successAudio);

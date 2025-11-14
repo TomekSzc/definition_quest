@@ -24,7 +24,7 @@ export const NavItem: FC<NavItemProps> = ({ item }) => {
 
   return (
     <a
-      href={isActive ? undefined : item.route}
+      href={item.route}
       className={clsx(
         "flex items-center gap-3 rounded-md px-3 py-2 transition-colors",
         collapsed ? "justify-center text-sm font-normal" : "text-sm font-bold",
@@ -34,7 +34,7 @@ export const NavItem: FC<NavItemProps> = ({ item }) => {
       )}
       role="menuitem"
       aria-current={isActive ? "page" : undefined}
-      tabIndex={isActive ? -1 : 0}
+      aria-disabled={isActive || undefined}
     >
       <Icon className="h-5 w-5" />
       {!collapsed && <span>{item.label}</span>}

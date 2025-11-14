@@ -1,5 +1,5 @@
-import React, { forwardRef, useImperativeHandle, useState } from "react";
-import { useForm, useFieldArray } from "react-hook-form";
+import { forwardRef, useImperativeHandle, useState } from "react";
+import { useForm, useFieldArray, type FieldError } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/Button";
@@ -9,6 +9,7 @@ import type { PairCreateCmd } from "@/types";
 import { useToast } from "@/store/hooks";
 import { setLoading } from "@/store/slices/uiSlice";
 import { useAppDispatch } from "@/store/hooks";
+import { Routes } from "@/lib/routes";
 
 export const AddLevelSchema = z.object({
   pairs: z
@@ -73,12 +74,13 @@ const AddLevelForm = forwardRef<AddLevelFormHandle, AddLevelFormProps>(({ rootId
       await addLevel({ boardId: rootId, pairs: values.pairs as unknown as PairCreateCmd[] }).unwrap();
       showToast({ type: "success", title: "Sukces", message: "Poziom zapisany" });
       if (saveMode === "save") {
-        window.location.href = "/public-boards";
+        window.location.href = Routes.Boards;
       } else {
         reset({ pairs: [] });
       }
-    } catch (e: any) {
-      showToast({ type: "error", title: "Błąd", message: e?.data?.message || "Nie udało się zapisać" });
+    } catch (e: unknown) {
+      const apiError = (e as { data?: { message?: string } } | undefined)?.data?.message;
+      showToast({ type: "error", title: "Błąd", message: apiError || "Nie udało się zapisać" });
     } finally {
       dispatch(setLoading(false));
     }
@@ -94,8 +96,8 @@ const AddLevelForm = forwardRef<AddLevelFormHandle, AddLevelFormProps>(({ rootId
           <PairFormRow
             key={field.id}
             index={index}
-            register={register as any}
-            errors={errors.pairs?.[index] as any}
+            register={register}
+            errors={errors.pairs?.[index] as { term?: FieldError; definition?: FieldError } | undefined}
             onRemove={() => remove(index)}
           />
         ))}
@@ -136,5 +138,6 @@ const AddLevelForm = forwardRef<AddLevelFormHandle, AddLevelFormProps>(({ rootId
     </form>
   );
 });
+AddLevelForm.displayName = "AddLevelForm";
 
 export default AddLevelForm;

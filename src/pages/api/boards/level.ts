@@ -22,7 +22,7 @@ export const prerender = false;
  * @returns 404 Not Found - Board does not exist
  * @returns 500 Internal Server Error - Unhandled errors
  */
-export const POST: APIRoute = async ({ request, locals, url }) => {
+export const POST: APIRoute = async ({ request, locals }) => {
   try {
     const user = locals.user;
     if (!user) {
@@ -46,7 +46,7 @@ export const POST: APIRoute = async ({ request, locals, url }) => {
     // 2. Call service layer
     const message = await createBoardNextLevel(locals.supabase, user.id, cmd);
     return createSuccessResponse({ message }, 201);
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (error instanceof HttpError) {
       return createErrorResponse(error.response || error.message, error.status);
     }

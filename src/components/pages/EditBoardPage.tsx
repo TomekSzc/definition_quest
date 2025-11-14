@@ -19,7 +19,7 @@ const EditBoardPageComponent: FC<IEditBoardPageProps> = ({ boardId }) => {
       showToast({
         type: "error",
         title: "Błąd",
-        message: (error as any)?.data?.error || "Nie udało się pobrać tablicy",
+        message: (error as { data?: { error?: string } } | undefined)?.data?.error || "Nie udało się pobrać tablicy",
       })
     );
   }

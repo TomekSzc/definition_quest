@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import type { FC } from "react";
 import debounce from "lodash.debounce";
 import { X } from "lucide-react";
+import { useRefValue } from "@/hooks/useRefValue";
 
 interface ISearchInputProps {
   onChange: (value: string) => void;
@@ -10,7 +11,8 @@ interface ISearchInputProps {
 
 export const SearchInput: FC<ISearchInputProps> = ({ onChange, initialValue }) => {
   const searchRef = useRef<HTMLInputElement>(null);
-  const value = searchRef.current?.value ?? "";
+  const value = useRefValue(searchRef);
+
   const debouncedSearch = debounce(async (search: string) => {
     onChange(search);
   }, 300);

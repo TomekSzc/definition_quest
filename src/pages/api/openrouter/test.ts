@@ -39,8 +39,6 @@ export const GET: APIRoute = async () => {
       },
     });
   } catch (error) {
-    console.error("[OpenRouter Test] Error:", error);
-
     if (error instanceof OpenRouterError) {
       return apiResponse(
         {

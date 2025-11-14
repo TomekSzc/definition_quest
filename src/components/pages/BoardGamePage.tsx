@@ -1,5 +1,6 @@
 import type { FC } from "react";
 import { useGetBoardByIdQuery, useSubmitScoreMutation } from "@/store/api/apiSlice";
+import { skipToken } from "@reduxjs/toolkit/query";
 import { useBoardGame } from "@/hooks/useBoardGame";
 import GameMeta from "@/components/ui/GameMeta";
 import { useLevels } from "@/hooks/useLevels";
@@ -15,15 +16,17 @@ interface IBoardGamePageComponentProps {
 
 const BoardGamePageComponent: FC<IBoardGamePageComponentProps> = ({ boardId }) => {
   const { showToast } = useToast();
-  if (!boardId) return <p className="p-4">Brak identyfikatora planszy</p>;
 
-  const { data: board, isFetching, error } = useGetBoardByIdQuery(boardId);
+  // Ensure hooks called unconditionally
+  const queryArg = boardId ?? skipToken;
+  const { data: board, isFetching, error } = useGetBoardByIdQuery(queryArg);
   const [submitScore] = useSubmitScoreMutation();
 
   // Levels hook
-  const { levels, currentLevel, navigateToLevel } = useLevels(boardId, board?.title || "");
+  const { levels, currentLevel, navigateToLevel } = useLevels(boardId ?? "", board?.title || "");
 
   const onGameFinish = async (elapsedMs: number) => {
+    if (!boardId) return;
     try {
       await submitScore({ boardId, elapsedMs }).unwrap();
       showToast({ type: "success", title: "Sukces", message: "Wynik zapisany" });
@@ -47,6 +50,7 @@ const BoardGamePageComponent: FC<IBoardGamePageComponentProps> = ({ boardId }) =
     onFinish: onGameFinish,
     onTimeout: onGameTimeout,
   });
+  if (!boardId) return <p className="p-4">Brak identyfikatora planszy</p>;
   if (error) return <p className="p-4">Board not found</p>;
 
   return (

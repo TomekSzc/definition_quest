@@ -82,14 +82,14 @@ export const POST: APIRoute = async ({ request, locals }) => {
         data: {
           user: {
             id: user.id,
-            email: user.email!,
+            email: user.email,
           },
         },
         message: "Account created successfully. Please check your email for verification.",
       },
       201
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (error instanceof ValidationError) {
       return createErrorResponse(error.response, error.status);
     }

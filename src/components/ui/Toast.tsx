@@ -17,10 +17,6 @@ export const Toast: FC = () => {
 
   if (!visible) return null;
 
-  const closeToast = () => {
-    dispatch(clearToast());
-  };
-
   const colorMap: Record<ToastType, string> = {
     success: "bg-[var(--color-toast-success-bg)] text-[var(--color-toast-success-text)]",
     error: "bg-[var(--color-toast-error-bg)] text-[var(--color-toast-error-text)]",

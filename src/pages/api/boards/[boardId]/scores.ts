@@ -63,7 +63,7 @@ async function handleUpsert(
         return createErrorResponse(mapped.response, mapped.status);
       }
     }
-    console.error("Error in POST /boards/:boardId/scores", error);
+
     return createErrorResponse({ error: "SERVER_ERROR" }, 500);
   }
 }

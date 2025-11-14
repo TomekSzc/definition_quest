@@ -26,7 +26,7 @@ export const AuthForm: FC = () => {
   async function onSubmit(data: LoginRequest) {
     const res = await login(data).unwrap();
     if (res.data?.user) {
-      window.location.href = Routes.Boards;
+      window.location.assign(Routes.Boards);
     }
   }
 
