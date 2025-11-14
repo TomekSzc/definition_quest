@@ -7,7 +7,7 @@
 // manually to match the public contract. Where a column is reused verbatim
 // the underlying DB column type is referenced to preserve accuracy.
 
-import type { Tables, TablesInsert, TablesUpdate } from "./db/database.types";
+import type { Tables } from "./db/database.types";
 
 /**
  * Helpers ────────────────────────────────────────────────────────────────

@@ -7,8 +7,8 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
+    "lint": "eslint . --no-error-on-unmatched-pattern",
+    "lint:fix": "eslint . --no-error-on-unmatched-pattern --fix",
     "format": "prettier --write .",
     "test:openrouter": "tsx scripts/test-openrouter.ts",
     "test:ai-generation": "tsx scripts/test-board-generation.ts"
