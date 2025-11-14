@@ -32,8 +32,7 @@ const BoardGamePageComponent: FC<IBoardGamePageComponentProps> = ({ boardId }) =
     }
   };
 
-  const onGameTimeout = () =>
-    showToast({ type: "warning", title: "Czas", message: "Czas minął" });
+  const onGameTimeout = () => showToast({ type: "warning", title: "Czas", message: "Czas minął" });
 
   const { collapsed } = useSidebar();
   const sidebarOffset = collapsed ? "ml-0 md:ml-11" : "ml-64";
@@ -56,14 +55,14 @@ const BoardGamePageComponent: FC<IBoardGamePageComponentProps> = ({ boardId }) =
         <SkeletonBoard cardCount={16} />
       ) : (
         <>
-           <BoardGrid
+          <BoardGrid
             cards={cards.map((c, idx) => ({
               ...c,
               status: statusMap[idx] ?? "idle",
             }))}
             running={running}
             onCardClick={markCard}
-            levels={levels.map(l=>l.level)}
+            levels={levels.map((l) => l.level)}
             currentLevel={currentLevel}
             navigateToLevel={navigateToLevel}
           />
@@ -75,7 +74,7 @@ const BoardGamePageComponent: FC<IBoardGamePageComponentProps> = ({ boardId }) =
             onStart={startGame}
             onStop={stopGame}
             onReset={resetGame}
-            levels={levels.map(l => l.level)}
+            levels={levels.map((l) => l.level)}
             currentLevel={currentLevel}
             navigateToLevel={navigateToLevel}
           />

@@ -276,15 +276,17 @@ export const apiSlice = createApi({
       async onQueryStarted(arg, { dispatch, queryFulfilled }) {
         try {
           const { data } = await queryFulfilled;
-          dispatch(
-            showToast({ type: "success", title: "Sukces", message: "Tablica utworzona" })
-          );
+          dispatch(showToast({ type: "success", title: "Sukces", message: "Tablica utworzona" }));
           if (data && data.length) {
             window.location.href = `/boards/${data[0].id}`;
           }
         } catch (err: any) {
           dispatch(
-            showToast({ type: "error", title: "Błąd", message: err?.error?.data?.message || "Nie udało się utworzyć tablicy" })
+            showToast({
+              type: "error",
+              title: "Błąd",
+              message: err?.error?.data?.message || "Nie udało się utworzyć tablicy",
+            })
           );
         }
       },
@@ -328,13 +330,15 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: (result, error, { boardId }) => [{ type: "Boards", id: boardId }],
     }),
-    deletePair: builder.mutation<{ id: string; boardId: string; message: string }, { boardId: string; pairId: string }>({
-      query: ({ boardId, pairId }) => ({
-        url: `/api/boards/${boardId}/pairs/${pairId}`,
-        method: "DELETE",
-      }),
-      invalidatesTags: (result, error, { boardId }) => [{ type: "Boards", id: boardId }],
-    }),
+    deletePair: builder.mutation<{ id: string; boardId: string; message: string }, { boardId: string; pairId: string }>(
+      {
+        query: ({ boardId, pairId }) => ({
+          url: `/api/boards/${boardId}/pairs/${pairId}`,
+          method: "DELETE",
+        }),
+        invalidatesTags: (result, error, { boardId }) => [{ type: "Boards", id: boardId }],
+      }
+    ),
   }),
 });
 

@@ -10,11 +10,13 @@ Punkt końcowy pozwala zalogowanemu użytkownikowi **zapisać** czas ukończenia
 - **URL:** `/boards/:boardId/scores`
   - `:boardId` (`uuid`) – identyfikator tablicy – wymagany
 - **Request Body (JSON):**
+
   ```jsonc
   { "elapsedMs": 93400 }
   ```
 
   - `elapsedMs` `number` > 0 – czas w milisekundach – wymagany
+
 - **Nagłówki:**
   - `Authorization: Bearer <JWT>` — token Supabase (wymagany)
 

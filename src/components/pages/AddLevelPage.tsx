@@ -31,7 +31,10 @@ const AddLevelPageComponent: FC<AddLevelPageProps> = ({ boardId }) => {
         <AddLevelForm ref={formRef} rootId={boardId} cardCount={board.cardCount as 16 | 24} />
       </div>
       <div className="w-full md:w-80 lg:w-96 sticky top-20 self-start">
-        <GeneratePairsByAI remainingSlots={cardCountSlotsRemaining()} onAdd={(pairs)=>formRef.current?.addPairs(pairs)} />
+        <GeneratePairsByAI
+          remainingSlots={cardCountSlotsRemaining()}
+          onAdd={(pairs) => formRef.current?.addPairs(pairs)}
+        />
       </div>
     </div>
   );

@@ -56,9 +56,7 @@ export function useBoardGame(
   const [selectedIndices, setSelectedIndices] = useState<number[]>([]);
   const [timeSec, setTimeSec] = useState(0);
   const [running, setRunning] = useState(false);
-  const [lastScore, setLastScore] = useState<number | undefined>(
-    board?.myScore?.lastTime
-  );
+  const [lastScore, setLastScore] = useState<number | undefined>(board?.myScore?.lastTime);
 
   const timerRef = useRef<number | null>(null);
   const gameStartRef = useRef<number | null>(null);
@@ -73,7 +71,7 @@ export function useBoardGame(
 
   // Timer tick
   const tick = useCallback(() => {
-    setTimeSec(prev => prev + 1);
+    setTimeSec((prev) => prev + 1);
   }, []);
 
   // Public controls
@@ -132,12 +130,12 @@ export function useBoardGame(
     (i1: number, i2: number) => {
       const success = cards[i1].pairId === cards[i2].pairId;
       if (success) {
-        setStatusMap(s => ({ ...s, [i1]: "success", [i2]: "success" }));
+        setStatusMap((s) => ({ ...s, [i1]: "success", [i2]: "success" }));
         playSuccess();
         const pairId = cards[i1].pairId;
         setTimeout(() => {
-          setCards(prev => {
-            const updated = prev.filter(card => card.pairId !== pairId);
+          setCards((prev) => {
+            const updated = prev.filter((card) => card.pairId !== pairId);
             if (updated.length === 0) {
               playFanfare();
               setLastScore(timeSec * 1000);
@@ -146,17 +144,17 @@ export function useBoardGame(
             }
             return updated;
           });
-          setStatusMap(s => {
+          setStatusMap((s) => {
             const { [i1]: _, [i2]: __, ...rest } = s;
             return rest;
           });
           setSelectedIndices([]);
         }, 500);
       } else {
-        setStatusMap(s => ({ ...s, [i1]: "failure", [i2]: "failure" }));
+        setStatusMap((s) => ({ ...s, [i1]: "failure", [i2]: "failure" }));
         playFailure();
         setTimeout(() => {
-          setStatusMap(s => {
+          setStatusMap((s) => {
             const copy = { ...s };
             delete copy[i1];
             delete copy[i2];
@@ -175,14 +173,14 @@ export function useBoardGame(
       if (!running) return;
       if (statusMap[index] === "success" || statusMap[index] === "failure") return;
 
-      setSelectedIndices(prev => {
+      setSelectedIndices((prev) => {
         let next = prev;
         // toggle selection
         if (prev.includes(index)) {
-          next = prev.filter(i => i !== index);
+          next = prev.filter((i) => i !== index);
         } else if (prev.length < 2) {
           next = [...prev, index];
-          setStatusMap(s => ({ ...s, [index]: "selected" }));
+          setStatusMap((s) => ({ ...s, [index]: "selected" }));
         }
 
         // After updating next, if 2 selected, check pairs
@@ -211,4 +209,3 @@ export function useBoardGame(
     markCard,
   };
 }
-

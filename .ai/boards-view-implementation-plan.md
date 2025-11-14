@@ -7,10 +7,12 @@ Widok „Public Boards” umożliwia anonimowym i zalogowanym użytkownikom prze
 ## 2. Routing widoków
 
 Public Boards:
+
 - Ścieżka: `/boards`
 - Plik Astro: `src/pages/boards.astro`
 
 My Boards (widok prywatny – wymaga zalogowania):
+
 - Ścieżka: `/my-boards`
 - Plik Astro: `src/pages/my-boards.astro`
 - Różnica w zapytaniu: `ownerId` ustawiany na `auth.user.id` (reszta parametrów i UI takie same jak w Public Boards)

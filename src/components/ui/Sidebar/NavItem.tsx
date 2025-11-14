@@ -43,4 +43,3 @@ export const NavItem: FC<NavItemProps> = ({ item }) => {
 };
 
 export default NavItem;
- 

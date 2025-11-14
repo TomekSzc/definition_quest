@@ -12,11 +12,13 @@ W odróżnieniu od `POST` nie zwraca statusu 201 – zawsze 200 OK, niezależnie
 - **URL:** `/boards/:boardId/scores`
   - `:boardId` (`uuid`) – identyfikator tablicy – wymagany
 - **Request Body (JSON):**
+
   ```jsonc
   { "elapsedMs": 93400 }
   ```
 
   - `elapsedMs` `number` > 0 – czas w milisekundach – wymagany
+
 - **Nagłówki:**
   - `Authorization: Bearer <JWT>` — token Supabase (wymagany)
 

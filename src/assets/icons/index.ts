@@ -9,5 +9,6 @@ export { default as ChevronLeftIcon } from "./ChevronLeftIcon";
 export { default as MyBoardsIcon } from "./MyBoardsIcon";
 export { default as XIcon } from "./XIcon";
 export { default as CheckIcon } from "./CheckIcon";
+export { default as PowerIcon } from "./PowerIcon";
 export * from "./VolumeOnIcon";
 export * from "./VolumeOffIcon";

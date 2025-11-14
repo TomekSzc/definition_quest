@@ -16,7 +16,7 @@ export function useBoardSound() {
   const dispatch = useAppDispatch();
 
   const stopAll = () => {
-    [successAudio, failureAudio, fanfareAudio].forEach(a => {
+    [successAudio, failureAudio, fanfareAudio].forEach((a) => {
       if (a && !a.paused) {
         a.pause();
         a.currentTime = 0;

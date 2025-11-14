@@ -13,12 +13,7 @@ export const ProtectedRoute: FC<ProtectedRouteProps> = ({ children }) => {
 
   const pathname = typeof window !== "undefined" ? window.location.pathname : "/";
   // Determine if current route requires authentication or should be hidden from authenticated users
-  const authPages: Routes[] = [
-    Routes.Login,
-    Routes.SignUp,
-    Routes.ForgotPassword,
-    Routes.ResetPassword,
-  ];
+  const authPages: Routes[] = [Routes.Login, Routes.SignUp, Routes.ForgotPassword, Routes.ResetPassword];
 
   const isProtected = Object.values(ProtectedRoutes).includes(pathname as ProtectedRoutes);
   const isAuthPage = authPages.includes(pathname as Routes);

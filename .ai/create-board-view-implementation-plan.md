@@ -1,14 +1,17 @@
 # Plan implementacji widoku „Utwórz tablicę”
 
 ## 1. Przegląd
+
 Widok „Utwórz tablicę” umożliwia ręczne dodawanie par termin–definicja lub generowanie ich przy pomocy AI. Użytkownik może skonfigurować tytuł, tagi, liczbę kart (16/24) oraz maksymalnie 100 par. Formularz korzysta z `react-hook-form` i walidacji `zod`. Pary mogą być dodawane / usuwane dynamicznie, a panel boczny pozwala wkleić tekst do AI i zaakceptować wygenerowane pary.
 
 ## 2. Routing widoku
-- Ścieżka: `/boards/create`  
-- Plik strony: `src/pages/boards/create.astro`  
+
+- Ścieżka: `/boards/create`
+- Plik strony: `src/pages/boards/create.astro`
 - Route jest chroniony – dostęp tylko po zalogowaniu (middleware auth).
 
 ## 3. Struktura komponentów
+
 ```
 CreateBoardPage (.astro)
 └── Layout
@@ -31,7 +34,9 @@ CreateBoardPage (.astro)
 ```
 
 ## 4. Szczegóły komponentów
+
 ### 4.1 CreateBoardForm
+
 - **Opis**: Główny formularz tworzenia tablicy.
 - **Elementy**: `form`, `TitleInput`, `TagsInput`, `CardCountToggle`, `PairsFieldArray`, `Submit`, `Reset`.
 - **Interakcje**: submit, reset, dodawanie/usuwanie par.
@@ -45,6 +50,7 @@ CreateBoardPage (.astro)
 - **Propsy**: brak (komponent nadrzędny zarządza stanem globalnym formularza przez RHF context).
 
 ### 4.2 TagsInput
+
 - **Opis**: Pole tekstowe + lista chipów usuwalnych.
 - **Elementy**: `input`, lista `Chip` z przyciskiem X.
 - **Interakcje**: `onEnter` dodaje tag, klik X usuwa.
@@ -53,33 +59,39 @@ CreateBoardPage (.astro)
 - **Propsy**: `name` (string).
 
 ### 4.3 CardCountToggle
+
 - **Opis**: Przełącznik 16/24 kart (radio lub SegmentedToggle z Shadcn/ui).
 - **Interakcje**: klik zmienia `cardCount` w RHF.
 - **Walidacja**: literal 16 lub 24.
 - **Propsy**: `name`.
 
 ### 4.4 PairsFieldArray
+
 - **Opis**: Zarządza dynamiczną listą par z użyciem `useFieldArray`.
 - **Interakcje**: Dodaj (+), Usuń (trash), edycja pól.
 - **Walidacja**: delegowane do `PairFormRow` + limit 100.
 
 ### 4.5 PairFormRow
+
 - **Opis**: Dwa pola tekstowe w wierszu.
 - **Walidacja**: term i definition jak wyżej.
 - **Interakcje**: na blur walidacja, przycisk usuń.
 
 ### 4.6 GeneratePairsByAI
+
 - **Opis**: Sticky panel z textarea i przyciskiem „Generuj AI”.
 - **Interakcje**: submit ↠ POST `/api/boards/generate`.
 - **Walidacja**: `inputText` ≤ 5000.
 - **Stan**: `loading`, `error`, `pairsResult`.
 
 ### 4.7 AcceptPairsModal
+
 - **Opis**: Modal z listą wygenerowanych par (checkbox per pair, zaznaczone domyślnie).
 - **Interakcje**: odznacz, „Akceptuj” ↠ filtr → dodać do `PairsFieldArray`.
 - **Walidacja**: co najmniej 1 para zaznaczona.
 
 ## 5. Typy
+
 ```ts
 interface PairFormValue {
   term: string;
@@ -98,20 +110,23 @@ interface AiGenerateResponse extends BoardGenerationResultDTO {}
 ```
 
 ## 6. Zarządzanie stanem
+
 - Formularz: `react-hook-form` + `zodResolver`.
 - Dynamiczna lista par: `useFieldArray`.
 - AI panel: lokalny `useState` na `inputText`, `loading`, `pairsResult`.
 - Modal: kontrolowany `isOpen` oraz formularz RHF do checkboxów.
 
 ## 7. Integracja API
-| Akcja | Endpoint | Metoda | Wejście | Wyjście |
-|-------|----------|--------|---------|---------|
-| Utwórz tablicę | `/api/boards` | POST | `CreateBoardCmd` | `BoardDetailDTO[]` |
-| Generuj pary | `/api/boards/generate` | POST | `GenerateBoardCmd` | `BoardGenerationResultDTO` |
+
+| Akcja          | Endpoint               | Metoda | Wejście            | Wyjście                    |
+| -------------- | ---------------------- | ------ | ------------------ | -------------------------- |
+| Utwórz tablicę | `/api/boards`          | POST   | `CreateBoardCmd`   | `BoardDetailDTO[]`         |
+| Generuj pary   | `/api/boards/generate` | POST   | `GenerateBoardCmd` | `BoardGenerationResultDTO` |
 
 Implementacja w RTK Query (`apiSlice`) – dodać dwa endpoints `createBoard` i `generatePairs`.
 
 ## 8. Interakcje użytkownika
+
 1. Wprowadza tytuł, tagi, cardCount.
 2. Dodaje pary ręcznie lub generuje AI:
    - Wkleja tekst → klik „Generuj AI”.
@@ -121,6 +136,7 @@ Implementacja w RTK Query (`apiSlice`) – dodać dwa endpoints `createBoard` i 
    - błąd: toast z komunikatem.
 
 ## 9. Warunki i walidacja
+
 - Walidacja klienta = walidacji z schematów backend (zod sync).
 - Dodatkowe:
   - unikalność termów lokalnie.
@@ -128,6 +144,7 @@ Implementacja w RTK Query (`apiSlice`) – dodać dwa endpoints `createBoard` i 
   - limit 5000 znaków dla AI input.
 
 ## 10. Obsługa błędów
+
 - Walidacja kliencka: komunikaty inline.
 - 400/409 z API: toast error + podświetlenie pól.
 - 401: redirect do login.
@@ -135,6 +152,7 @@ Implementacja w RTK Query (`apiSlice`) – dodać dwa endpoints `createBoard` i 
 - Sieć / 500: toast error, możliwość ponowienia.
 
 ## 11. Kroki implementacji
+
 1. **Routing**: utwórz `src/pages/boards/create.astro` na bazie `my-boards.astro`.
 2. **Breadcrumbs**: rozszerz `routeTitles` o `/boards/create`.
 3. **Instalacja lib**: `npm i react-hook-form @hookform/resolvers zod`.

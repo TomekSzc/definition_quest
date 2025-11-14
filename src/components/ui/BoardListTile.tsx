@@ -62,10 +62,12 @@ export const BoardListTile: FC<IBoardListTileProps> = ({ board }) => {
       </div>
       {canManage && (
         <div className="flex items-center gap-2">
-          {board?.lastTime && (<div className="text-sm text-gray-500 flex flex-col lowercase">
-            <span>Last score</span>
-            <span>{board.lastTime}ms</span>
-          </div>)}
+          {board?.lastTime && (
+            <div className="text-sm text-gray-500 flex flex-col lowercase">
+              <span>Last score</span>
+              <span>{board.lastTime}ms</span>
+            </div>
+          )}
           <EditIcon
             className="w-[30px] h-[30px] cursor-pointer text-[var(--color-primary)] hover:bg-[var(--color-primary)] hover:text-white rounded p-1 transition-colors"
             onClick={(e) => {
@@ -74,11 +76,14 @@ export const BoardListTile: FC<IBoardListTileProps> = ({ board }) => {
               window.location.href = `/boards/${board.id}/edit`;
             }}
           />
-          <DeleteIcon className="w-[30px] h-[30px] cursor-pointer text-[var(--color-primary)] hover:bg-red-500 hover:text-white rounded p-1 transition-colors" onClick={(e) => {
+          <DeleteIcon
+            className="w-[30px] h-[30px] cursor-pointer text-[var(--color-primary)] hover:bg-red-500 hover:text-white rounded p-1 transition-colors"
+            onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
               setShowDelete(true);
-            }} />
+            }}
+          />
         </div>
       )}
       <DeleteBoardDialog
