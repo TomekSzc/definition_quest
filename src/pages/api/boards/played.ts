@@ -41,7 +41,7 @@ export const GET: APIRoute = async ({ url, locals }) => {
     const paged = await listBoardsPlayedByUser(locals.supabase, user.id, parseResult.data);
 
     return createSuccessResponse(paged);
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (error instanceof HttpError) {
       return createErrorResponse(error.response || error.message, error.status);
     }

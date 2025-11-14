@@ -23,8 +23,10 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
   try {
     const user = locals.user;
     if (!user) {
-      const map = getErrorMapping("UNAUTHORIZED")!;
-      return createErrorResponse(map.response, map.status);
+      const unauthorized = getErrorMapping("UNAUTHORIZED");
+      return unauthorized
+        ? createErrorResponse(unauthorized.response, unauthorized.status)
+        : createErrorResponse({ error: "Unauthorized" }, 401);
     }
 
     // 1. Validate params
@@ -49,7 +51,7 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
     const updated = await updatePair(locals.supabase, user.id, boardId, pairId, bodyResult.data);
 
     return createSuccessResponse(updated);
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (error instanceof ValidationError) {
       return createErrorResponse(error.response, error.status);
     }
@@ -70,8 +72,10 @@ export const DELETE: APIRoute = async ({ params, locals }) => {
   try {
     const user = locals.user;
     if (!user) {
-      const map = getErrorMapping("UNAUTHORIZED")!;
-      return createErrorResponse(map.response, map.status);
+      const unauthorized = getErrorMapping("UNAUTHORIZED");
+      return unauthorized
+        ? createErrorResponse(unauthorized.response, unauthorized.status)
+        : createErrorResponse({ error: "Unauthorized" }, 401);
     }
 
     // 1. Validate params
@@ -87,7 +91,7 @@ export const DELETE: APIRoute = async ({ params, locals }) => {
     const deleted = await removePair(locals.supabase, user.id, boardId, pairId);
 
     return createSuccessResponse({ ...deleted, message: "deleted" });
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (error instanceof ValidationError) {
       return createErrorResponse(error.response, error.status);
     }

@@ -34,7 +34,7 @@ export const GET: APIRoute = async ({ url, locals }) => {
     const paged = await listPublicBoards(locals.supabase, parseResult.data);
 
     return createSuccessResponse(paged);
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (error instanceof ValidationError) {
       return createErrorResponse(error.response, error.status);
     }
@@ -90,7 +90,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const message = await createBoard(locals.supabase, user.id, command);
 
     return createSuccessResponse({ message }, 201);
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (error instanceof HttpError) {
       return createErrorResponse(error.response || error.message, error.status);
     }
@@ -101,12 +101,14 @@ export const POST: APIRoute = async ({ request, locals }) => {
         return createErrorResponse(mapping.response, mapping.status);
       }
 
-      if ((error as any).code === "23505") {
-        return createErrorResponse(getErrorMapping("DUPLICATE_BOARD")!.response, 409);
+      if ((error as { code?: string }).code === "23505") {
+        const duplicate = getErrorMapping("DUPLICATE_BOARD");
+        if (duplicate) {
+          return createErrorResponse(duplicate.response, 409);
+        }
       }
     }
 
-    console.error("Error in POST /api/boards:", error);
     return createErrorResponse("Internal server error", 500);
   }
 };

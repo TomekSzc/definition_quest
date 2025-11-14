@@ -1,4 +1,4 @@
-import { type FC, useRef } from "react";
+import { type FC, useRef, useEffect, useState } from "react";
 import { withProviders } from "@/components/HOC/Providers";
 import LoaderOverlay from "@/components/ui/LoaderOverlay";
 import AddLevelForm, { type AddLevelFormHandle } from "@/components/forms/AddLevelForm";
@@ -13,15 +13,18 @@ const AddLevelPageComponent: FC<AddLevelPageProps> = ({ boardId }) => {
   const formRef = useRef<AddLevelFormHandle>(null);
   const { data: board, isFetching } = useGetBoardByIdQuery(boardId);
 
+  const [remainingSlots, setRemainingSlots] = useState(0);
+
+  useEffect(() => {
+    if (!board) return;
+    const pairs =
+      formRef.current && "getPairs" in formRef.current ? (formRef.current as { getPairs: () => number }).getPairs() : 0;
+    setRemainingSlots(board.cardCount / 2 - pairs);
+  }, [board]);
+
   if (isFetching || !board) {
     return <LoaderOverlay />;
   }
-
-  const cardCountSlotsRemaining = () => {
-    const current = formRef.current as any;
-    const currPairs = current?.getPairs?.() ?? 0;
-    return board.cardCount / 2 - currPairs;
-  };
 
   return (
     <div className="flex flex-wrap justify-start p-4 gap-8 bg-secondary relative min-h-[85vh] md:pl-[80px]">
@@ -31,10 +34,7 @@ const AddLevelPageComponent: FC<AddLevelPageProps> = ({ boardId }) => {
         <AddLevelForm ref={formRef} rootId={boardId} cardCount={board.cardCount as 16 | 24} />
       </div>
       <div className="w-full md:w-80 lg:w-96 sticky top-20 self-start">
-        <GeneratePairsByAI
-          remainingSlots={cardCountSlotsRemaining()}
-          onAdd={(pairs) => formRef.current?.addPairs(pairs)}
-        />
+        <GeneratePairsByAI remainingSlots={remainingSlots} onAdd={(pairs) => formRef.current?.addPairs(pairs)} />
       </div>
     </div>
   );

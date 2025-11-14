@@ -349,10 +349,23 @@ export async function listBoardsPlayedByUser(
   // Remove duplicates and pick bestTime
   const uniqueMap = new Map<string, PlayedBoardDTO>();
 
-  (data ?? []).forEach((r: any) => {
+  interface PlayedBoardRow {
+    id: string;
+    owner_id: string;
+    title: string;
+    card_count: number;
+    level: number;
+    is_public: boolean;
+    tags: string[];
+    created_at: string;
+    updated_at: string;
+    scores?: { elapsed_ms: number }[];
+  }
+
+  (data ?? []).forEach((r: PlayedBoardRow) => {
     const existing = uniqueMap.get(r.id);
     const scoresArr = Array.isArray(r.scores) ? r.scores : [];
-    const elapsed = scoresArr.length ? scoresArr[0].elapsed_ms : null;
+    const elapsed = scoresArr.length ? scoresArr[0].elapsed_ms : 0;
 
     if (!existing) {
       uniqueMap.set(r.id, {
@@ -367,7 +380,7 @@ export async function listBoardsPlayedByUser(
         updatedAt: r.updated_at,
         lastTime: elapsed,
       });
-    } else if (elapsed !== null) {
+    } else if (elapsed !== 0) {
       // For MVP we keep the most recent score regardless of value (scores returned sorted by board order, not time)
       existing.lastTime = elapsed;
     }
@@ -428,7 +441,14 @@ export async function fetchBoardById(
   }
 
   // Map to DTOs
-  const pairs: PairDTO[] = (data.pairs ?? []).map((p: any) => ({
+  interface PairRow {
+    id: string;
+    term: string;
+    definition: string;
+    level?: number;
+  }
+
+  const pairs: PairDTO[] = (data.pairs ?? []).map((p: PairRow) => ({
     id: p.id,
     term: p.term,
     definition: p.definition,
@@ -514,7 +534,7 @@ export async function updateBoardMeta(
     .eq("title", boardRow.title);
 
   if (updateErr2) {
-    if ((updateErr2 as any).code === "23505") {
+    if ((updateErr2 as { code?: string }).code === "23505") {
       throw new Error("DUPLICATE_BOARD");
     }
     console.error("Error updating boards:", updateErr2);
@@ -695,7 +715,7 @@ export async function addPairToBoard(
 
   if (insertErr) {
     // Unique violation
-    if ((insertErr as any).code === "23505") {
+    if ((insertErr as { code?: string }).code === "23505") {
       throw new Error("DUPLICATE_PAIR");
     }
 

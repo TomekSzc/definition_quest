@@ -24,7 +24,7 @@ export const POST: APIRoute = async ({ locals }) => {
     }
 
     return createSuccessResponse({ message: "Logged out successfully" }, 200);
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (error instanceof HttpError) {
       return createErrorResponse({ error: error.message }, error.status);
     }

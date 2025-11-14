@@ -20,8 +20,10 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
   try {
     const user = locals.user;
     if (!user) {
-      const map = getErrorMapping("UNAUTHORIZED")!;
-      return createErrorResponse(map.response, map.status);
+      const unauthorized = getErrorMapping("UNAUTHORIZED");
+      return unauthorized
+        ? createErrorResponse(unauthorized.response, unauthorized.status)
+        : createErrorResponse({ error: "Unauthorized" }, 401);
     }
 
     // 1. Validate path params
@@ -47,7 +49,7 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
     const created = await addPairToBoard(locals.supabase, user.id, boardId, bodyRes.data);
 
     return createSuccessResponse(created, 201);
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (error instanceof ValidationError) {
       return createErrorResponse(error.response, error.status);
     }

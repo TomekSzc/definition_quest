@@ -5,14 +5,14 @@ import { CheckIcon, XIcon, EditIcon, DeleteIcon } from "@/assets/icons";
 import { useDeletePairMutation } from "@/store/api/apiSlice";
 import { useToast } from "@/store/hooks";
 
-interface Props {
+interface IPairEditRow {
   boardId: string;
   pair: PairDTO;
   onSave: (pairId: string, patch: PairUpdateCmd) => void;
   onDelete: (pairId: string) => void;
 }
 
-const PairEditRow: React.FC<Props> = ({ pair, boardId, onSave, onDelete }) => {
+const PairEditRow: React.FC<IPairEditRow> = ({ pair, boardId, onSave, onDelete }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [term, setTerm] = useState(pair.term);
   const [definition, setDefinition] = useState(pair.definition);
@@ -81,8 +81,9 @@ const PairEditRow: React.FC<Props> = ({ pair, boardId, onSave, onDelete }) => {
                     await deletePair({ boardId, pairId: pair.id }).unwrap();
                     onDelete(pair.id);
                     showToast({ type: "success", title: "Usunięto", message: "Para usunięta" });
-                  } catch (e: any) {
-                    showToast({ type: "error", title: "Błąd", message: e?.data?.error || "Nie udało się usunąć" });
+                  } catch (e: unknown) {
+                    const apiError = (e as { data?: { error?: string } } | undefined)?.data?.error;
+                    showToast({ type: "error", title: "Błąd", message: apiError || "Nie udało się usunąć" });
                   }
                 }}
                 className="cursor-pointer"

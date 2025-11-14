@@ -1,5 +1,5 @@
 export enum Routes {
-  Home = "/",
+  Home = "/home",
   Login = "/",
   SignUp = "/signup",
   ForgotPassword = "/forgot-password",
@@ -10,8 +10,8 @@ export enum Routes {
   BoardGame = "/boards/:id",
 }
 
-export enum ProtectedRoutes {
-  BOARDS = Routes.Boards,
-  MY_BOARDS = Routes.MyBoards,
-  MY_PLAYED_BOARDS = Routes.MyPlayedBoards,
-}
+export const ProtectedRoutes = {
+  BOARDS: Routes.Boards,
+  MY_BOARDS: Routes.MyBoards,
+  MY_PLAYED_BOARDS: Routes.MyPlayedBoards,
+} as const;

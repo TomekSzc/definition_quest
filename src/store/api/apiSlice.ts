@@ -5,7 +5,6 @@ import type {
   SignUpRequest,
   RefreshTokenRequest,
   ForgotPasswordRequest,
-  ResetPasswordRequest,
   BoardSummaryDTO,
   PlayedBoardDTO,
   Paged,
@@ -20,14 +19,15 @@ import type {
   PairUpdateCmd,
   PairCreateCmd,
 } from "../../types";
-import { setCredentials, logout, updateTokens } from "../slices/authSlice";
+import type { RootState } from "../index";
+import { setCredentials, updateTokens } from "../slices/authSlice";
 import { showToast } from "../slices/toastSlice";
 import { handleClientLogout } from "./helpers";
 
 const baseQuery = fetchBaseQuery({
   baseUrl: "/",
   prepareHeaders: (headers, { getState }) => {
-    const token = (getState() as any).auth.accessToken as string | null;
+    const token = (getState() as RootState).auth.accessToken;
     if (token) {
       headers.set("Authorization", `Bearer ${token}`);
     }
@@ -46,7 +46,7 @@ const baseQueryWithReauth: typeof baseQuery = async (args, api, extraOptions) =>
       return result;
     }
 
-    const refreshToken = (api.getState() as any).auth.refreshToken as string | null;
+    const refreshToken = (api.getState() as RootState).auth.refreshToken;
     if (!refreshToken) {
       // hit logout endpoint to invalidate any server-side session
       await baseQuery({ url: "/api/auth/logout", method: "POST" }, api, extraOptions);
@@ -64,15 +64,15 @@ const baseQueryWithReauth: typeof baseQuery = async (args, api, extraOptions) =>
       extraOptions
     );
 
-    if (refreshResult.data && (refreshResult.data as AuthResponse).data?.session) {
-      const { accessToken, refreshToken: newRefreshToken } = (refreshResult.data as AuthResponse).data!.session!;
+    const authResponse = refreshResult.data as AuthResponse;
+    const session = authResponse?.data?.session;
+    if (session) {
+      const { accessToken, refreshToken: newRefreshToken } = session;
       api.dispatch(updateTokens({ accessToken, refreshToken: newRefreshToken }));
-
-      // retry original query with new token
-      result = await baseQuery(args, api, extraOptions);
-    } else {
-      handleClientLogout(api.dispatch);
     }
+
+    // retry original query with new token
+    result = await baseQuery(args, api, extraOptions);
   }
 
   // Pokaż toast dla wszystkich innych błędów sieciowych
@@ -81,7 +81,7 @@ const baseQueryWithReauth: typeof baseQuery = async (args, api, extraOptions) =>
       showToast({
         type: "error",
         title: "Błąd",
-        message: (result.error.data as any)?.message || "Wystąpił błąd zapytania",
+        message: (result.error.data as { message?: string } | undefined)?.message || "Wystąpił błąd zapytania",
       })
     );
   }
@@ -119,14 +119,10 @@ export const apiSlice = createApi({
               })
             );
           }
-        } catch (err: any) {
-          dispatch(
-            showToast({
-              type: "error",
-              title: "Error",
-              message: err.error?.data?.message || "Login failed",
-            })
-          );
+        } catch (err: unknown) {
+          const errorMessage =
+            (err as { error?: { data?: { message?: string } } }).error?.data?.message ?? "Login failed";
+          dispatch(showToast({ type: "error", title: "Error", message: errorMessage }));
         }
       },
     }),
@@ -146,18 +142,14 @@ export const apiSlice = createApi({
               message: data.message || "Account created",
             })
           );
-        } catch (err: any) {
-          dispatch(
-            showToast({
-              type: "error",
-              title: "Error",
-              message: err.error?.data?.message || "Sign up failed",
-            })
-          );
+        } catch (err: unknown) {
+          const errorMessage =
+            (err as { error?: { data?: { message?: string } } }).error?.data?.message ?? "Sign up failed";
+          dispatch(showToast({ type: "error", title: "Error", message: errorMessage }));
         }
       },
     }),
-    logout: builder.mutation<{ message: string }, void>({
+    logout: builder.mutation<{ message: string }, undefined>({
       query: () => ({
         url: "/api/auth/logout",
         method: "POST",
@@ -186,14 +178,10 @@ export const apiSlice = createApi({
               message: "Wysłaliśmy link resetujący hasło.",
             })
           );
-        } catch (err: any) {
-          dispatch(
-            showToast({
-              type: "error",
-              title: "Błąd",
-              message: err.error?.data?.error || "Coś poszło nie tak",
-            })
-          );
+        } catch (err: unknown) {
+          const errorMessage =
+            (err as { error?: { data?: { error?: string } } }).error?.data?.error ?? "Coś poszło nie tak";
+          dispatch(showToast({ type: "error", title: "Błąd", message: errorMessage }));
         }
       },
     }),
@@ -215,18 +203,14 @@ export const apiSlice = createApi({
           );
           // Redirect to login page after success
           window.location.href = "/";
-        } catch (err: any) {
-          dispatch(
-            showToast({
-              type: "error",
-              title: "Błąd",
-              message: err.error?.data?.error || "Nie udało się zresetować hasła",
-            })
-          );
+        } catch (err: unknown) {
+          const errorMessage =
+            (err as { error?: { data?: { error?: string } } }).error?.data?.error ?? "Nie udało się zresetować hasła";
+          dispatch(showToast({ type: "error", title: "Błąd", message: errorMessage }));
         }
       },
     }),
-    getBoards: builder.query<BoardSummaryDTO[], void>({
+    getBoards: builder.query<BoardSummaryDTO[], undefined>({
       query: () => "/api/boards",
       providesTags: ["Boards"],
     }),
@@ -280,14 +264,11 @@ export const apiSlice = createApi({
           if (data && data.length) {
             window.location.href = `/boards/${data[0].id}`;
           }
-        } catch (err: any) {
-          dispatch(
-            showToast({
-              type: "error",
-              title: "Błąd",
-              message: err?.error?.data?.message || "Nie udało się utworzyć tablicy",
-            })
-          );
+        } catch (err: unknown) {
+          const errorMessage =
+            (err as { error?: { data?: { message?: string } } }).error?.data?.message ??
+            "Nie udało się utworzyć tablicy";
+          dispatch(showToast({ type: "error", title: "Błąd", message: errorMessage }));
         }
       },
     }),

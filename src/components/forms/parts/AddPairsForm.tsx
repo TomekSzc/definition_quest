@@ -42,8 +42,9 @@ const AddPairsForm: React.FC<AddPairsFormProps> = ({ boardId, existingCount, car
       onPairAdded(created);
       setDraftPairs((prev) => prev.filter((_, i) => i !== index));
       showToast({ type: "success", title: "Zapisano", message: "Para dodana" });
-    } catch (e: any) {
-      showToast({ type: "error", title: "Błąd", message: e?.data?.error || "Nie udało się zapisać" });
+    } catch (e: unknown) {
+      const apiError = (e as { data?: { error?: string } } | undefined)?.data?.error;
+      showToast({ type: "error", title: "Błąd", message: apiError || "Nie udało się zapisać" });
     }
   };
 

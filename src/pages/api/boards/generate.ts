@@ -70,7 +70,6 @@ export const POST: APIRoute = async ({ request, locals }) => {
     }
 
     // General error handling
-    console.error("Error in POST /api/boards/generate:", error);
     return createErrorResponse("Internal server error", 500);
   }
 };

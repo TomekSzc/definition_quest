@@ -41,7 +41,7 @@ export const Breadcrumbs: FC = () => {
     }
   }, []);
 
-  const handleBack = (e: React.MouseEvent<HTMLAnchorElement>) => {
+  const handleBack = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     if (typeof window !== "undefined") {
       window.history.back();
@@ -50,16 +50,16 @@ export const Breadcrumbs: FC = () => {
 
   if (isBoardDetail) {
     return (
-      <a
-        href="#"
+      <button
+        type="button"
         onClick={handleBack}
-        className="text-[18px] md:text-[22px] flex items-center md:text-2xl font-bold cursor-pointer select-none"
+        className="text-[18px] md:text-[22px] flex items-center md:text-2xl font-bold cursor-pointer select-none bg-transparent border-none p-0"
       >
         <ChevronLeftIcon className="h-6 w-6 mr-2" />
         <span>{prevTitle}</span>
         <span className="mx-2">/</span>
         <span>{isEdit ? "Edit" : "Play"}</span>
-      </a>
+      </button>
     );
   }
 

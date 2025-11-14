@@ -258,15 +258,24 @@ export class OpenRouterService {
    * Handle chat completion response
    */
   private async handleChatResponse(response: Response, responseFormat?: JsonSchemaFormat): Promise<ChatCompletion> {
+    interface RouterChatResponse {
+      choices?: { message?: { content?: string } }[];
+      usage?: {
+        prompt_tokens?: number;
+        completion_tokens?: number;
+        total_tokens?: number;
+      };
+    }
+
     // Handle HTTP errors
     if (!response.ok) {
       await this.handleErrorResponse(response);
     }
 
-    let data: any;
+    let data: RouterChatResponse;
     try {
-      data = await response.json();
-    } catch (error) {
+      data = (await response.json()) as RouterChatResponse;
+    } catch {
       const text = await response.text();
       throw new ParseError("Failed to parse JSON response", text);
     }
@@ -310,10 +319,13 @@ export class OpenRouterService {
       await this.handleErrorResponse(response);
     }
 
-    let data: any;
+    interface ModelsResponse {
+      data?: Model[];
+    }
+    let data: ModelsResponse;
     try {
-      data = await response.json();
-    } catch (error) {
+      data = (await response.json()) as ModelsResponse;
+    } catch {
       const text = await response.text();
       throw new ParseError("Failed to parse models response", text);
     }
@@ -325,9 +337,13 @@ export class OpenRouterService {
    * Handle error responses from API
    */
   private async handleErrorResponse(response: Response): Promise<never> {
-    let errorData: any;
+    interface ErrorResponse {
+      error?: { message?: string };
+      message?: string;
+    }
+    let errorData: ErrorResponse;
     try {
-      errorData = await response.json();
+      errorData = (await response.json()) as ErrorResponse;
     } catch {
       errorData = { error: { message: await response.text() } };
     }

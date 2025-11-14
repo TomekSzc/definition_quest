@@ -27,8 +27,9 @@ const GeneratePairsByAI: FC<IGeneratePairsByAIProps> = ({ formRef, remainingSlot
       dispatch(setLoading(true));
       const result = await generatePairs({ title: "temp", inputText, cardCount: 16, isPublic: false }).unwrap();
       setPairs(result.pairs);
-    } catch (e: any) {
-      showToast({ type: "error", title: "Błąd", message: e?.data?.message || "Nie udało się wygenerować" });
+    } catch (e: unknown) {
+      const apiError = (e as { data?: { message?: string } } | undefined)?.data?.message;
+      showToast({ type: "error", title: "Błąd", message: apiError || "Nie udało się wygenerować" });
     } finally {
       dispatch(setLoading(false));
     }

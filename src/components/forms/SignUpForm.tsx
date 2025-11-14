@@ -1,6 +1,5 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { SignUpSchema } from "../../lib/validation/auth";
 import type { SignUpRequest } from "../../types";
 import { useSignUpMutation } from "../../store/api/apiSlice";
 import * as Form from "@radix-ui/react-form";
@@ -31,7 +30,7 @@ export default function SignUpForm() {
       displayName: data.displayName,
     };
     await signUp(payload).unwrap();
-    window.location.href = Routes.Home;
+    window.location.assign(Routes.Login);
   }
 
   return (

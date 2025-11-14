@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useCallback, useState } from "react";
+import { skipToken } from "@reduxjs/toolkit/query";
 import { useAppSelector } from "../store/hooks";
 import { selectCurrentUser } from "../store/slices/authSlice";
 import { useListPublicBoardsQuery } from "../store/api/apiSlice";
@@ -28,16 +29,9 @@ export function useLevels(boardId: string, boardTitle: string): UseLevelsResult 
   const userId = useAppSelector(selectCurrentUser)?.id;
 
   // 2. Fetch all boards (levels) matching title & owner
-  const {
-    data: pagedData,
-    isFetching,
-    error,
-  } = useListPublicBoardsQuery(
-    userId && boardTitle
-      ? { ownerId: userId, q: boardTitle, page: 1, pageSize: 100 }
-      : // When userId undefined, skip query by passing undefined (RTK Query convention)
-        (undefined as any)
-  );
+  const queryArgs = userId && boardTitle ? { ownerId: userId, q: boardTitle, page: 1, pageSize: 100 } : skipToken;
+
+  const { data: pagedData, isFetching, error } = useListPublicBoardsQuery(queryArgs);
 
   // 3. Normalise/ sort levels
   const levels = useMemo<BoardSummaryDTO[]>(() => {
@@ -64,7 +58,7 @@ export function useLevels(boardId: string, boardTitle: string): UseLevelsResult 
     (level: number) => {
       const target = levels.find((b) => b.level === level);
       if (target) {
-        window.location.href = `/boards/${target.id}`;
+        window.location.assign(`/boards/${target.id}`);
       }
     },
     [levels]

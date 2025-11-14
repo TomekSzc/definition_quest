@@ -1,19 +1,18 @@
 import React, { forwardRef, useImperativeHandle } from "react";
-import { useForm, useFieldArray, Controller } from "react-hook-form";
+import { useForm, useFieldArray, Controller, type FieldError } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { CreateBoardSchema } from "@/lib/validation/boards";
 import { Button } from "@/components/ui/Button";
 import TagsInput from "../ui/TagsInput";
 import CardCountToggle from "../ui/ToggleGroup/CardCountToggle";
-import PairFormRow from "./PairFormRow";
 import { useToast } from "@/store/hooks";
 import { Routes } from "@/lib/routes";
 import PairForm from "./PairForm";
 import { useAppDispatch } from "@/store/hooks";
 import { setLoading } from "@/store/slices/uiSlice";
 
-export type SubmitFn = (payload: any) => Promise<any>;
+export type SubmitFn = (payload: CreateBoardFormValues) => Promise<unknown>;
 
 export type CreateBoardFormValues = z.infer<typeof CreateBoardSchema>;
 
@@ -67,11 +66,11 @@ const CreateBoardForm = forwardRef<CreateBoardFormHandle, ICreateBoardForm>(({ s
   const onSubmit = async (values: CreateBoardFormValues) => {
     dispatch(setLoading(true));
     try {
-      await submitFn(values as any);
+      await submitFn(values);
       showToast({ type: "success", title: "Sukces", message: "Tablica utworzona" });
       dispatch(setLoading(false));
-      window.location.href = Routes.MyBoards;
-    } catch (e) {
+      window.location.assign(Routes.MyBoards);
+    } catch {
       showToast({ type: "error", title: "Błąd", message: "Nie udało się utworzyć tablicy" });
       dispatch(setLoading(false));
     }
@@ -81,8 +80,11 @@ const CreateBoardForm = forwardRef<CreateBoardFormHandle, ICreateBoardForm>(({ s
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 py-10 pb-60 md:pb-10">
       {/* Title */}
       <div>
-        <label className="block text-sm text-[var(--color-primary)] font-bold mb-1">Tytuł tablicy</label>
+        <label htmlFor="boardTitle" className="block text-sm text-[var(--color-primary)] font-bold mb-1">
+          Tytuł tablicy
+        </label>
         <input
+          id="boardTitle"
           {...register("title")}
           placeholder="Dodaj tytuł"
           className={`w-full px-3 py-2 border rounded bg-background text-foreground ${errors.title ? "border-red-500" : "border-[var(--color-primary)]"}`}
@@ -105,7 +107,7 @@ const CreateBoardForm = forwardRef<CreateBoardFormHandle, ICreateBoardForm>(({ s
         <h3 className="font-semibold text-[var(--color-primary)]">Pary termin – definicja</h3>
         <PairForm
           fields={fields}
-          errors={errors.pairs as any}
+          errors={errors.pairs as { term?: FieldError; definition?: FieldError }[] | undefined}
           register={register}
           remove={remove}
           cardCount={watch("cardCount") as 16 | 24}
@@ -137,5 +139,6 @@ const CreateBoardForm = forwardRef<CreateBoardFormHandle, ICreateBoardForm>(({ s
     </form>
   );
 });
+CreateBoardForm.displayName = "CreateBoardForm";
 
 export default CreateBoardForm;

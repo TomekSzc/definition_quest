@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 
 /**
  * Global hook returning current URL query params and updater.
@@ -7,10 +7,10 @@ import { useCallback, useEffect, useState } from "react";
 export function useQueryParams<T extends Record<string, string | undefined>>() {
   const getParams = (): T => {
     const searchParams = new URLSearchParams(window.location.search);
-    const entries = Array.from(searchParams.entries()).reduce((acc, [key, value]) => {
-      (acc as any)[key] = value;
+    const entries = Array.from(searchParams.entries()).reduce<Record<string, string>>((acc, [key, value]) => {
+      acc[key] = value;
       return acc;
-    }, {} as any);
+    }, {});
     return entries as T;
   };
 

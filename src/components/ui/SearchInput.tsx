@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import type { FC } from "react";
 import debounce from "lodash.debounce";
 import { X } from "lucide-react";

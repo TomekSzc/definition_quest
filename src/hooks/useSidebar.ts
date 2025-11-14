@@ -12,7 +12,9 @@ export function useSidebar() {
   const syncToStorage = (val: boolean) => {
     try {
       window.localStorage.setItem(LS_KEY, String(val));
-    } catch {}
+    } catch {
+      return;
+    }
   };
 
   const toggle = useCallback(() => {

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import type { KeyboardEvent } from "react";
-import { Badge } from "@/components/ui/Badge";
+import { Badge } from "@/components/ui/badge";
 import CloseIcon from "@/assets/icons/CloseIcon";
 
 interface TagsInputProps {
@@ -34,7 +34,9 @@ const TagsInput: React.FC<TagsInputProps> = ({ value = [], onChange, error }) =>
 
   return (
     <div>
-      <label className="block text-sm font-bold mb-1 text-[var(--color-primary)]">Tagi (max 10)</label>
+      <label htmlFor="tags-input" className="block text-sm font-bold mb-1 text-[var(--color-primary)]">
+        Tagi (max 10)
+      </label>
       <div className="flex flex-wrap gap-2 mb-2">
         {value.map((tag) => (
           <Badge key={tag} className="flex items-center gap-1 bg-[var(--color-primary)] text-white">
@@ -44,6 +46,7 @@ const TagsInput: React.FC<TagsInputProps> = ({ value = [], onChange, error }) =>
         ))}
       </div>
       <input
+        id="tags-input"
         className={`w-full px-3 py-2 border rounded bg-background text-foreground ${error ? "border-red-500" : "border-[var(--color-primary)]"}`}
         value={input}
         onChange={(e) => setInput(e.target.value)}
