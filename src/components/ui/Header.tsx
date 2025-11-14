@@ -25,9 +25,9 @@ export const Header: FC<HeaderProps> = ({ className }) => {
         className
       )}
     >
-      <button className="absolute left-5" onClick={toggle}>
+      {/* <button id="burger-menu-button" className="absolute left-5" onClick={toggle}>
         <MenuIcon className="h-5 w-5" />
-      </button>
+      </button> */}
       <div className={breadCrumbsVisible}>
         <Breadcrumbs />
       </div>
