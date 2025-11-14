@@ -43,7 +43,7 @@ export const SearchInput: FC<ISearchInputProps> = ({ onChange, initialValue }) =
           type="button"
           onClick={clearAll}
           aria-label="Wyczyść wyszukiwanie"
-          className="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--color-primary)] hover:text-[var(--color-muted)] focus:outline-none"
+          className="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--color-primary)] hover:text-[var(--color-muted)] focus:outline-none cursor-pointer"
           style={{ zIndex: 1 }}
         >
           <X className="h-4 w-4" />

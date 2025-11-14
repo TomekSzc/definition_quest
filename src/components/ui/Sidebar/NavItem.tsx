@@ -30,7 +30,7 @@ export const NavItem: FC<NavItemProps> = ({ item }) => {
         collapsed ? "justify-center text-sm font-normal" : "text-sm font-bold",
         isActive
           ? "bg-blue-700 bg-opacity-60 cursor-default pointer-events-none"
-          : "hover:bg-blue-700 hover:bg-opacity-50"
+          : "hover:bg-blue-700 hover:bg-opacity-50 cursor-pointer"
       )}
       role="menuitem"
       aria-current={isActive ? "page" : undefined}
