@@ -54,8 +54,8 @@ export const Sidebar: FC = () => {
               collapsed ? "justify-center" : ""
             )}
           >
-            <PowerIcon className="h-5 w-5" />
-            {!collapsed && <span>Log out</span>}
+            <PowerIcon className="h-5 w-5 cursor-pointer" />
+            {!collapsed && <span className="cursor-pointer">Log out</span>}
           </button>
         </nav>
       </div>

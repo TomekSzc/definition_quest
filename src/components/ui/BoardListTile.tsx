@@ -35,6 +35,7 @@ export const BoardListTile: FC<IBoardListTileProps> = ({ board }) => {
           className="
             w-[40px] 
             h-[40px] 
+            shrink-0
             rounded-[20px] 
             border-2 border-blue-500 
             bg-white 
@@ -47,14 +48,22 @@ export const BoardListTile: FC<IBoardListTileProps> = ({ board }) => {
         >
           {board.title.slice(0, 1)}
         </div>
-        <div className="flex flex-col">
-          <div className="relative">{board.title}</div>
+        <div className="flex flex-col w-full">
+          <div className="relative truncate md:whitespace-normal md:text-clip" title={board.title}>
+            {board.title.length > 22 ? `${board.title.slice(0, 22)}…` : board.title}
+          </div>
           <div className="text-sm text-gray-500 mb-1 flex gap-4">
             <span>Level: {board.level}</span>
             <div>
               <div className="flex flex-wrap gap-1">
-                {board.tags && board.tags.slice(0, 4).map((t) => <Chip key={t}>{t}</Chip>)}
-                {board.tags && board.tags.length > 4 && <Chip>…</Chip>}
+                <div className="block md:hidden">
+                  {board.tags && board.tags.slice(0, 1).map((t) => <Chip key={t}>{t}</Chip>)}
+                  {board.tags && board.tags.length > 1 && <Chip>…</Chip>}
+                </div>
+                <div className="hidden md:block">
+                  {board.tags && board.tags.slice(0, 2).map((t) => <Chip key={t}>{t}</Chip>)}
+                  {board.tags && board.tags.length > 2 && <Chip>…</Chip>}
+                </div>
               </div>
             </div>
           </div>

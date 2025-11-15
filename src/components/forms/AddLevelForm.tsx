@@ -64,8 +64,12 @@ const AddLevelForm = forwardRef<AddLevelFormHandle, AddLevelFormProps>(({ rootId
   useImperativeHandle(ref, () => ({ addPairs: appendPairs }));
 
   const onSubmit = async (values: AddLevelFormValues) => {
-    if (values.pairs.length !== cardCount / 2) {
-      showToast({ type: "error", title: "Błąd", message: `Dodaj dokładnie ${cardCount / 2} par` });
+    if (values.pairs.length > cardCount / 2) {
+      showToast({
+        type: "error",
+        title: "Błąd",
+        message: `Maksymalna liczba par dla tego poziomu to ${cardCount / 2}`,
+      });
       return;
     }
 
