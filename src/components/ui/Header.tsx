@@ -8,7 +8,10 @@ interface HeaderProps {
 }
 
 /**
- * Full-width application header (80 px height, bottom shadow).
+ * Full-width application header (60px height, fixed positioning with bottom shadow).
+ * Dynamically adjusts left padding based on sidebar collapsed state.
+ * - Collapsed sidebar: pl-13 (52px)
+ * - Expanded sidebar: pl-72 (288px)
  */
 export const Header: FC<HeaderProps> = ({ className }) => {
   const { collapsed } = useSidebar();
@@ -24,9 +27,6 @@ export const Header: FC<HeaderProps> = ({ className }) => {
         className
       )}
     >
-      {/* <button id="burger-menu-button" className="absolute left-5" onClick={toggle}>
-        <MenuIcon className="h-5 w-5" />
-      </button> */}
       <div className={breadCrumbsVisible}>
         <Breadcrumbs />
       </div>
