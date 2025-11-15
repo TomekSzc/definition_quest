@@ -1,4 +1,4 @@
-import { vi } from 'vitest';
+import { vi } from "vitest";
 
 /**
  * Przykładowe mocki dla testów
@@ -38,4 +38,3 @@ export function resetAllMocks() {
   vi.clearAllMocks();
   vi.resetAllMocks();
 }
-

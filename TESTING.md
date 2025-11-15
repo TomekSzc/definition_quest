@@ -42,6 +42,7 @@ npm run test:e2e:report
 ## 📦 Zainstalowane narzędzia
 
 ### Vitest - Testy jednostkowe i integracyjne
+
 - **vitest** - framework do testów jednostkowych
 - **@vitest/ui** - interfejs użytkownika dla testów
 - **jsdom** - symulacja środowiska DOM
@@ -51,6 +52,7 @@ npm run test:e2e:report
 - **happy-dom** - alternatywa dla jsdom (szybsza)
 
 ### Playwright - Testy E2E
+
 - **@playwright/test** - framework do testów end-to-end
 - **Chromium** - przeglądarka do testów (zgodnie z wytycznymi)
 
@@ -75,7 +77,9 @@ tests/
 ## ⚙️ Pliki konfiguracyjne
 
 ### vitest.config.ts
+
 Konfiguracja Vitest z następującymi ustawieniami:
+
 - Environment: `jsdom` (dla testowania komponentów React)
 - Setup file: `vitest.setup.ts`
 - Globals: włączone (globalne funkcje testowe)
@@ -83,13 +87,17 @@ Konfiguracja Vitest z następującymi ustawieniami:
 - Alias: `@/*` wskazuje na `./src/*`
 
 ### vitest.setup.ts
+
 Plik setup wykonywany przed każdym testem:
+
 - Rozszerzenie `expect` o matchers z `@testing-library/jest-dom`
 - Automatyczne czyszczenie po testach (`cleanup`)
 - Mocki dla `window.matchMedia`, `IntersectionObserver`, `ResizeObserver`
 
 ### playwright.config.ts
+
 Konfiguracja Playwright:
+
 - Test directory: `./tests/e2e`
 - Tylko przeglądarka Chromium (zgodnie z wytycznymi)
 - Trace, screenshots i video tylko przy niepowodzeniu
@@ -97,7 +105,9 @@ Konfiguracja Playwright:
 - Browser contexts dla izolacji środowiska testowego
 
 ### tsconfig.test.json
+
 Konfiguracja TypeScript dla testów:
+
 - Rozszerza główny `tsconfig.json`
 - Dodaje typy dla Vitest i Testing Library
 
@@ -108,16 +118,16 @@ Konfiguracja TypeScript dla testów:
 #### 1. Używaj obiektu `vi` do mockowania
 
 ```typescript
-import { vi } from 'vitest';
+import { vi } from "vitest";
 
 // Mock funkcji
 const mockFn = vi.fn();
 
 // Spy na istniejącą funkcję
-const spy = vi.spyOn(object, 'method');
+const spy = vi.spyOn(object, "method");
 
 // Mock modułu
-vi.mock('./module', () => ({
+vi.mock("./module", () => ({
   myFunction: vi.fn(),
 }));
 ```
@@ -125,13 +135,13 @@ vi.mock('./module', () => ({
 #### 2. Strukturyzuj testy zgodnie z AAA (Arrange-Act-Assert)
 
 ```typescript
-it('should do something', () => {
+it("should do something", () => {
   // Arrange - przygotowanie
   const input = 5;
-  
+
   // Act - akcja
   const result = myFunction(input);
-  
+
   // Assert - sprawdzenie
   expect(result).toBe(10);
 });
@@ -146,9 +156,9 @@ import userEvent from '@testing-library/user-event';
 it('should handle user interaction', async () => {
   const user = userEvent.setup();
   render(<MyComponent />);
-  
+
   await user.click(screen.getByRole('button'));
-  
+
   expect(screen.getByText('Clicked')).toBeInTheDocument();
 });
 ```
@@ -183,12 +193,12 @@ export class LoginPage {
 #### 2. Używaj Browser Contexts dla izolacji
 
 ```typescript
-test('isolated test', async ({ browser }) => {
+test("isolated test", async ({ browser }) => {
   const context = await browser.newContext();
   const page = await context.newPage();
-  
+
   // ... test code ...
-  
+
   await context.close();
 });
 ```
@@ -196,7 +206,7 @@ test('isolated test', async ({ browser }) => {
 #### 3. Wykorzystaj Visual Regression Testing
 
 ```typescript
-await expect(page).toHaveScreenshot('homepage.png', {
+await expect(page).toHaveScreenshot("homepage.png", {
   fullPage: true,
   maxDiffPixels: 100,
 });
@@ -206,24 +216,26 @@ await expect(page).toHaveScreenshot('homepage.png', {
 
 ```typescript
 // ✅ Dobre - role-based
-await page.getByRole('button', { name: 'Submit' });
+await page.getByRole("button", { name: "Submit" });
 
 // ✅ Dobre - data-testid
-await page.getByTestId('submit-button');
+await page.getByTestId("submit-button");
 
 // ❌ Złe - CSS selector bazujący na strukturze
-await page.locator('div > button:nth-child(2)');
+await page.locator("div > button:nth-child(2)");
 ```
 
 ## 🔍 Debugowanie
 
 ### Vitest
+
 1. Użyj `test.only()` do uruchomienia pojedynczego testu
 2. Użyj `console.log()` lub `debugger` w testach
 3. Uruchom UI mode: `npm run test:ui`
 4. Użyj VS Code debugger z konfiguracją dla Vitest
 
 ### Playwright
+
 1. Debug mode: `npm run test:e2e:debug`
 2. Codegen mode: `npm run test:e2e:codegen`
 3. Trace viewer: `npx playwright show-trace trace.zip`
@@ -238,11 +250,13 @@ npm run test:coverage
 ```
 
 Raporty coverage:
+
 - Konsola: tekst w terminalu
 - HTML: `coverage/index.html`
 - JSON: `coverage/coverage-final.json`
 
 Progi coverage (80% dla wszystkich metryk):
+
 - Lines: 80%
 - Functions: 80%
 - Branches: 80%
@@ -255,30 +269,35 @@ Progi coverage (80% dla wszystkich metryk):
 Workflow `.github/workflows/test.yml` uruchamia:
 
 **Job 1: Unit Tests**
+
 - Instalacja zależności
 - Uruchomienie testów jednostkowych
 - Generowanie coverage
 - Upload coverage do Codecov
 
 **Job 2: E2E Tests**
+
 - Instalacja zależności
 - Instalacja przeglądarki Chromium
 - Uruchomienie testów e2e
 - Upload raportów i traces jako artifacts
 
 Testy uruchamiane są:
+
 - Przy każdym push do `main` i `develop`
 - Przy każdym pull request do `main` i `develop`
 
 ## 📚 Dodatkowe zasoby
 
 ### Dokumentacja
+
 - [Vitest](https://vitest.dev/)
 - [Testing Library](https://testing-library.com/)
 - [Playwright](https://playwright.dev/)
 - [React Testing Best Practices](https://kentcdodds.com/blog/common-mistakes-with-react-testing-library)
 
 ### Wskazówki
+
 - Zobacz `tests/README.md` dla szczegółowej dokumentacji
 - Sprawdź przykładowe testy w folderze `tests/`
 - Użyj `test:e2e:codegen` do generowania testów e2e
@@ -299,20 +318,20 @@ npm run test:e2e -- example.spec.ts
 
 ```typescript
 // Vitest
-it.skip('skipped test', () => {});
+it.skip("skipped test", () => {});
 
 // Playwright
-test.skip('skipped test', async ({ page }) => {});
+test.skip("skipped test", async ({ page }) => {});
 ```
 
 ### Jak uruchomić tylko jeden test?
 
 ```typescript
 // Vitest
-it.only('only this test', () => {});
+it.only("only this test", () => {});
 
 // Playwright
-test.only('only this test', async ({ page }) => {});
+test.only("only this test", async ({ page }) => {});
 ```
 
 ### Jak dodać nowy test?
@@ -334,4 +353,3 @@ test.only('only this test', async ({ page }) => {});
 Środowisko testowe jest w pełni skonfigurowane i gotowe do użycia. Możesz rozpocząć pisanie testów dla swojej aplikacji!
 
 Powodzenia! 🚀
-

@@ -1,4 +1,4 @@
-import { defineConfig, devices } from '@playwright/test';
+import { defineConfig, devices } from "@playwright/test";
 
 /**
  * Konfiguracja Playwright dla testów e2e
@@ -6,7 +6,7 @@ import { defineConfig, devices } from '@playwright/test';
  */
 export default defineConfig({
   // Ścieżka do foldera z testami
-  testDir: './tests/e2e',
+  testDir: "./tests/e2e",
 
   // Maksymalny czas wykonania jednego testu
   timeout: 30 * 1000,
@@ -29,31 +29,29 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
 
   // Reporter - html dla lokalnego debugowania, github actions dla CI
-  reporter: process.env.CI 
-    ? [['html'], ['github']]
-    : [['html'], ['list']],
+  reporter: process.env.CI ? [["html"], ["github"]] : [["html"], ["list"]],
 
   // Ustawienia współdzielone dla wszystkich projektów
   use: {
     // Bazowy URL dla testów
-    baseURL: process.env.BASE_URL || 'http://localhost:4321',
+    baseURL: process.env.BASE_URL || "http://localhost:4321",
 
     // Zbieranie trace tylko przy niepowodzeniu
-    trace: 'retain-on-failure',
+    trace: "retain-on-failure",
 
     // Screenshot tylko przy niepowodzeniu
-    screenshot: 'only-on-failure',
+    screenshot: "only-on-failure",
 
     // Video tylko przy niepowodzeniu
-    video: 'retain-on-failure',
+    video: "retain-on-failure",
   },
 
   // Konfiguracja projektu testowego - TYLKO Chromium
   projects: [
     {
-      name: 'chromium',
-      use: { 
-        ...devices['Desktop Chrome'],
+      name: "chromium",
+      use: {
+        ...devices["Desktop Chrome"],
         // Browser contexts dla izolacji środowiska testowego
         contextOptions: {
           // Ignorowanie błędów HTTPS w środowisku dev
@@ -65,10 +63,9 @@ export default defineConfig({
 
   // Uruchom serwer deweloperski przed testami
   webServer: {
-    command: 'npm run dev',
-    url: 'http://localhost:4321',
+    command: "npm run dev",
+    url: "http://localhost:4321",
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,
   },
 });
-

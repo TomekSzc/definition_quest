@@ -5,6 +5,7 @@
 ### 1. Vitest - Testy jednostkowe i integracyjne
 
 **Zainstalowane pakiety:**
+
 - `vitest` - framework testowy
 - `@vitest/ui` - interfejs użytkownika
 - `jsdom` - środowisko DOM
@@ -15,11 +16,13 @@
 - `@vitejs/plugin-react` - plugin React dla Vite
 
 **Pliki konfiguracyjne:**
+
 - `vitest.config.ts` - główna konfiguracja z jsdom environment
 - `vitest.setup.ts` - setup z globalnymi mockami (matchMedia, IntersectionObserver, ResizeObserver)
 - `tsconfig.test.json` - konfiguracja TypeScript dla testów
 
 **Skrypty:**
+
 - `npm test` - uruchom testy jeden raz
 - `npm run test:watch` - tryb watch
 - `npm run test:ui` - interfejs UI
@@ -28,13 +31,16 @@
 ### 2. Playwright - Testy E2E
 
 **Zainstalowane pakiety:**
+
 - `@playwright/test` - framework testowy
 - Chromium browser - zgodnie z wytycznymi, tylko przeglądarka Chromium
 
 **Pliki konfiguracyjne:**
+
 - `playwright.config.ts` - konfiguracja tylko z Chromium, browser contexts, trace przy niepowodzeniu
 
 **Skrypty:**
+
 - `npm run test:e2e` - uruchom testy e2e
 - `npm run test:e2e:ui` - interfejs UI
 - `npm run test:e2e:debug` - tryb debug
@@ -62,6 +68,7 @@ tests/
 ### 4. Dokumentacja
 
 **Utworzone pliki dokumentacji:**
+
 - `TESTING.md` - kompletny przewodnik testowania z przykładami
 - `tests/README.md` - dokumentacja struktury testów i najlepszych praktyk
 - `.ai/testing-setup-summary.md` (ten plik) - podsumowanie konfiguracji
@@ -69,17 +76,20 @@ tests/
 ### 5. CI/CD
 
 **GitHub Actions workflow:**
+
 - `.github/workflows/test.yml` - automatyczne uruchamianie testów w CI/CD
   - Job 1: Unit Tests - testy jednostkowe + coverage
   - Job 2: E2E Tests - testy e2e z Playwright
 
 **Trigger:**
+
 - Push do `main` i `develop`
 - Pull requesty do `main` i `develop`
 
 ### 6. Aktualizacje projektu
 
 **Zaktualizowane pliki:**
+
 - `package.json` - dodano skrypty testowe
 - `README.md` - dodano sekcję Testing z linkami do dokumentacji
 - `.gitignore` - dodano foldery testowe (test-results, playwright-report, coverage)
@@ -121,6 +131,7 @@ npm run test:e2e:codegen
 ## 📝 Najważniejsze wskazówki
 
 ### Vitest
+
 1. Użyj `vi.fn()`, `vi.spyOn()`, `vi.mock()` do mockowania
 2. Struktura AAA: Arrange-Act-Assert
 3. `render()` i `screen` z Testing Library dla komponentów
@@ -128,6 +139,7 @@ npm run test:e2e:codegen
 5. Inline snapshots dla czytelności
 
 ### Playwright
+
 1. Page Object Model dla reużywalności
 2. Browser contexts dla izolacji
 3. Role-based locators dla stabilności
@@ -137,10 +149,12 @@ npm run test:e2e:codegen
 ## ✅ Weryfikacja instalacji
 
 **Testy zostały uruchomione i działają poprawnie:**
+
 - ✅ `tests/unit/example.test.ts` - 4 testy przeszły
 - ✅ `tests/unit/components/Example.test.tsx` - 3 testy przeszły
 
 **Przykładowe uruchomienie:**
+
 ```
 ✓ tests/unit/example.test.ts (4 tests) 112ms
   ✓ Przykładowy test jednostkowy (3)
@@ -173,9 +187,9 @@ Test Files  1 passed (1)
 ## 🎉 Gotowe!
 
 Środowisko testowe jest w pełni skonfigurowane zgodnie z wytycznymi z:
+
 - ✅ `@tech-stack.md` - Vitest, React Testing Library, Playwright
 - ✅ `@vitest-unit-testing.mdc` - Vi object, mocking patterns, jsdom
 - ✅ `@playwright-e2e-testing.mdc` - Browser contexts, Page Objects, tylko Chromium
 
 Powodzenia w testowaniu! 🚀
-

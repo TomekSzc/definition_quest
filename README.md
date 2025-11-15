@@ -169,6 +169,7 @@ npm run test:e2e:ui
 ### Documentation
 
 For detailed testing documentation, best practices, and examples:
+
 - **[TESTING.md](./TESTING.md)** - Complete testing guide
 - **[tests/README.md](./tests/README.md)** - Test structure and examples
 
@@ -185,6 +186,7 @@ tests/
 ### CI/CD
 
 Tests run automatically on:
+
 - Every push to `main` and `develop`
 - Every pull request to `main` and `develop`
 

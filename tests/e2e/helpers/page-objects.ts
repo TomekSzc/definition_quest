@@ -1,4 +1,4 @@
-import { Page, Locator } from '@playwright/test';
+import { Page, Locator } from "@playwright/test";
 
 /**
  * Przykładowy Page Object Model dla Playwright
@@ -12,12 +12,12 @@ export class HomePage {
 
   constructor(page: Page) {
     this.page = page;
-    this.header = page.locator('header');
-    this.mainContent = page.locator('main');
+    this.header = page.locator("header");
+    this.mainContent = page.locator("main");
   }
 
   async goto() {
-    await this.page.goto('/');
+    await this.page.goto("/");
   }
 
   async getTitle() {
@@ -37,11 +37,11 @@ export class LoginPage {
     this.emailInput = page.locator('input[name="email"]');
     this.passwordInput = page.locator('input[name="password"]');
     this.submitButton = page.locator('button[type="submit"]');
-    this.errorMessage = page.locator('.error-message');
+    this.errorMessage = page.locator(".error-message");
   }
 
   async goto() {
-    await this.page.goto('/login');
+    await this.page.goto("/login");
   }
 
   async login(email: string, password: string) {
@@ -54,4 +54,3 @@ export class LoginPage {
     return await this.errorMessage.isVisible();
   }
 }
-

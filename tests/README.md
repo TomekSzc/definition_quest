@@ -51,6 +51,7 @@ npm run test:coverage
    - Używaj `userEvent` do symulacji interakcji
 
 4. **Inline snapshots dla czytelności**
+
    ```typescript
    expect(data).toMatchInlineSnapshot();
    ```
@@ -62,10 +63,10 @@ npm run test:coverage
 ### Przykład testu jednostkowego
 
 ```typescript
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi } from "vitest";
 
-describe('myFunction', () => {
-  it('should return expected value', () => {
+describe("myFunction", () => {
+  it("should return expected value", () => {
     const result = myFunction(5);
     expect(result).toBe(10);
   });
@@ -88,9 +89,9 @@ describe('MyComponent', () => {
   it('should handle click', async () => {
     const user = userEvent.setup();
     render(<MyComponent />);
-    
+
     await user.click(screen.getByRole('button'));
-    
+
     expect(screen.getByText('Clicked')).toBeInTheDocument();
   });
 });
@@ -120,6 +121,7 @@ npm run test:e2e:report
 ### Najlepsze praktyki
 
 1. **Używaj Browser Contexts dla izolacji**
+
    ```typescript
    const context = await browser.newContext();
    const page = await context.newPage();
@@ -136,8 +138,9 @@ npm run test:e2e:report
    - Unikaj selektorów CSS bazujących na strukturze
 
 4. **Visual Regression Testing**
+
    ```typescript
-   await expect(page).toHaveScreenshot('homepage.png');
+   await expect(page).toHaveScreenshot("homepage.png");
    ```
 
 5. **Trace dla debugowania**
@@ -147,16 +150,16 @@ npm run test:e2e:report
 ### Przykład testu e2e
 
 ```typescript
-import { test, expect } from '@playwright/test';
+import { test, expect } from "@playwright/test";
 
-test('user can login', async ({ page }) => {
-  await page.goto('/login');
-  
-  await page.fill('input[name="email"]', 'user@example.com');
-  await page.fill('input[name="password"]', 'password');
+test("user can login", async ({ page }) => {
+  await page.goto("/login");
+
+  await page.fill('input[name="email"]', "user@example.com");
+  await page.fill('input[name="password"]', "password");
   await page.click('button[type="submit"]');
-  
-  await expect(page).toHaveURL('/dashboard');
+
+  await expect(page).toHaveURL("/dashboard");
 });
 ```
 
@@ -179,17 +182,20 @@ export class LoginPage {
 ### GitHub Actions
 
 Testy są uruchamiane automatycznie w pipeline CI/CD:
+
 - Testy jednostkowe przy każdym push
 - Testy e2e przy pull requestach do main
 
 ## Debugowanie
 
 ### Vitest
+
 - Użyj `test.only()` do uruchomienia pojedynczego testu
 - Użyj `console.log()` lub debugger w testach
 - UI mode: `npm run test:ui`
 
 ### Playwright
+
 - Debug mode: `npm run test:e2e:debug`
 - Codegen mode: `npm run test:e2e:codegen`
 - Trace viewer: `npx playwright show-trace`
@@ -207,8 +213,8 @@ Progi coverage są ustawione na 80% dla wszystkich metryk.
 ## Wsparcie
 
 W razie problemów z testami:
+
 1. Sprawdź czy wszystkie zależności są zainstalowane
 2. Upewnij się że serwer deweloperski działa (dla testów e2e)
 3. Sprawdź trace/screenshots w przypadku niepowodzeń e2e
 4. Użyj debug mode do krokowego debugowania
-
