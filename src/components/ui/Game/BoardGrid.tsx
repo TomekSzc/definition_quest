@@ -1,6 +1,6 @@
 import type { FC } from "react";
-import Card from "./Card";
 import type { CardStatus, CardVM } from "@/hooks/useBoardGame";
+import Card from "./Card";
 
 interface IBoardGridProps {
   cards: (CardVM & { status: CardStatus })[];
