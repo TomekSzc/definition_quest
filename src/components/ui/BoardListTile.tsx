@@ -53,8 +53,14 @@ export const BoardListTile: FC<IBoardListTileProps> = ({ board }) => {
             <span>Level: {board.level}</span>
             <div>
               <div className="flex flex-wrap gap-1">
-                {board.tags && board.tags.slice(0, 4).map((t) => <Chip key={t}>{t}</Chip>)}
-                {board.tags && board.tags.length > 4 && <Chip>…</Chip>}
+                <div className="block md:hidden">
+                  {board.tags && board.tags.slice(0, 1).map((t) => <Chip key={t}>{t}</Chip>)}
+                  {board.tags && board.tags.length > 1 && <Chip>…</Chip>}
+                </div>
+                <div className="hidden md:block">
+                  {board.tags && board.tags.slice(0, 2).map((t) => <Chip key={t}>{t}</Chip>)}
+                  {board.tags && board.tags.length > 2 && <Chip>…</Chip>}
+                </div>
               </div>
             </div>
           </div>
