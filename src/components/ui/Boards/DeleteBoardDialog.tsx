@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { FC } from "react";
-import { Dialog, DialogContent, DialogTitle } from "./Dialog";
-import { Button } from "./Button";
+import { Dialog, DialogContent, DialogTitle } from "../Dialog";
+import { Button } from "../Button";
 
 interface DeleteBoardDialogProps {
   boardId: string;

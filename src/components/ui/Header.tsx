@@ -2,7 +2,6 @@ import type { FC } from "react";
 import clsx from "clsx";
 import { useSidebar } from "@/hooks/useSidebar";
 import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
-import { MenuIcon } from "@/assets/icons";
 
 interface HeaderProps {
   className?: string;
@@ -12,7 +11,7 @@ interface HeaderProps {
  * Full-width application header (80 px height, bottom shadow).
  */
 export const Header: FC<HeaderProps> = ({ className }) => {
-  const { collapsed, toggle } = useSidebar();
+  const { collapsed } = useSidebar();
   // Determine title based on current pathname
 
   const leftPadding = collapsed ? "pl-13" : "pl-72"; // +4rem for safety (header internal px-6)

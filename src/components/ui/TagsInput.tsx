@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import type { KeyboardEvent } from "react";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@/components/ui/Badge";
 import CloseIcon from "@/assets/icons/CloseIcon";
 
 interface TagsInputProps {

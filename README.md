@@ -11,9 +11,10 @@ Definition Quest helps students, educators and lifelong learners master definiti
 1. [Tech Stack](#tech-stack)
 2. [Getting Started Locally](#getting-started-locally)
 3. [Available Scripts](#available-scripts)
-4. [Project Scope](#project-scope)
-5. [Project Status](#project-status)
-6. [License](#license)
+4. [Testing](#testing)
+5. [Project Scope](#project-scope)
+6. [Project Status](#project-status)
+7. [License](#license)
 
 ---
 
@@ -41,6 +42,9 @@ Definition Quest helps students, educators and lifelong learners master definiti
 - **ESLint**, **Prettier**, **Husky** & **lint-staged** – code quality
 - **GitHub Actions** – CI / CD pipelines
 - **Docker + DigitalOcean** – production hosting
+- **Vitest** & **ts-vitest** – blazing-fast unit & integration tests for TypeScript
+- **React Testing Library** – UI component tests
+- **Playwright** – cross-browser e2e & accessibility tests
 
 ---
 
@@ -128,8 +132,65 @@ $ npm run preview
 | `npm run lint`               | Run ESLint on the entire codebase                  |
 | `npm run lint:fix`           | Auto-fix lint issues where possible                |
 | `npm run format`             | Format all supported files with Prettier           |
+| `npm test`                   | Run unit tests once                                |
+| `npm run test:watch`         | Run unit tests in watch mode                       |
+| `npm run test:ui`            | Run unit tests with UI interface                   |
+| `npm run test:coverage`      | Run unit tests with coverage report                |
+| `npm run test:e2e`           | Run end-to-end tests with Playwright               |
+| `npm run test:e2e:ui`        | Run e2e tests with Playwright UI                   |
+| `npm run test:e2e:debug`     | Run e2e tests in debug mode                        |
+| `npm run test:e2e:codegen`   | Generate e2e tests using Playwright codegen        |
+| `npm run test:e2e:report`    | Show Playwright test report                        |
 | `npm run test:openrouter`    | Test OpenRouter API connection and functionality   |
 | `npm run test:ai-generation` | Test AI board pair generation end-to-end           |
+
+---
+
+## Testing
+
+The project includes comprehensive testing infrastructure for unit, integration, and end-to-end tests.
+
+### Quick Start
+
+```bash
+# Run unit tests in watch mode
+npm run test:watch
+
+# Run unit tests with UI
+npm run test:ui
+
+# Run e2e tests
+npm run test:e2e
+
+# Run e2e tests with UI
+npm run test:e2e:ui
+```
+
+### Documentation
+
+For detailed testing documentation, best practices, and examples:
+
+- **[TESTING.md](./TESTING.md)** - Complete testing guide
+- **[tests/README.md](./tests/README.md)** - Test structure and examples
+
+### Test Structure
+
+```
+tests/
+├── unit/          # Vitest unit tests
+├── integration/   # Vitest integration tests
+├── e2e/          # Playwright e2e tests
+└── __mocks__/    # Shared mocks
+```
+
+### CI/CD
+
+Tests run automatically on:
+
+- Every push to `main` and `develop`
+- Every pull request to `main` and `develop`
+
+See `.github/workflows/test.yml` for the complete CI configuration.
 
 ---
 

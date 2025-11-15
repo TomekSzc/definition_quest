@@ -2,7 +2,7 @@ import type { FC } from "react";
 import type { BoardSummaryDTO } from "@/types";
 import { EditIcon, DeleteIcon } from "@/assets/icons";
 import { useAppSelector } from "@/store/hooks";
-import Chip from "./Chip";
+import Chip from "../Chip";
 import type { RootState } from "@/store";
 import { useState } from "react";
 import { DeleteBoardDialog } from "./DeleteBoardDialog";

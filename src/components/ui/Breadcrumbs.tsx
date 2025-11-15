@@ -17,7 +17,9 @@ const routeTitles: Record<string, string> = {
 export const Breadcrumbs: FC = () => {
   const pathname = typeof window !== "undefined" ? window.location.pathname : "";
   const boardMatch = pathname.match(/^\/boards\/([^/]+)(?:\/(edit))?$/);
+  const addLevelMatch = pathname.match(/^(?:\/my-boards|\/boards)\/[^/]+\/add-level$/);
   const isBoardDetail = Boolean(boardMatch);
+  const isAddLevel = Boolean(addLevelMatch);
   const isEdit = boardMatch?.[2] === "edit";
   const title = routeTitles[pathname] ?? "Public Boards";
 
@@ -60,6 +62,20 @@ export const Breadcrumbs: FC = () => {
         <span className="mx-2">/</span>
         <span>{isEdit ? "Edit" : "Play"}</span>
       </button>
+    );
+  }
+  if (isAddLevel) {
+    const isMine = pathname.startsWith("/my-boards");
+    const baseHref = isMine ? "/my-boards" : "/boards";
+    const baseTitle = isMine ? "My Boards" : "Public Boards";
+    return (
+      <h1 className="text-2xl font-bold flex items-center">
+        <a href={baseHref} className="hover:underline">
+          {baseTitle}
+        </a>
+        <span className="mx-2">/</span>
+        <span>Add level</span>
+      </h1>
     );
   }
 
