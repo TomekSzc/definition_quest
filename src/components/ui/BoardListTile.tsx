@@ -47,8 +47,10 @@ export const BoardListTile: FC<IBoardListTileProps> = ({ board }) => {
         >
           {board.title.slice(0, 1)}
         </div>
-        <div className="flex flex-col">
-          <div className="relative">{board.title}</div>
+        <div className="flex flex-col w-full">
+          <div className="relative truncate md:whitespace-normal md:text-clip" title={board.title}>
+            {board.title.length > 22 ? `${board.title.slice(0, 22)}…` : board.title}
+          </div>
           <div className="text-sm text-gray-500 mb-1 flex gap-4">
             <span>Level: {board.level}</span>
             <div>
