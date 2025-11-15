@@ -82,7 +82,7 @@ export const GameMeta: FC<IGameMetaProps> = ({
         Reset
       </button>
       {levels.length > 1 && (
-        <>
+        <div className="hidden md:block">
           <div className="text-center font-semibold">Poziomy</div>
           <div className="flex flex-wrap gap-2 justify-center mt-2">
             {levels.map((l: number) => (
@@ -96,7 +96,7 @@ export const GameMeta: FC<IGameMetaProps> = ({
               </button>
             ))}
           </div>
-        </>
+        </div>
       )}
     </aside>
   );
