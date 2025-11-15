@@ -35,6 +35,7 @@ export const BoardListTile: FC<IBoardListTileProps> = ({ board }) => {
           className="
             w-[40px] 
             h-[40px] 
+            shrink-0
             rounded-[20px] 
             border-2 border-blue-500 
             bg-white 
