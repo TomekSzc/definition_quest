@@ -6,8 +6,8 @@ import { SearchInput } from "@/components/ui/SearchInput";
 import { useListPublicBoardsQuery } from "@/store/api/apiSlice";
 import type { ListBoardsQuery } from "@/types";
 import { Pagination } from "@/components/ui/Pagination";
-import { BoardsList } from "@/components/ui/BoardsList";
 import { useAppSelector } from "@/store/hooks";
+import { BoardsList } from "@/components/ui/Boards/BoardsList";
 
 const MyBoardsPageComponent: FC = () => {
   const userId = useAppSelector((state) => state.auth.user?.id);

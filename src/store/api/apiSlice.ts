@@ -64,12 +64,16 @@ const baseQueryWithReauth: typeof baseQuery = async (args, api, extraOptions) =>
       extraOptions
     );
 
-    const authResponse = refreshResult.data as AuthResponse;
-    const session = authResponse?.data?.session;
-    if (session) {
-      const { accessToken, refreshToken: newRefreshToken } = session;
-      api.dispatch(updateTokens({ accessToken, refreshToken: newRefreshToken }));
+    const authResponse = refreshResult.data as AuthResponse | undefined;
+
+    // If refresh token request failed (e.g., received 401) or no session returned, log out and exit
+    if (refreshResult.error || !authResponse?.data?.session) {
+      handleClientLogout(api.dispatch);
+      return refreshResult;
     }
+
+    const { accessToken, refreshToken: newRefreshToken } = authResponse.data.session;
+    api.dispatch(updateTokens({ accessToken, refreshToken: newRefreshToken }));
 
     // retry original query with new token
     result = await baseQuery(args, api, extraOptions);
