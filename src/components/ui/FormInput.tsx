@@ -47,6 +47,8 @@ export const FormInput: FC<IInputProps> = ({
             onMouseDown={() => setShowPwd(true)}
             onMouseUp={() => setShowPwd(false)}
             onMouseLeave={() => setShowPwd(false)}
+            onTouchStart={() => setShowPwd(true)}
+            onTouchEnd={() => setShowPwd(false)}
             className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 cursor-pointer text-[var(--color-white)]"
           />
         )}
