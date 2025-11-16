@@ -13,7 +13,7 @@ import React from "react";
  * - Usuwanie tagów (CloseIcon)
  * - Walidacja (max 10 tagów, whitespace, duplikaty)
  * - Wyświetlanie błędów walidacji
- * - Style warunkowe (error state)
+ * - Style warunkowe (error state)qq
  * - Accessibility (label, placeholder)
  * - Edge cases (długie tagi, pusty input, whitespace)
  */
