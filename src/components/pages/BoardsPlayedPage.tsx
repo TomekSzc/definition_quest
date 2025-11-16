@@ -6,7 +6,7 @@ import { SearchInput } from "@/components/ui/SearchInput";
 import { useListPlayedBoardsQuery } from "@/store/api/apiSlice";
 import type { ListBoardsQuery, BoardSummaryDTO } from "@/types";
 import { Pagination } from "@/components/ui/Pagination";
-import { BoardsList } from "@/components/ui/BoardsList";
+import { BoardsList } from "@/components/ui/Boards/BoardsList";
 
 const BoardsPlayedPageComponent: FC = () => {
   const initialParams = DEFAULT_PAGINATION;
