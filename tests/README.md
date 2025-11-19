@@ -151,31 +151,59 @@ npm run test:e2e:report
 
 ```typescript
 import { test, expect } from "@playwright/test";
+import { LoginPage, BoardsPage } from "./helpers/page-objects";
 
 test("user can login", async ({ page }) => {
-  await page.goto("/login");
+  const loginPage = new LoginPage(page);
+  const boardsPage = new BoardsPage(page);
 
-  await page.fill('input[name="email"]', "user@example.com");
-  await page.fill('input[name="password"]', "password");
-  await page.click('button[type="submit"]');
+  // Przejdź do strony logowania
+  await loginPage.goto();
 
-  await expect(page).toHaveURL("/dashboard");
+  // Zaloguj używając zmiennych środowiskowych
+  await loginPage.loginWithEnvCredentials();
+
+  // Weryfikuj przekierowanie
+  await loginPage.waitForSuccessfulLogin();
+  await boardsPage.verifyOnBoardsPage();
 });
 ```
+
+Więcej przykładów w: [tests/e2e/auth/login.spec.ts](./e2e/auth/login.spec.ts)
 
 ### Przykład Page Object
 
 ```typescript
-export class LoginPage {
-  constructor(private page: Page) {}
+export class LoginPage extends BasePage {
+  readonly emailInput: Locator;
+  readonly passwordInput: Locator;
+  readonly submitButton: Locator;
+
+  constructor(page: Page) {
+    super(page);
+    this.emailInput = this.getByTestId("login-email-input");
+    this.passwordInput = this.getByTestId("login-password-input");
+    this.submitButton = this.getByTestId("login-submit-button");
+  }
 
   async login(email: string, password: string) {
-    await this.page.fill('input[name="email"]', email);
-    await this.page.fill('input[name="password"]', password);
-    await this.page.click('button[type="submit"]');
+    await this.emailInput.fill(email);
+    await this.passwordInput.fill(password);
+    await this.submitButton.click();
+  }
+
+  async loginWithEnvCredentials() {
+    const email = process.env.E2E_USERNAME;
+    const password = process.env.E2E_PASSWORD;
+    if (!email || !password) {
+      throw new Error("E2E_USERNAME and E2E_PASSWORD must be set");
+    }
+    await this.login(email, password);
   }
 }
 ```
+
+Pełna dokumentacja Page Object Models: [tests/e2e/README.md](./e2e/README.md)
 
 ## Konfiguracja CI/CD
 
