@@ -38,6 +38,16 @@ export class TestHelpers {
   }
 
   /**
+   * Szybkie logowanie i nawigacja do Edit Board
+   */
+  static async loginAndGoToEditBoard(page: Page, boardId: string): Promise<EditBoardPage> {
+    await TestHelpers.quickLogin(page);
+    const editBoardPage = new EditBoardPage(page);
+    await editBoardPage.goto(boardId);
+    return editBoardPage;
+  }
+
+  /**
    * Czeka na konkretny URL pattern z retry
    */
   static async waitForUrlPattern(page: Page, pattern: RegExp, timeout = 10000): Promise<void> {
@@ -912,5 +922,403 @@ export class BoardGamePage extends BasePage {
     
     // Poczekaj chwilę na pełne renderowanie
     await this.page.waitForTimeout(1000);
+  }
+}
+
+/**
+ * Page Object Model dla strony Edit Board
+ * Obsługuje edycję tablicy - tytuł, pary, tagi
+ */
+export class EditBoardPage extends BasePage {
+  readonly pairEditList: Locator;
+  readonly addPairButton: Locator;
+  readonly addLevelButton: Locator;
+  readonly backButton: Locator;
+  readonly sidebar: Locator;
+
+  constructor(page: Page) {
+    super(page);
+
+    this.pairEditList = this.getByTestId("pair-edit-list");
+    this.addPairButton = this.getByTestId("add-pair-button");
+    this.addLevelButton = this.getByTestId("add-level-button");
+    this.backButton = this.getByTestId("edit-board-back-button");
+    this.sidebar = page.locator("aside");
+  }
+
+  /**
+   * Przechodzi do strony edycji tablicy
+   */
+  async goto(boardId: string) {
+    await super.goto(`/boards/${boardId}/edit`);
+    await this.page.waitForLoadState("domcontentloaded");
+    await this.pairEditList.waitFor({ state: "visible", timeout: 15000 });
+  }
+
+  /**
+   * Pobiera liczbę par w liście edycji
+   * Czeka na załadowanie listy par
+   */
+  async getPairsCount(): Promise<number> {
+    // Czekaj na pojawienie się przynajmniej jednej pary
+    await this.page.locator('[data-testid^="pair-edit-row-"]').first().waitFor({ state: "visible", timeout: 10000 }).catch(() => {});
+    await this.page.waitForTimeout(500);
+    return await this.page.locator('[data-testid^="pair-edit-row-"]').count();
+  }
+
+  /**
+   * Pobiera locator dla wiersza edycji pary po ID pary
+   */
+  getPairRow(pairId: string): Locator {
+    return this.getByTestId(`pair-edit-row-${pairId}`);
+  }
+
+  /**
+   * Pobiera locator dla przycisku edycji pary po ID
+   */
+  getEditPairButton(pairId: string): Locator {
+    return this.getByTestId(`pair-edit-button-${pairId}`);
+  }
+
+  /**
+   * Pobiera locator dla przycisku usuwania pary po ID
+   */
+  getDeletePairButton(pairId: string): Locator {
+    return this.getByTestId(`pair-delete-button-${pairId}`);
+  }
+
+  /**
+   * Pobiera locator dla input term w trybie edycji
+   */
+  getPairTermInput(pairId: string): Locator {
+    return this.getByTestId(`pair-edit-term-${pairId}`);
+  }
+
+  /**
+   * Pobiera locator dla textarea definition w trybie edycji
+   */
+  getPairDefinitionInput(pairId: string): Locator {
+    return this.getByTestId(`pair-edit-definition-${pairId}`);
+  }
+
+  /**
+   * Pobiera locator dla przycisku zapisz w trybie edycji
+   */
+  getSavePairButton(pairId: string): Locator {
+    return this.getByTestId(`pair-edit-save-${pairId}`);
+  }
+
+  /**
+   * Pobiera locator dla przycisku anuluj w trybie edycji
+   */
+  getCancelPairButton(pairId: string): Locator {
+    return this.getByTestId(`pair-edit-cancel-${pairId}`);
+  }
+
+  /**
+   * Pobiera ID pierwszej pary z listy
+   */
+  async getFirstPairId(): Promise<string | null> {
+    const firstPairRow = this.page.locator('[data-testid^="pair-edit-row-"]').first();
+    const testId = await firstPairRow.getAttribute("data-testid");
+    return testId ? testId.replace("pair-edit-row-", "") : null;
+  }
+
+  /**
+   * Klika przycisk edycji dla określonej pary
+   */
+  async clickEditPair(pairId: string) {
+    const editButton = this.getEditPairButton(pairId);
+    await editButton.waitFor({ state: "visible" });
+    await editButton.click();
+  }
+
+  /**
+   * Klika przycisk usuwania dla określonej pary
+   */
+  async clickDeletePair(pairId: string) {
+    const deleteButton = this.getDeletePairButton(pairId);
+    await deleteButton.waitFor({ state: "visible" });
+    await deleteButton.click();
+    // Czekaj na usunięcie z DOM
+    await this.page.waitForTimeout(500);
+  }
+
+  /**
+   * Edytuje parę - zmienia term i/lub definition
+   */
+  async editPair(pairId: string, newTerm?: string, newDefinition?: string) {
+    // Kliknij edycję
+    await this.clickEditPair(pairId);
+
+    // Zmień term jeśli podano
+    if (newTerm !== undefined) {
+      const termInput = this.getPairTermInput(pairId);
+      await termInput.waitFor({ state: "visible" });
+      await termInput.fill(newTerm);
+    }
+
+    // Zmień definition jeśli podano
+    if (newDefinition !== undefined) {
+      const defInput = this.getPairDefinitionInput(pairId);
+      await defInput.waitFor({ state: "visible" });
+      await defInput.fill(newDefinition);
+    }
+
+    // Zapisz
+    const saveButton = this.getSavePairButton(pairId);
+    await saveButton.click();
+    
+    // Czekaj na zakończenie zapisu
+    await this.page.waitForTimeout(1000);
+  }
+
+  /**
+   * Pobiera input term dla nowego draft pair (przy dodawaniu pary)
+   */
+  getAddPairTermInput(index: number): Locator {
+    return this.getByTestId(`add-pair-term-${index}`);
+  }
+
+  /**
+   * Pobiera input definition dla nowego draft pair
+   */
+  getAddPairDefinitionInput(index: number): Locator {
+    return this.getByTestId(`add-pair-definition-${index}`);
+  }
+
+  /**
+   * Pobiera przycisk zapisz dla nowego draft pair
+   */
+  getAddPairSaveButton(index: number): Locator {
+    return this.getByTestId(`add-pair-save-${index}`);
+  }
+
+  /**
+   * Dodaje nową parę
+   */
+  async addNewPair(term: string, definition: string) {
+    // Kliknij przycisk dodawania pary
+    await this.addPairButton.scrollIntoViewIfNeeded();
+    await this.addPairButton.click();
+    await this.page.waitForTimeout(300);
+
+    // Wypełnij pola (zawsze index 0 bo dodajemy jedną naraz)
+    const termInput = this.getAddPairTermInput(0);
+    const defInput = this.getAddPairDefinitionInput(0);
+    const saveButton = this.getAddPairSaveButton(0);
+
+    await termInput.waitFor({ state: "visible" });
+    await termInput.fill(term);
+    await defInput.fill(definition);
+    
+    // Zapisz
+    await saveButton.click();
+    
+    // Czekaj na zapisanie
+    await this.page.waitForTimeout(1000);
+  }
+
+  /**
+   * Klika przycisk "Dodaj level"
+   */
+  async clickAddLevel() {
+    await this.addLevelButton.scrollIntoViewIfNeeded();
+    await this.addLevelButton.click();
+  }
+
+  /**
+   * Weryfikuje czy jesteśmy na stronie edycji
+   */
+  async verifyOnEditBoardPage(boardId: string) {
+    await expect(this.page).toHaveURL(new RegExp(`/boards/${boardId}/edit`));
+  }
+
+  /**
+   * High-level metoda: Wykonuje pełną edycję tablicy
+   * @param operations - obiekt z operacjami do wykonania
+   */
+  async editBoard(operations: {
+    deletePairAtIndex?: number;
+    editFirstPair?: { term?: string; definition?: string };
+    addNewPairs?: Array<{ term: string; definition: string }>;
+  }) {
+    // Usuń parę jeśli podano
+    if (operations.deletePairAtIndex !== undefined) {
+      const pairRow = this.page.locator('[data-testid^="pair-edit-row-"]').nth(operations.deletePairAtIndex);
+      const pairTestId = await pairRow.getAttribute("data-testid");
+      const pairId = pairTestId?.replace("pair-edit-row-", "") || "";
+      
+      if (pairId) {
+        await this.clickDeletePair(pairId);
+      }
+    }
+
+    // Edytuj pierwszą parę jeśli podano
+    if (operations.editFirstPair) {
+      const firstPairId = await this.getFirstPairId();
+      if (firstPairId) {
+        await this.editPair(
+          firstPairId,
+          operations.editFirstPair.term,
+          operations.editFirstPair.definition
+        );
+      }
+    }
+
+    // Dodaj nowe pary jeśli podano
+    if (operations.addNewPairs) {
+      for (const pair of operations.addNewPairs) {
+        await this.addNewPair(pair.term, pair.definition);
+      }
+    }
+  }
+}
+
+/**
+ * Page Object Model dla strony Add Level
+ * Obsługuje dodawanie nowego poziomu do istniejącej tablicy
+ */
+export class AddLevelPage extends BasePage {
+  readonly addPairButton: Locator;
+  readonly saveLevelButton: Locator;
+  readonly saveAndContinueButton: Locator;
+  readonly sidebar: Locator;
+
+  constructor(page: Page) {
+    super(page);
+
+    this.addPairButton = this.getByTestId("add-pair-button");
+    this.saveLevelButton = this.getByTestId("save-level-button");
+    this.saveAndContinueButton = this.getByTestId("save-and-continue-level-button");
+    this.sidebar = page.locator("aside");
+  }
+
+  /**
+   * Przechodzi do strony dodawania poziomu
+   */
+  async goto(boardId: string) {
+    await super.goto(`/boards/${boardId}/add-level`);
+    await this.page.waitForLoadState("domcontentloaded");
+    // Czekaj na załadowanie formularza
+    await this.page.waitForTimeout(1000);
+  }
+
+  /**
+   * Pobiera locator dla input term na określonym indeksie
+   */
+  getPairTermInput(index: number): Locator {
+    return this.getByTestId(`pair-term-${index}`);
+  }
+
+  /**
+   * Pobiera locator dla input definition na określonym indeksie
+   */
+  getPairDefinitionInput(index: number): Locator {
+    return this.getByTestId(`pair-definition-${index}`);
+  }
+
+  /**
+   * Pobiera locator dla przycisku usuwania pary
+   */
+  getRemovePairButton(index: number): Locator {
+    return this.getByTestId(`remove-pair-${index}`);
+  }
+
+  /**
+   * Wypełnia parę na określonym indeksie
+   */
+  async fillPair(index: number, term: string, definition: string) {
+    const termInput = this.getPairTermInput(index);
+    const defInput = this.getPairDefinitionInput(index);
+
+    await termInput.waitFor({ state: "visible" });
+    await termInput.fill(term);
+    await defInput.fill(definition);
+  }
+
+  /**
+   * Dodaje nową pustą parę (klika przycisk + Dodaj parę)
+   */
+  async addNewPair() {
+    await this.addPairButton.scrollIntoViewIfNeeded();
+    await this.addPairButton.click();
+    await this.page.waitForTimeout(200);
+  }
+
+  /**
+   * Wypełnia wiele par (automatycznie dodaje brakujące)
+   * Uwaga: AddLevelForm domyślnie ma jedną pustą parę (index 0)
+   */
+  async fillPairs(pairs: Array<{ term: string; definition: string }>) {
+    for (let i = 0; i < pairs.length; i++) {
+      // Jeśli to nie pierwsza para, sprawdź czy musimy dodać nowy wiersz
+      if (i > 0) {
+        // Czekaj chwilę na re-render po wypełnieniu poprzedniej pary
+        await this.page.waitForTimeout(300);
+        
+        // Sprawdź czy para o tym indeksie już istnieje
+        const pairExists = await this.getPairTermInput(i).count().then(c => c > 0);
+        
+        if (!pairExists) {
+          // Para nie istnieje - musimy ją dodać
+          const addButtonExists = await this.addPairButton.isVisible().catch(() => false);
+          if (addButtonExists) {
+            await this.addNewPair();
+          } else {
+            // Brak przycisku - osiągnęliśmy limit par
+            throw new Error(`Cannot add more pairs. Limit reached at ${i} pairs. Button not visible.`);
+          }
+        }
+      }
+      
+      // Wypełnij parę
+      await this.fillPair(i, pairs[i].term, pairs[i].definition);
+    }
+  }
+
+  /**
+   * Pobiera liczbę par w formularzu
+   */
+  async getPairsCount(): Promise<number> {
+    return await this.page.locator('[data-testid^="pair-row-"]').count();
+  }
+
+  /**
+   * Zapisuje level (przycisk "Zapisz")
+   */
+  async saveLevel() {
+    await this.saveLevelButton.scrollIntoViewIfNeeded();
+    await this.saveLevelButton.click();
+  }
+
+  /**
+   * Zapisuje level i kontynuuje (przycisk "Zapisz i utwórz kolejny level")
+   */
+  async saveAndContinueLevel() {
+    await this.saveAndContinueButton.scrollIntoViewIfNeeded();
+    await this.saveAndContinueButton.click();
+  }
+
+  /**
+   * Weryfikuje czy jesteśmy na stronie dodawania poziomu
+   */
+  async verifyOnAddLevelPage(boardId: string) {
+    await expect(this.page).toHaveURL(new RegExp(`/boards/${boardId}/add-level`));
+  }
+
+  /**
+   * High-level metoda: Tworzy level z podanymi parami i zapisuje
+   * @param pairs - tablica par do dodania
+   * @param saveAndContinue - czy użyć przycisku "Zapisz i kontynuuj" zamiast "Zapisz"
+   */
+  async createLevel(pairs: Array<{ term: string; definition: string }>, saveAndContinue = false) {
+    await this.fillPairs(pairs);
+    
+    if (saveAndContinue) {
+      await this.saveAndContinueLevel();
+    } else {
+      await this.saveLevel();
+    }
   }
 }

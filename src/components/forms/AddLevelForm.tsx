@@ -1,5 +1,5 @@
 import { forwardRef, useImperativeHandle, useState } from "react";
-import { useForm, useFieldArray, type FieldError } from "react-hook-form";
+import { useForm, useFieldArray, type FieldError, type UseFormRegister } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/Button";
@@ -100,13 +100,22 @@ const AddLevelForm = forwardRef<AddLevelFormHandle, AddLevelFormProps>(({ rootId
           <PairFormRow
             key={field.id}
             index={index}
-            register={register}
+            register={
+              register as unknown as UseFormRegister<{
+                pairs: { term: string; definition: string }[];
+                cardCount: 16 | 24;
+                title: string;
+                isPublic: boolean;
+                tags?: string[];
+              }>
+            }
             errors={errors.pairs?.[index] as { term?: FieldError; definition?: FieldError } | undefined}
             onRemove={() => remove(index)}
           />
         ))}
         {remainingSlots > 0 && (
           <Button
+            data-testid="add-pair-button"
             type="button"
             variant="secondary"
             onClick={() => append({ term: "", definition: "" })}
@@ -122,6 +131,7 @@ const AddLevelForm = forwardRef<AddLevelFormHandle, AddLevelFormProps>(({ rootId
 
       <div className="flex gap-4 pt-4">
         <Button
+          data-testid="save-level-button"
           type="submit"
           disabled={isSubmitting}
           className="font-bold bg-[var(--color-primary)] text-white cursor-pointer"
@@ -130,6 +140,7 @@ const AddLevelForm = forwardRef<AddLevelFormHandle, AddLevelFormProps>(({ rootId
           Zapisz
         </Button>
         <Button
+          data-testid="save-and-continue-level-button"
           type="submit"
           variant="outline"
           disabled={isSubmitting}

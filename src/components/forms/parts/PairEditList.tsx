@@ -23,7 +23,7 @@ const PairEditList: FC<IPairEditListProps> = ({ boardId, pairs, cardCount, onSav
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" data-testid="pair-edit-list">
       {pairs.map((pair: PairDTO) => (
         <PairEditRow key={pair.id} pair={pair} boardId={boardId} onSave={onSave} onDelete={onDelete} />
       ))}
