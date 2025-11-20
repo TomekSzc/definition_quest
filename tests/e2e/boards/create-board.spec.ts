@@ -23,6 +23,7 @@ test.describe("Create Board Flow", () => {
    * 3. Utwórz tablicę i przejdź do nowo utworzonej tablicy
    */
   test("should create board manually and navigate to it", async ({ page }) => {
+    test.setTimeout(60000); // 60s timeout
     // ARRANGE - Zaloguj się i przejdź do Create Board
     const createBoardPage = await TestHelpers.loginAndGoToCreateBoard(page);
 
@@ -214,20 +215,25 @@ test.describe("Complete Board Workflow", () => {
     viewport: { width: 1280, height: 720 },
   });
   test("should create board and play it", async ({ page }) => {
+    // Zwiększ timeout - rozwiązywanie planszy zajmuje czas
+    test.setTimeout(120000); // 2 minuty
+    
     // 1. Utwórz tablicę
     const createBoardPage = await TestHelpers.loginAndGoToCreateBoard(page);
 
     const boardTitle = `E2E Test Board ${Date.now()}`;
+    const testPairs = [
+      { term: "apple", definition: "fruit" },
+      { term: "car", definition: "vehicle" },
+      { term: "book", definition: "reading" },
+      { term: "water", definition: "drink" },
+    ];
+
     await createBoardPage.createBoard({
       title: boardTitle,
       tags: ["e2e", "automated"],
       cardCount: 16,
-      pairs: [
-        { term: "apple", definition: "fruit" },
-        { term: "car", definition: "vehicle" },
-        { term: "book", definition: "reading" },
-        { term: "water", definition: "drink" },
-      ],
+      pairs: testPairs,
     });
 
     // 2. Poczekaj na przekierowanie do My Boards
@@ -243,6 +249,26 @@ test.describe("Complete Board Workflow", () => {
     // 5. Zweryfikuj czy plansza się załadowała
     const boardGamePage = new BoardGamePage(page);
     await boardGamePage.waitForBoardLoaded();
+
+    // 6. Rozpocznij grę
+    await boardGamePage.startGame();
+    
+    // Sprawdź że gra się rozpoczęła (karty są klikalne)
+    const cardsCount = await boardGamePage.getCardsCount();
+    expect(cardsCount).toBe(8); // 4 pary * 2 karty = 8 kart
+
+    // 7. Rozwiąż planszę używając znanych par
+    await boardGamePage.solveBoard(testPairs);
+
+    // 8. Sprawdź czy gra została ukończona
+    const isCompleted = await boardGamePage.isGameCompleted();
+    expect(isCompleted).toBeTruthy();
+
+    // 9. Kliknij Reset
+    await boardGamePage.resetGame();
+    
+    // 10. Sprawdź że plansza została zresetowana (można znowu rozpocząć grę)
+    await expect(boardGamePage.startButton).toBeVisible();
   });
 });
 

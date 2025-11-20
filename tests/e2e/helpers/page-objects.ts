@@ -742,32 +742,93 @@ export class BoardGamePage extends BasePage {
   }
 
   /**
-   * Pobiera kartę po indeksie
+   * Pobiera wszystkie karty gry (z właściwymi klasami CSS)
+   * Karty mają specyficzne klasy: w-[250px] h-[200px] i są w kontenerze BoardGrid
    */
-  getCard(index: number): Locator {
-    return this.page.locator(`[data-card-index="${index}"]`);
+  getAllCards(): Locator {
+    // Karty są buttonami z klasą "w-[250px] h-[200px]" i mają tekst (term lub definition)
+    return this.page.locator('button.mb-6.mx-2.bg-white[type="button"]');
   }
 
   /**
-   * Klika w kartę
+   * Pobiera kartę po indeksie (0-based)
+   */
+  getCardByIndex(index: number): Locator {
+    return this.getAllCards().nth(index);
+  }
+
+  /**
+   * Znajduje kartę po tekście
+   */
+  getCardByText(text: string): Locator {
+    return this.page.locator(`button.mb-6.mx-2.bg-white[type="button"]:has-text("${text}")`);
+  }
+
+  /**
+   * Klika w kartę o określonym tekście
+   */
+  async clickCardByText(text: string) {
+    const card = this.getCardByText(text);
+    
+    // Sprawdź czy karta istnieje i jest widoczna (może już być dopasowana)
+    const isVisible = await card.isVisible().catch(() => false);
+    if (!isVisible) {
+      // Karta już dopasowana lub nie istnieje
+      return;
+    }
+    
+    await card.click();
+    // Czekaj chwilę na animację
+    await this.page.waitForTimeout(300);
+  }
+
+  /**
+   * Klika w kartę po indeksie
    */
   async clickCard(index: number) {
-    const card = this.getCard(index);
-    await card.waitFor({ state: "visible" });
+    const card = this.getCardByIndex(index);
+    // Sprawdź czy karta istnieje i jest widoczna (może już być dopasowana)
+    const isVisible = await card.isVisible().catch(() => false);
+    if (!isVisible) {
+      // Karta już dopasowana lub nie istnieje
+      return;
+    }
+    
     await card.click();
+    // Czekaj chwilę na animację
+    await this.page.waitForTimeout(200);
+  }
+
+  /**
+   * Pobiera tekst z karty (term lub definition)
+   */
+  async getCardText(index: number): Promise<string> {
+    const card = this.getCardByIndex(index);
+    return (await card.textContent()) || "";
+  }
+
+  /**
+   * Pobiera liczbę kart na planszy
+   */
+  async getCardsCount(): Promise<number> {
+    return await this.getAllCards().count();
   }
 
   /**
    * Rozpoczyna grę
    */
   async startGame() {
+    await this.startButton.waitFor({ state: "visible" });
     await this.startButton.click();
+    // Czekaj aż overlay zniknie
+    await this.page.waitForTimeout(500);
   }
 
   /**
    * Zatrzymuje grę
    */
   async stopGame() {
+    await this.stopButton.waitFor({ state: "visible" });
     await this.stopButton.click();
   }
 
@@ -775,7 +836,54 @@ export class BoardGamePage extends BasePage {
    * Resetuje grę
    */
   async resetGame() {
+    await this.resetButton.waitFor({ state: "visible" });
     await this.resetButton.click();
+    // Czekaj na zresetowanie stanu
+    await this.page.waitForTimeout(500);
+  }
+
+  /**
+   * Rozwiązuje całą planszę automatycznie
+   * Używa znanych par term-definition do dopasowania kart
+   * Szuka kart po tekście (nie po indeksie, bo są shufflowane)
+   * @param pairs - tablica par {term, definition} używana do stworzenia tablicy
+   */
+  async solveBoard(pairs: Array<{ term: string; definition: string }>) {
+    // Dla każdej pary, znajdź karty po tekście i kliknij
+    for (const pair of pairs) {
+      // Kliknij w kartę z term (np. "book")
+      await this.clickCardByText(pair.term);
+      
+      // Kliknij w kartę z definition (np. "reading")
+      await this.clickCardByText(pair.definition);
+      
+      // Czekaj na animację dopasowania (karty staną się zielone)
+      await this.page.waitForTimeout(800);
+    }
+    
+    // Poczekaj na fanfare lub animację końcową
+    await this.page.waitForTimeout(2000);
+  }
+
+  /**
+   * Sprawdza czy gra została ukończona (wszystkie karty zielone)
+   */
+  async isGameCompleted(): Promise<boolean> {
+    // Poczekaj chwilę na aktualizację stanu
+    await this.page.waitForTimeout(500);
+    
+    const cardsCount = await this.getCardsCount();
+    let successCount = 0;
+    
+    for (let i = 0; i < cardsCount; i++) {
+      const card = this.getCardByIndex(i);
+      const classes = await card.getAttribute("class");
+      if (classes?.includes("border-green") || classes?.includes("bg-green")) {
+        successCount++;
+      }
+    }
+    
+    return successCount === cardsCount;
   }
 
   /**
