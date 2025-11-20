@@ -68,8 +68,8 @@ export default defineConfig({
     // Timeout dla nawigacji (czekaj dłużej na załadowanie React)
     navigationTimeout: 30000,
 
-    // Użyj data-test-id zamiast domyślnego data-testid
-    testIdAttribute: "data-test-id",
+    // Użyj data-testid jako standardowego atrybutu
+    testIdAttribute: "data-testid",
   },
 
   // Konfiguracja projektu testowego - TYLKO Chromium

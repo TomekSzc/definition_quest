@@ -85,6 +85,7 @@ const CreateBoardForm = forwardRef<CreateBoardFormHandle, ICreateBoardForm>(({ s
         </label>
         <input
           id="boardTitle"
+          data-testid="board-title-input"
           {...register("title")}
           placeholder="Dodaj tytuł"
           className={`w-full px-3 py-2 border rounded bg-background text-foreground ${errors.title ? "border-red-500" : "border-[var(--color-primary)]"}`}
@@ -118,6 +119,7 @@ const CreateBoardForm = forwardRef<CreateBoardFormHandle, ICreateBoardForm>(({ s
         <Button
           type="button"
           variant="secondary"
+          data-testid="add-pair-button"
           onClick={() => append({ term: "", definition: "" })}
           disabled={fields.length >= 100}
           className="cursor-pointer font-bold border-2 border-[var(--color-primary)] text-[var(--color-primary)] hover:bg-[var(--color-primary)] hover:text-white"
@@ -130,6 +132,7 @@ const CreateBoardForm = forwardRef<CreateBoardFormHandle, ICreateBoardForm>(({ s
       <div className="pt-4">
         <Button
           type="submit"
+          data-testid="create-board-submit"
           disabled={isSubmitting}
           className="font-bold bg-[var(--color-primary)] text-white cursor-pointer"
         >

@@ -32,7 +32,7 @@ export const AuthForm: FC = () => {
 
   return (
     <div className="max-w-md w-full mx-auto bg-[var(--color-primary)]  p-8 rounded-xl shadow border-2 border-[var(--color-white)]">
-      <Form.Root className="space-y-6" onSubmit={handleSubmit(onSubmit)} data-test-id="login-form">
+      <Form.Root className="space-y-6" onSubmit={handleSubmit(onSubmit)} data-testid="login-form">
         <FormInput
           name="email"
           label="Email"

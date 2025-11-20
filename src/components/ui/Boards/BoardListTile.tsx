@@ -19,6 +19,8 @@ export const BoardListTile: FC<IBoardListTileProps> = ({ board }) => {
   return (
     <a
       href={href}
+      data-testid={`board-tile-${board.id}`}
+      data-board-title={board.title}
       className="
     h-[60px]
     text-[var(--color-primary)]
