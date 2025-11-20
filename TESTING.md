@@ -103,6 +103,7 @@ Konfiguracja Playwright:
 - Trace, screenshots i video tylko przy niepowodzeniu
 - Automatyczne uruchamianie serwera dev przed testami
 - Browser contexts dla izolacji środowiska testowego
+- **Global Teardown** - automatyczne czyszczenie bazy danych po testach
 
 ### tsconfig.test.json
 
@@ -173,6 +174,49 @@ expect(data).toMatchInlineSnapshot(`
   }
 `);
 ```
+
+### Konfiguracja testów E2E
+
+#### Wymagane zmienne środowiskowe
+
+Utwórz plik `.env.test` w głównym katalogu projektu:
+
+```env
+# Supabase Test Environment (ODRĘBNA baza testowa!)
+SUPABASE_URL=https://your-test-project.supabase.co
+SUPABASE_KEY=your_test_anon_key
+
+# Test User Credentials (WYMAGANE dla czyszczenia bazy danych)
+E2E_USERNAME=test@example.com
+E2E_PASSWORD=your_test_password
+
+# Base URL
+BASE_URL=http://localhost:3000
+```
+
+**WAŻNE:**
+- ⚠️ **Używaj ODRĘBNEJ bazy testowej, NIGDY produkcyjnej!**
+- 🔑 `E2E_USERNAME` i `E2E_PASSWORD` są wymagane dla automatycznego czyszczenia bazy danych
+- 👤 Użytkownik testowy musi istnieć w bazie danych
+- 🔒 Nie commituj pliku `.env.test` do repozytorium
+
+#### Global Teardown - Automatyczne czyszczenie bazy danych
+
+Po zakończeniu wszystkich testów E2E automatycznie uruchamia się cleanup, który usuwa dane testowe:
+
+```
+🧹 Starting E2E Global Teardown...
+   Logging in as test user: test@example.com
+   ✅ Logged in successfully (ID: uuid...)
+   ✅ Deleted scores for test user
+   ✅ Deleted ai_requests for test user
+   ✅ Deleted pairs for 3 board(s)
+   ✅ Deleted boards for test user
+   ✅ Deleted user_meta for test user
+✅ E2E Global Teardown completed successfully
+```
+
+Więcej informacji: [tests/e2e/E2E-TEARDOWN.md](./tests/e2e/E2E-TEARDOWN.md)
 
 ### Testy E2E (Playwright)
 
@@ -299,6 +343,7 @@ Testy uruchamiane są:
 ### Wskazówki
 
 - Zobacz `tests/README.md` dla szczegółowej dokumentacji
+- Zobacz `tests/e2e/E2E-TEARDOWN.md` dla dokumentacji czyszczenia bazy danych 🆕
 - Sprawdź przykładowe testy w folderze `tests/`
 - Użyj `test:e2e:codegen` do generowania testów e2e
 

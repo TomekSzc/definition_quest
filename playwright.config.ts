@@ -1,4 +1,21 @@
 import { defineConfig, devices } from "@playwright/test";
+import dotenv from "dotenv";
+import path from "path";
+import fs from "fs";
+
+// Załaduj .env.test jeśli istnieje, w przeciwnym razie .env
+const envTestPath = path.resolve(process.cwd(), ".env.test");
+const envPath = path.resolve(process.cwd(), ".env");
+
+if (fs.existsSync(envTestPath)) {
+  dotenv.config({ path: envTestPath });
+  // eslint-disable-next-line no-console
+  console.log("✅ Loaded environment from: .env.test");
+} else if (fs.existsSync(envPath)) {
+  dotenv.config({ path: envPath });
+  // eslint-disable-next-line no-console
+  console.log("⚠️  .env.test not found, using .env");
+}
 
 /**
  * Konfiguracja Playwright dla testów e2e
@@ -7,6 +24,9 @@ import { defineConfig, devices } from "@playwright/test";
 export default defineConfig({
   // Ścieżka do foldera z testami
   testDir: "./tests/e2e",
+
+  // Global Teardown - czyszczenie bazy danych po WSZYSTKICH testach
+  globalTeardown: "./tests/e2e/global-teardown.ts",
 
   // Maksymalny czas wykonania jednego testu
   timeout: 30 * 1000,
@@ -34,7 +54,7 @@ export default defineConfig({
   // Ustawienia współdzielone dla wszystkich projektów
   use: {
     // Bazowy URL dla testów
-    baseURL: process.env.BASE_URL || "http://localhost:4321",
+    baseURL: process.env.BASE_URL || "http://localhost:3000",
 
     // Zbieranie trace tylko przy niepowodzeniu
     trace: "retain-on-failure",
@@ -44,6 +64,12 @@ export default defineConfig({
 
     // Video tylko przy niepowodzeniu
     video: "retain-on-failure",
+
+    // Timeout dla nawigacji (czekaj dłużej na załadowanie React)
+    navigationTimeout: 30000,
+
+    // Użyj data-testid jako standardowego atrybutu
+    testIdAttribute: "data-testid",
   },
 
   // Konfiguracja projektu testowego - TYLKO Chromium
@@ -63,8 +89,8 @@ export default defineConfig({
 
   // Uruchom serwer deweloperski przed testami
   webServer: {
-    command: "npm run dev",
-    url: "http://localhost:4321",
+    command: "npm run dev:e2e",
+    url: "http://localhost:3000",
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,
   },

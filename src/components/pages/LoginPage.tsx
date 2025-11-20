@@ -10,12 +10,12 @@ const LoginPageComponent: FC = () => {
       <AuthForm />
       <p className="text-[var(--color-white)] text-sm mt-4">
         Nie masz konta?{" "}
-        <a href={Routes.SignUp} className="underline">
+        <a href={Routes.SignUp} className="underline" data-testid="signup-link">
           Zarejestruj się
         </a>
       </p>
       <p className="text-[var(--color-white)] text-sm">
-        <a href={Routes.ForgotPassword} className="underline">
+        <a href={Routes.ForgotPassword} className="underline" data-testid="forgot-password-link">
           Zapomniałeś hasła?
         </a>
       </p>

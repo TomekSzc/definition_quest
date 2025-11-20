@@ -51,8 +51,9 @@ const AddPairsForm: React.FC<AddPairsFormProps> = ({ boardId, existingCount, car
   return (
     <>
       {draftPairs.map((draft, idx) => (
-        <div key={idx} className="flex flex-wrap gap-2 items-start border rounded p-3 bg-background">
+        <div key={idx} className="flex flex-wrap gap-2 items-start border rounded p-3 bg-background" data-testid={`add-pair-draft-${idx}`}>
           <input
+            data-testid={`add-pair-term-${idx}`}
             className="flex-1 px-3 py-2 border rounded bg-background text-foreground border-[var(--color-primary)]"
             placeholder="Słowo"
             value={draft.term}
@@ -62,6 +63,7 @@ const AddPairsForm: React.FC<AddPairsFormProps> = ({ boardId, existingCount, car
             }}
           />
           <input
+            data-testid={`add-pair-definition-${idx}`}
             className="flex-1 px-3 py-2 border rounded bg-background text-foreground border-[var(--color-primary)]"
             placeholder="Definicja"
             value={draft.definition}
@@ -71,10 +73,22 @@ const AddPairsForm: React.FC<AddPairsFormProps> = ({ boardId, existingCount, car
             }}
           />
           <div className="flex gap-1 self-center">
-            <Button size="icon" variant="ghost" onClick={() => saveDraftRow(idx)} className="cursor-pointer">
+            <Button 
+              data-testid={`add-pair-save-${idx}`}
+              size="icon" 
+              variant="ghost" 
+              onClick={() => saveDraftRow(idx)} 
+              className="cursor-pointer"
+            >
               <CheckIcon className="w-5 h-5 text-green-600" />
             </Button>
-            <Button size="icon" variant="ghost" onClick={() => removeDraftRow(idx)} className="cursor-pointer">
+            <Button 
+              data-testid={`add-pair-cancel-${idx}`}
+              size="icon" 
+              variant="ghost" 
+              onClick={() => removeDraftRow(idx)} 
+              className="cursor-pointer"
+            >
               <XIcon className="w-5 h-5 text-red-600" />
             </Button>
           </div>
@@ -82,6 +96,7 @@ const AddPairsForm: React.FC<AddPairsFormProps> = ({ boardId, existingCount, car
       ))}
       {remainingSlots > 0 && (
         <Button
+          data-testid="add-pair-button"
           type="button"
           variant="secondary"
           onClick={addDraftRow}

@@ -32,7 +32,7 @@ export const AuthForm: FC = () => {
 
   return (
     <div className="max-w-md w-full mx-auto bg-[var(--color-primary)]  p-8 rounded-xl shadow border-2 border-[var(--color-white)]">
-      <Form.Root className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
+      <Form.Root className="space-y-6" onSubmit={handleSubmit(onSubmit)} data-testid="login-form">
         <FormInput
           name="email"
           label="Email"
@@ -40,6 +40,7 @@ export const AuthForm: FC = () => {
           error={errors.email?.message}
           type="email"
           disabled={isLoading}
+          dataTestId="login-email-input"
         />
         <FormInput
           name="password"
@@ -49,10 +50,16 @@ export const AuthForm: FC = () => {
           type="password"
           disabled={isLoading}
           showPasswordToggle
+          dataTestId="login-password-input"
         />
 
         <Form.Submit asChild>
-          <SubmitButton idleText="Zaloguj" loadingText="Logowanie..." isLoading={isLoading} />
+          <SubmitButton
+            idleText="Zaloguj"
+            loadingText="Logowanie..."
+            isLoading={isLoading}
+            dataTestId="login-submit-button"
+          />
         </Form.Submit>
       </Form.Root>
     </div>

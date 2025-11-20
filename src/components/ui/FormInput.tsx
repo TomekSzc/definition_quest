@@ -12,6 +12,7 @@ interface IInputProps {
   type?: "text" | "email" | "password";
   disabled?: boolean;
   showPasswordToggle?: boolean;
+  dataTestId?: string;
 }
 
 export const FormInput: FC<IInputProps> = ({
@@ -22,6 +23,7 @@ export const FormInput: FC<IInputProps> = ({
   type = "text",
   disabled = false,
   showPasswordToggle = false,
+  dataTestId,
 }) => {
   const [showPwd, setShowPwd] = useState(false);
   const computedType = type === "password" && showPasswordToggle ? (showPwd ? "text" : "password") : type;
@@ -39,6 +41,7 @@ export const FormInput: FC<IInputProps> = ({
             required
             className={`w-full px-3 py-2 border-2 rounded outline-none focus:ring-2 bg-[var(--color-primary)] text-[var(--color-white)] ${error ? "border-red-500 focus:ring-red-500" : "border-[var(--color-white)] focus:ring-[var(--color-white)]"}`}
             disabled={disabled}
+            data-testid={dataTestId}
             {...register}
           />
         </Form.Control>
@@ -50,6 +53,7 @@ export const FormInput: FC<IInputProps> = ({
             onTouchStart={() => setShowPwd(true)}
             onTouchEnd={() => setShowPwd(false)}
             className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 cursor-pointer text-[var(--color-white)]"
+            data-testid={dataTestId ? `${dataTestId}-toggle` : undefined}
           />
         )}
       </div>

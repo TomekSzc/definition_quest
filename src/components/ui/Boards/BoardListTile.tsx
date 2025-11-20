@@ -19,6 +19,8 @@ export const BoardListTile: FC<IBoardListTileProps> = ({ board }) => {
   return (
     <a
       href={href}
+      data-testid={`board-tile-${board.id}`}
+      data-board-title={board.title}
       className="
     h-[60px]
     text-[var(--color-primary)]
@@ -78,6 +80,7 @@ export const BoardListTile: FC<IBoardListTileProps> = ({ board }) => {
             </div>
           )}
           <EditIcon
+            data-testid={`edit-board-${board.id}`}
             className="w-[30px] h-[30px] cursor-pointer text-[var(--color-primary)] hover:bg-[var(--color-primary)] hover:text-white rounded p-1 transition-colors"
             onClick={(e) => {
               e.preventDefault();
@@ -86,6 +89,7 @@ export const BoardListTile: FC<IBoardListTileProps> = ({ board }) => {
             }}
           />
           <DeleteIcon
+            data-testid={`delete-board-${board.id}`}
             className="w-[30px] h-[30px] cursor-pointer text-[var(--color-primary)] hover:bg-red-500 hover:text-white rounded p-1 transition-colors"
             onClick={(e) => {
               e.preventDefault();

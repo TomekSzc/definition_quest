@@ -37,16 +37,17 @@ const TagsInput: React.FC<TagsInputProps> = ({ value = [], onChange, error }) =>
       <label htmlFor="tags-input" className="block text-sm font-bold mb-1 text-[var(--color-primary)]">
         Tagi (max 10)
       </label>
-      <div className="flex flex-wrap gap-2 mb-2">
+      <div className="flex flex-wrap gap-2 mb-2" data-testid="tags-list">
         {value.map((tag) => (
-          <Badge key={tag} className="flex items-center gap-1 bg-[var(--color-primary)] text-white">
+          <Badge key={tag} className="flex items-center gap-1 bg-[var(--color-primary)] text-white" data-testid={`tag-${tag}`}>
             {tag}
-            <CloseIcon className="w-4 h-4 cursor-pointer font-bold" onClick={() => removeTag(tag)} />
+            <CloseIcon className="w-4 h-4 cursor-pointer font-bold" onClick={() => removeTag(tag)} data-testid={`remove-tag-${tag}`} />
           </Badge>
         ))}
       </div>
       <input
         id="tags-input"
+        data-testid="tags-input"
         className={`w-full px-3 py-2 border rounded bg-background text-foreground ${error ? "border-red-500" : "border-[var(--color-primary)]"}`}
         value={input}
         onChange={(e) => setInput(e.target.value)}
