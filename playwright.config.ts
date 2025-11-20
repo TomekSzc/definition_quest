@@ -25,6 +25,9 @@ export default defineConfig({
   // Ścieżka do foldera z testami
   testDir: "./tests/e2e",
 
+  // Global Teardown - czyszczenie bazy danych po WSZYSTKICH testach
+  globalTeardown: "./tests/e2e/global-teardown.ts",
+
   // Maksymalny czas wykonania jednego testu
   timeout: 30 * 1000,
 

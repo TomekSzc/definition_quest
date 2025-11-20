@@ -10,6 +10,7 @@ Testy end-to-end dla aplikacji Definition Quest używające Playwright i Page Ob
 - [Page Object Model](#page-object-model)
 - [Pisanie testów](#pisanie-testów)
 - [Best Practices](#best-practices)
+- [Global Teardown - Czyszczenie bazy danych](#global-teardown---czyszczenie-bazy-danych)
 
 ## Wymagania
 
@@ -422,9 +423,65 @@ export default defineConfig({
 });
 ```
 
+## Global Teardown - Czyszczenie bazy danych
+
+Po zakończeniu wszystkich testów E2E automatycznie uruchamia się **Global Teardown**, który czyści bazę danych testową.
+
+### Szybki start
+
+1. **Utwórz `.env.test`** w głównym katalogu projektu:
+
+```env
+SUPABASE_URL=https://your-test-project.supabase.co
+SUPABASE_KEY=your_test_anon_key
+E2E_USERNAME=test@example.com
+E2E_PASSWORD=your_test_password
+```
+
+2. **Klucze Supabase** znajdziesz w Supabase Dashboard → Settings → API
+
+3. **WAŻNE:** Używaj ODRĘBNEJ bazy testowej, nigdy produkcyjnej!
+
+### Jak to działa?
+
+Global Teardown automatycznie:
+- Loguje się jako użytkownik testowy (E2E_USERNAME/E2E_PASSWORD)
+- Usuwa wszystkie jego dane: scores, ai_requests, pairs, boards, user_meta
+- Respektuje Row Level Security (RLS) - bezpieczne podejście
+- Działa PO WSZYSTKICH testach, nie po każdym z osobna
+- Loguje szczegółowe informacje o procesie czyszczenia
+
+### Logi z teardown
+
+Po uruchomieniu testów zobaczysz:
+
+```
+🧹 Starting E2E Global Teardown...
+   Logging in as test user: test@example.com
+   ✅ Logged in successfully (ID: uuid...)
+   ✅ Deleted scores for test user
+   ✅ Deleted ai_requests for test user
+   ✅ Deleted pairs for 3 board(s)
+   ✅ Deleted boards for test user
+   ✅ Deleted user_meta for test user
+✅ E2E Global Teardown completed successfully
+```
+
+### Szczegółowa dokumentacja
+
+Zobacz pełną dokumentację: **[E2E-TEARDOWN.md](./E2E-TEARDOWN.md)**
+
+Zawiera:
+- Szczegółową konfigurację użytkownika testowego
+- Strategie czyszczenia bazy danych
+- Bezpieczeństwo i dobre praktyki
+- Troubleshooting
+- Integrację z CI/CD
+
 ## Zasoby
 
 - [Dokumentacja Playwright](https://playwright.dev/)
 - [Best Practices Playwright](https://playwright.dev/docs/best-practices)
 - [Page Object Model](https://playwright.dev/docs/pom)
 - [Test Fixtures](https://playwright.dev/docs/test-fixtures)
+- [E2E Global Teardown](./E2E-TEARDOWN.md) 🆕

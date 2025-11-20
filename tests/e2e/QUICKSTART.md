@@ -12,18 +12,29 @@ npx playwright install chromium
 
 ### Krok 2: Ustaw zmienne środowiskowe
 
-Skopiuj i edytuj `.env`:
+Utwórz plik `.env.test` w głównym katalogu projektu:
 
 ```bash
-cp .env.example .env
+# Utwórz plik .env.test (nie commituj go!)
+touch .env.test
 ```
 
-Dodaj do `.env`:
+Dodaj do `.env.test`:
 
 ```env
+# Supabase Test Environment
+SUPABASE_URL=https://your-test-project.supabase.co
+SUPABASE_KEY=your_test_anon_key
+
+# Test User (WYMAGANE dla czyszczenia bazy danych)
 E2E_USERNAME=your_test_user@example.com
 E2E_PASSWORD=your_test_password
+
+# Base URL
+BASE_URL=http://localhost:3000
 ```
+
+**WAŻNE:** `E2E_USERNAME` i `E2E_PASSWORD` są wymagane dla automatycznego czyszczenia bazy danych po testach!
 
 ## 2. Uruchom testy
 
@@ -234,8 +245,35 @@ Rozwiązanie: Sprawdź czy używasz poprawnego `data-test-id`
 2. Przejrzyj przykładowe testy: [auth/login.spec.ts](./auth/login.spec.ts)
 3. Zobacz wszystkie Page Objects: [helpers/page-objects.ts](./helpers/page-objects.ts)
 
+## Czyszczenie bazy danych (Global Teardown)
+
+Po zakończeniu wszystkich testów automatycznie uruchamia się cleanup, który usuwa dane testowe z bazy Supabase.
+
+### Wymagania:
+- ✅ Plik `.env.test` z konfiguracją
+- ✅ `E2E_USERNAME` i `E2E_PASSWORD` w zmiennych środowiskowych
+- ✅ Użytkownik testowy w bazie danych
+- ✅ Oddzielna baza testowa (NIGDY nie używaj produkcyjnej!)
+
+### Logi:
+Po testach zobaczysz:
+```
+🧹 Starting E2E Global Teardown...
+   Logging in as test user: test@example.com
+   ✅ Logged in successfully (ID: uuid...)
+   ✅ Deleted scores for test user
+   ✅ Deleted ai_requests for test user
+   ✅ Deleted pairs for 3 board(s)
+   ✅ Deleted boards for test user
+   ✅ Deleted user_meta for test user
+✅ E2E Global Teardown completed successfully
+```
+
+Szczegóły: [E2E-TEARDOWN.md](./E2E-TEARDOWN.md)
+
 ## Dodatkowe zasoby
 
 - 📚 [Dokumentacja Playwright](https://playwright.dev/)
 - 🎓 [Best Practices](https://playwright.dev/docs/best-practices)
 - 🏗️ [Page Object Model](https://playwright.dev/docs/pom)
+- 🧹 [Global Teardown - Czyszczenie bazy danych](./E2E-TEARDOWN.md) 🆕
