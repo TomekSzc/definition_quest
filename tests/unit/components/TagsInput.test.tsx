@@ -21,7 +21,7 @@ import React from "react";
 // Mock dla Badge component
 vi.mock("@/components/ui/Badge", () => ({
   Badge: ({ children, className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-    <div data-testid="badge" className={className} {...props}>
+    <div className={className} {...props}>
       {children}
     </div>
   ),
@@ -31,11 +31,12 @@ vi.mock("@/components/ui/Badge", () => ({
 interface MockCloseIconProps extends React.SVGProps<SVGSVGElement> {
   className?: string;
   onClick?: () => void;
+  "data-testid"?: string;
 }
 
 vi.mock("@/assets/icons/CloseIcon", () => ({
   default: ({ className, onClick, ...props }: MockCloseIconProps) => (
-    <svg data-testid="close-icon" className={className} onClick={onClick} {...props}>
+    <svg className={className} onClick={onClick} {...props}>
       <path />
     </svg>
   ),
@@ -107,8 +108,12 @@ describe("TagsInput", () => {
       render(<TagsInput value={tags} onChange={mockOnChange} />);
 
       // Assert
-      const badges = screen.getAllByTestId("badge");
-      expect(badges).toHaveLength(3);
+      const badge1 = screen.getByTestId("tag-Tag1");
+      const badge2 = screen.getByTestId("tag-Tag2");
+      const badge3 = screen.getByTestId("tag-Tag3");
+      expect(badge1).toBeInTheDocument();
+      expect(badge2).toBeInTheDocument();
+      expect(badge3).toBeInTheDocument();
     });
 
     it("powinien renderować CloseIcon dla każdego tagu", () => {
@@ -120,8 +125,10 @@ describe("TagsInput", () => {
       render(<TagsInput value={tags} onChange={mockOnChange} />);
 
       // Assert
-      const closeIcons = screen.getAllByTestId("close-icon");
-      expect(closeIcons).toHaveLength(2);
+      const closeIcon1 = screen.getByTestId("remove-tag-Tag1");
+      const closeIcon2 = screen.getByTestId("remove-tag-Tag2");
+      expect(closeIcon1).toBeInTheDocument();
+      expect(closeIcon2).toBeInTheDocument();
     });
   });
 
@@ -295,8 +302,8 @@ describe("TagsInput", () => {
       render(<TagsInput value={tags} onChange={mockOnChange} />);
 
       // Act
-      const closeIcons = screen.getAllByTestId("close-icon");
-      await user.click(closeIcons[1]); // Usuń Tag2
+      const closeIcon = screen.getByTestId("remove-tag-Tag2");
+      await user.click(closeIcon); // Usuń Tag2
 
       // Assert
       expect(mockOnChange).toHaveBeenCalledWith(["Tag1", "Tag3"]);
@@ -310,8 +317,8 @@ describe("TagsInput", () => {
       render(<TagsInput value={tags} onChange={mockOnChange} />);
 
       // Act
-      const closeIcons = screen.getAllByTestId("close-icon");
-      await user.click(closeIcons[0]);
+      const closeIcon = screen.getByTestId("remove-tag-First");
+      await user.click(closeIcon);
 
       // Assert
       expect(mockOnChange).toHaveBeenCalledWith(["Second", "Third"]);
@@ -325,8 +332,8 @@ describe("TagsInput", () => {
       render(<TagsInput value={tags} onChange={mockOnChange} />);
 
       // Act
-      const closeIcons = screen.getAllByTestId("close-icon");
-      await user.click(closeIcons[2]);
+      const closeIcon = screen.getByTestId("remove-tag-Third");
+      await user.click(closeIcon);
 
       // Assert
       expect(mockOnChange).toHaveBeenCalledWith(["First", "Second"]);
@@ -340,16 +347,16 @@ describe("TagsInput", () => {
       const { rerender } = render(<TagsInput value={tags} onChange={mockOnChange} />);
 
       // Act - usuń pierwszy tag
-      let closeIcons = screen.getAllByTestId("close-icon");
-      await user.click(closeIcons[0]);
+      const closeIcon1 = screen.getByTestId("remove-tag-Tag1");
+      await user.click(closeIcon1);
       expect(mockOnChange).toHaveBeenNthCalledWith(1, ["Tag2"]);
 
       // Rerender z zaktualizowanymi tagami
       rerender(<TagsInput value={["Tag2"]} onChange={mockOnChange} />);
 
       // Act - usuń drugi tag
-      closeIcons = screen.getAllByTestId("close-icon");
-      await user.click(closeIcons[0]);
+      const closeIcon2 = screen.getByTestId("remove-tag-Tag2");
+      await user.click(closeIcon2);
 
       // Assert
       expect(mockOnChange).toHaveBeenCalledTimes(2);
@@ -365,7 +372,7 @@ describe("TagsInput", () => {
       render(<TagsInput value={tags} onChange={mockOnChange} />);
 
       // Assert
-      const closeIcon = screen.getByTestId("close-icon");
+      const closeIcon = screen.getByTestId("remove-tag-Tag1");
       expect(closeIcon).toHaveClass("cursor-pointer");
     });
   });
@@ -481,7 +488,7 @@ describe("TagsInput", () => {
       render(<TagsInput value={tags} onChange={mockOnChange} />);
 
       // Assert
-      const badge = screen.getByTestId("badge");
+      const badge = screen.getByTestId("tag-Tag1");
       expect(badge).toHaveClass("flex");
       expect(badge).toHaveClass("items-center");
       expect(badge).toHaveClass("gap-1");
@@ -498,7 +505,7 @@ describe("TagsInput", () => {
       render(<TagsInput value={tags} onChange={mockOnChange} />);
 
       // Assert
-      const closeIcon = screen.getByTestId("close-icon");
+      const closeIcon = screen.getByTestId("remove-tag-Tag1");
       expect(closeIcon).toHaveClass("w-4");
       expect(closeIcon).toHaveClass("h-4");
       expect(closeIcon).toHaveClass("cursor-pointer");
@@ -586,10 +593,9 @@ describe("TagsInput", () => {
       const { container } = render(<TagsInput onChange={mockOnChange} />);
 
       // Assert
-      const badges = screen.queryAllByTestId("badge");
-      expect(badges).toHaveLength(0);
+      const tagsContainer = screen.getByTestId("tags-list");
+      expect(tagsContainer.children).toHaveLength(0);
       // Container powinien istnieć mimo braku tagów
-      const tagsContainer = container.querySelector(".flex.flex-wrap");
       expect(tagsContainer).toBeInTheDocument();
     });
 
@@ -601,8 +607,8 @@ describe("TagsInput", () => {
       render(<TagsInput value={[]} onChange={mockOnChange} />);
 
       // Assert
-      const badges = screen.queryAllByTestId("badge");
-      expect(badges).toHaveLength(0);
+      const tagsContainer = screen.getByTestId("tags-list");
+      expect(tagsContainer.children).toHaveLength(0);
     });
   });
 
@@ -681,8 +687,11 @@ describe("TagsInput", () => {
       render(<TagsInput value={maxTags} onChange={mockOnChange} />);
 
       // Assert
-      const badges = screen.getAllByTestId("badge");
-      expect(badges).toHaveLength(10);
+      const tagsContainer = screen.getByTestId("tags-list");
+      expect(tagsContainer.children).toHaveLength(10);
+      maxTags.forEach((tag) => {
+        expect(screen.getByTestId(`tag-${tag}`)).toBeInTheDocument();
+      });
     });
 
     it("nie powinien pozwolić na dodanie 11. tagu", async () => {
@@ -698,8 +707,8 @@ describe("TagsInput", () => {
 
       // Assert
       expect(mockOnChange).not.toHaveBeenCalled();
-      const badges = screen.getAllByTestId("badge");
-      expect(badges).toHaveLength(10);
+      const tagsContainer = screen.getByTestId("tags-list");
+      expect(tagsContainer.children).toHaveLength(10);
     });
 
     it("powinien obsłużyć case-sensitive duplikaty (JavaScript vs javascript)", async () => {
@@ -753,14 +762,15 @@ describe("TagsInput", () => {
 
       // Act - renderowanie z początkowymi tagami
       const { rerender } = render(<TagsInput value={initialTags} onChange={mockOnChange} />);
-      expect(screen.getAllByTestId("badge")).toHaveLength(2);
+      const tagsContainer = screen.getByTestId("tags-list");
+      expect(tagsContainer.children).toHaveLength(2);
 
       // Act - zmiana value z zewnątrz
       const updatedTags = ["Tag1", "Tag2", "Tag3", "Tag4"];
       rerender(<TagsInput value={updatedTags} onChange={mockOnChange} />);
 
       // Assert
-      expect(screen.getAllByTestId("badge")).toHaveLength(4);
+      expect(tagsContainer.children).toHaveLength(4);
       expect(screen.getByText("Tag3")).toBeInTheDocument();
       expect(screen.getByText("Tag4")).toBeInTheDocument();
     });
@@ -782,7 +792,7 @@ describe("TagsInput", () => {
       rerender(<TagsInput value={["TestTag"]} onChange={mockOnChange} />);
 
       // Act - usunięcie tagu
-      const closeIcon = screen.getByTestId("close-icon");
+      const closeIcon = screen.getByTestId("remove-tag-TestTag");
       await user.click(closeIcon);
       expect(mockOnChange).toHaveBeenNthCalledWith(2, []);
 
