@@ -70,7 +70,7 @@ vi.mock("@/components/ui/ToggleGroup/Toggle-group", () => ({
     );
   },
   ToggleGroupItem: ({ children, value, ...props }: { children: React.ReactNode; value: string }) => (
-    <button data-testid={`toggle-item-${value}`} data-value={value} role="radio" aria-checked={false} {...props}>
+    <button data-testid={props["data-testid"] || `toggle-item-${value}`} data-value={value} role="radio" aria-checked={false} {...props}>
       {children}
     </button>
   ),
@@ -91,8 +91,8 @@ describe("CardCountToggle", () => {
       // Assert
       expect(screen.getByText("Liczba kart")).toBeInTheDocument();
       expect(screen.getByTestId("toggle-group")).toBeInTheDocument();
-      expect(screen.getByTestId("toggle-item-16")).toBeInTheDocument();
-      expect(screen.getByTestId("toggle-item-24")).toBeInTheDocument();
+      expect(screen.getByTestId("card-count-16")).toBeInTheDocument();
+      expect(screen.getByTestId("card-count-24")).toBeInTheDocument();
     });
 
     it("powinien wyrenderować komponent w strukturze div > label + ToggleGroup", () => {
@@ -193,7 +193,7 @@ describe("CardCountToggle", () => {
       render(<CardCountToggle value={16} onChange={mockOnChange} />);
 
       // Assert
-      const button16 = screen.getByTestId("toggle-item-16");
+      const button16 = screen.getByTestId("card-count-16");
       expect(button16).toBeInTheDocument();
       expect(button16).toHaveTextContent("16");
       expect(button16).toHaveAttribute("data-value", "16");
@@ -204,7 +204,7 @@ describe("CardCountToggle", () => {
       render(<CardCountToggle value={16} onChange={mockOnChange} />);
 
       // Assert
-      const button24 = screen.getByTestId("toggle-item-24");
+      const button24 = screen.getByTestId("card-count-24");
       expect(button24).toBeInTheDocument();
       expect(button24).toHaveTextContent("24");
       expect(button24).toHaveAttribute("data-value", "24");
@@ -215,8 +215,8 @@ describe("CardCountToggle", () => {
       render(<CardCountToggle value={16} onChange={mockOnChange} />);
 
       // Assert
-      const button16 = screen.getByTestId("toggle-item-16");
-      const button24 = screen.getByTestId("toggle-item-24");
+      const button16 = screen.getByTestId("card-count-16");
+      const button24 = screen.getByTestId("card-count-24");
       expect(button16).toHaveAttribute("role", "radio");
       expect(button24).toHaveAttribute("role", "radio");
     });
@@ -226,7 +226,7 @@ describe("CardCountToggle", () => {
       const { container } = render(<CardCountToggle value={16} onChange={mockOnChange} />);
 
       // Assert
-      const buttons = container.querySelectorAll('[data-testid^="toggle-item-"]');
+      const buttons = container.querySelectorAll('[data-testid^="card-count-"]');
       expect(buttons).toHaveLength(2);
     });
   });
@@ -269,7 +269,7 @@ describe("CardCountToggle", () => {
       render(<CardCountToggle value={24} onChange={mockOnChange} />);
 
       // Act
-      const button16 = screen.getByTestId("toggle-item-16");
+      const button16 = screen.getByTestId("card-count-16");
       await user.click(button16);
 
       // Assert
@@ -283,7 +283,7 @@ describe("CardCountToggle", () => {
       render(<CardCountToggle value={16} onChange={mockOnChange} />);
 
       // Act
-      const button24 = screen.getByTestId("toggle-item-24");
+      const button24 = screen.getByTestId("card-count-24");
       await user.click(button24);
 
       // Assert
@@ -297,7 +297,7 @@ describe("CardCountToggle", () => {
       render(<CardCountToggle value={16} onChange={mockOnChange} />);
 
       // Act
-      const button24 = screen.getByTestId("toggle-item-24");
+      const button24 = screen.getByTestId("card-count-24");
       await user.click(button24);
 
       // Assert
@@ -312,7 +312,7 @@ describe("CardCountToggle", () => {
       render(<CardCountToggle value={16} onChange={mockOnChange} />);
 
       // Act
-      const button16 = screen.getByTestId("toggle-item-16");
+      const button16 = screen.getByTestId("card-count-16");
       await user.click(button16);
 
       // Assert
@@ -346,7 +346,7 @@ describe("CardCountToggle", () => {
       render(<CardCountToggle value={24} onChange={mockOnChange} />);
 
       // Act
-      const button16 = screen.getByTestId("toggle-item-16");
+      const button16 = screen.getByTestId("card-count-16");
       await user.click(button16);
 
       // Assert
@@ -360,7 +360,7 @@ describe("CardCountToggle", () => {
       render(<CardCountToggle value={16} onChange={mockOnChange} />);
 
       // Act
-      const button24 = screen.getByTestId("toggle-item-24");
+      const button24 = screen.getByTestId("card-count-24");
       await user.click(button24);
 
       // Assert
@@ -375,7 +375,7 @@ describe("CardCountToggle", () => {
       render(<CardCountToggle value={16} onChange={onChangeTyped} />);
 
       // Act
-      const button24 = screen.getByTestId("toggle-item-24");
+      const button24 = screen.getByTestId("card-count-24");
       await user.click(button24);
 
       // Assert
@@ -479,7 +479,7 @@ describe("CardCountToggle", () => {
 
       // Act - zmiana handlera
       rerender(<CardCountToggle value={16} onChange={newOnChange} />);
-      const button24 = screen.getByTestId("toggle-item-24");
+      const button24 = screen.getByTestId("card-count-24");
       await user.click(button24);
 
       // Assert
@@ -497,8 +497,8 @@ describe("CardCountToggle", () => {
 
       // Assert - struktura powinna być taka sama (zmienia się tylko atrybut data-value)
       expect(screen.getByText("Liczba kart")).toBeInTheDocument();
-      expect(screen.getByTestId("toggle-item-16")).toBeInTheDocument();
-      expect(screen.getByTestId("toggle-item-24")).toBeInTheDocument();
+      expect(screen.getByTestId("card-count-16")).toBeInTheDocument();
+      expect(screen.getByTestId("card-count-24")).toBeInTheDocument();
     });
   });
 
@@ -519,8 +519,8 @@ describe("CardCountToggle", () => {
       render(<CardCountToggle value={16} onChange={mockOnChange} />);
 
       // Assert
-      const button16 = screen.getByTestId("toggle-item-16");
-      const button24 = screen.getByTestId("toggle-item-24");
+      const button16 = screen.getByTestId("card-count-16");
+      const button24 = screen.getByTestId("card-count-24");
       expect(button16).toHaveAttribute("role", "radio");
       expect(button24).toHaveAttribute("role", "radio");
     });
@@ -540,8 +540,8 @@ describe("CardCountToggle", () => {
       render(<CardCountToggle value={16} onChange={mockOnChange} />);
 
       // Assert
-      const button16 = screen.getByTestId("toggle-item-16");
-      const button24 = screen.getByTestId("toggle-item-24");
+      const button16 = screen.getByTestId("card-count-16");
+      const button24 = screen.getByTestId("card-count-24");
       expect(button16).toHaveTextContent("16");
       expect(button24).toHaveTextContent("24");
     });
@@ -577,7 +577,7 @@ describe("CardCountToggle", () => {
       render(<CardCountToggle value={16} onChange={mockOnChange} />);
 
       // Act
-      const button24 = screen.getByTestId("toggle-item-24");
+      const button24 = screen.getByTestId("card-count-24");
       await user.click(button24);
 
       // Assert

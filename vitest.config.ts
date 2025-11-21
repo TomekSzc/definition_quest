@@ -17,6 +17,15 @@ export default defineConfig({
     // Globalne ustawienia dla testów
     globals: true,
 
+    // Wyklucz testy e2e (Playwright) z Vitest
+    exclude: [
+      "**/node_modules/**",
+      "**/dist/**",
+      "**/.{idea,git,cache,output,temp}/**",
+      "**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build}.config.*",
+      "**/tests/e2e/**",
+    ],
+
     // Konfiguracja coverage
     coverage: {
       provider: "v8",
