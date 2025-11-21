@@ -445,6 +445,7 @@ E2E_PASSWORD=your_test_password
 ### Jak to działa?
 
 Global Teardown automatycznie:
+
 - Loguje się jako użytkownik testowy (E2E_USERNAME/E2E_PASSWORD)
 - Usuwa wszystkie jego dane: scores, ai_requests, pairs, boards, user_meta
 - Respektuje Row Level Security (RLS) - bezpieczne podejście
@@ -472,6 +473,7 @@ Po uruchomieniu testów zobaczysz:
 Zobacz pełną dokumentację: **[E2E-TEARDOWN.md](./E2E-TEARDOWN.md)**
 
 Zawiera:
+
 - Szczegółową konfigurację użytkownika testowego
 - Strategie czyszczenia bazy danych
 - Bezpieczeństwo i dobre praktyki

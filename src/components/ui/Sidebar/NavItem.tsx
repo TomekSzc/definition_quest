@@ -25,7 +25,7 @@ export const NavItem: FC<NavItemProps> = ({ item }) => {
   return (
     <a
       href={item.route}
-      data-testid={`nav-${item.route.replace(/\//g, '-')}`}
+      data-testid={`nav-${item.route.replace(/\//g, "-")}`}
       className={clsx(
         "flex items-center gap-3 rounded-md px-3 py-2 transition-colors",
         collapsed ? "justify-center text-sm font-normal" : "text-sm font-bold",

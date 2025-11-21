@@ -250,13 +250,16 @@ Rozwiązanie: Sprawdź czy używasz poprawnego `data-test-id`
 Po zakończeniu wszystkich testów automatycznie uruchamia się cleanup, który usuwa dane testowe z bazy Supabase.
 
 ### Wymagania:
+
 - ✅ Plik `.env.test` z konfiguracją
 - ✅ `E2E_USERNAME` i `E2E_PASSWORD` w zmiennych środowiskowych
 - ✅ Użytkownik testowy w bazie danych
 - ✅ Oddzielna baza testowa (NIGDY nie używaj produkcyjnej!)
 
 ### Logi:
+
 Po testach zobaczysz:
+
 ```
 🧹 Starting E2E Global Teardown...
    Logging in as test user: test@example.com

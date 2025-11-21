@@ -1,17 +1,11 @@
 import { test, expect } from "@playwright/test";
-import { 
-  TestHelpers, 
-  CreateBoardPage, 
-  MyBoardsPage, 
-  EditBoardPage, 
-  AddLevelPage 
-} from "../helpers/page-objects";
+import { loginAndGoToCreateBoard, MyBoardsPage, EditBoardPage, AddLevelPage } from "../helpers/page-objects";
 
 /**
  * Test suite dla scenariusza edycji tablicy i dodawania poziomu
  * Scenariusz:
  * 1. Zaloguj się i przejdź na stronę My Boards
- * 2. Jeżeli na liście jest board kliknij edit pierwszej tablicy, 
+ * 2. Jeżeli na liście jest board kliknij edit pierwszej tablicy,
  *    jeżeli nie ma to utwórz nową tablicę
  * 3. Na stronie edycji:
  *    - Usuń parę
@@ -32,7 +26,7 @@ test.describe("Edit Board and Add Level Flow", () => {
 
   /**
    * Test przypadek: Edycja tablicy i dodanie poziomu
-   * 
+   *
    * Scenariusz:
    * 1. Zaloguj się i utwórz nową tablicę
    * 2. Przejdź do edycji z My Boards
@@ -44,7 +38,7 @@ test.describe("Edit Board and Add Level Flow", () => {
     test.setTimeout(120000); // 2 minuty timeout
 
     // ARRANGE - Utwórz nową tablicę do edycji
-    const createBoardPage = await TestHelpers.loginAndGoToCreateBoard(page);
+    const createBoardPage = await loginAndGoToCreateBoard(page);
 
     const boardData = {
       title: `E2E Edit Test ${Date.now()}`,
@@ -65,7 +59,7 @@ test.describe("Edit Board and Add Level Flow", () => {
     const myBoardsPage = new MyBoardsPage(page);
     const tile = myBoardsPage.getBoardTileByTitle(boardData.title);
     await tile.waitFor({ state: "visible", timeout: 15000 });
-    
+
     const href = await tile.getAttribute("href");
     const boardIdToEdit = href?.split("/").pop() || "";
     expect(boardIdToEdit).toBeTruthy();
@@ -84,7 +78,7 @@ test.describe("Edit Board and Add Level Flow", () => {
     // Pobierz aktualną definition pierwszej pary
     const firstPairId = await editBoardPage.getFirstPairId();
     expect(firstPairId).toBeTruthy();
-    
+
     const firstPairDefLocator = page.getByTestId(`pair-definition-${firstPairId}`);
     const currentDefinition = await firstPairDefLocator.textContent();
 
@@ -128,7 +122,7 @@ test.describe("Edit Board and Add Level Flow", () => {
 
   /**
    * Test przypadek: Tworzenie tablicy, edycja i dodanie poziomu
-   * 
+   *
    * Scenariusz:
    * 1. Utwórz nową tablicę
    * 2. Przejdź do edycji z My Boards
@@ -139,7 +133,7 @@ test.describe("Edit Board and Add Level Flow", () => {
     test.setTimeout(120000);
 
     // ARRANGE - Utwórz nową tablicę
-    const createBoardPage = await TestHelpers.loginAndGoToCreateBoard(page);
+    const createBoardPage = await loginAndGoToCreateBoard(page);
 
     const boardData = {
       title: `E2E Edit Flow ${Date.now()}`,
@@ -160,7 +154,7 @@ test.describe("Edit Board and Add Level Flow", () => {
     const myBoardsPage = new MyBoardsPage(page);
     const tile = myBoardsPage.getBoardTileByTitle(boardData.title);
     await tile.waitFor({ state: "visible", timeout: 15000 });
-    
+
     const href = await tile.getAttribute("href");
     const boardId = href?.split("/").pop() || "";
     expect(boardId).toBeTruthy();
@@ -212,7 +206,7 @@ test.describe("Edit Board and Add Level Flow", () => {
     test.setTimeout(120000);
 
     // ARRANGE - Utwórz tablicę z wieloma parami
-    const createBoardPage = await TestHelpers.loginAndGoToCreateBoard(page);
+    const createBoardPage = await loginAndGoToCreateBoard(page);
 
     const boardData = {
       title: `E2E Multi Edit ${Date.now()}`,
@@ -234,7 +228,7 @@ test.describe("Edit Board and Add Level Flow", () => {
     const myBoardsPage = new MyBoardsPage(page);
     const tile = myBoardsPage.getBoardTileByTitle(boardData.title);
     await tile.waitFor({ state: "visible", timeout: 15000 });
-    
+
     const href = await tile.getAttribute("href");
     const boardId = href?.split("/").pop() || "";
 
@@ -290,7 +284,7 @@ test.describe("Edit Board and Add Level Flow", () => {
 
   /**
    * Test przypadek: Anulowanie edycji pary
-   * 
+   *
    * Scenariusz:
    * 1. Utwórz prostą tablicę
    * 2. Przejdź do edycji
@@ -302,7 +296,7 @@ test.describe("Edit Board and Add Level Flow", () => {
     test.setTimeout(90000);
 
     // ARRANGE - Utwórz prostą tablicę
-    const createBoardPage = await TestHelpers.loginAndGoToCreateBoard(page);
+    const createBoardPage = await loginAndGoToCreateBoard(page);
 
     const boardData = {
       title: `E2E Cancel Edit ${Date.now()}`,
@@ -321,7 +315,7 @@ test.describe("Edit Board and Add Level Flow", () => {
     const myBoardsPage = new MyBoardsPage(page);
     const tile = myBoardsPage.getBoardTileByTitle(boardData.title);
     await tile.waitFor({ state: "visible", timeout: 15000 });
-    
+
     const href = await tile.getAttribute("href");
     const boardId = href?.split("/").pop() || "";
 
@@ -353,13 +347,12 @@ test.describe("Edit Board and Add Level Flow", () => {
       await page.waitForTimeout(500);
       const termLocator = page.getByTestId(`pair-term-${firstPairId}`);
       const defLocator = page.getByTestId(`pair-definition-${firstPairId}`);
-      
+
       const termText = await termLocator.textContent();
       const defText = await defLocator.textContent();
-      
+
       expect(termText).toBe("original");
       expect(defText).toBe("original-def");
     }
   });
 });
-

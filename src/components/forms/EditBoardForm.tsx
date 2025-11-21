@@ -93,7 +93,7 @@ const EditBoardForm: FC<IEditBoardForm> = ({ board, onRefresh }) => {
           Powrót
         </Button>
         <a href={`/boards/${vm.id}/add-level`} className="cursor-pointer">
-          <Button 
+          <Button
             data-testid="add-level-button"
             className="cursor-pointer bg-[var(--color-primary)] text-white font-bold hover:bg-white hover:text-[var(--color-primary)] border-2 border-[var(--color-primary)]"
           >

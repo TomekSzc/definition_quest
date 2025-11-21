@@ -135,6 +135,7 @@ VALUES (
 ```
 
 Lub użyj Supabase Dashboard:
+
 - Authentication → Users → Add User
 - Email: `test@example.com`
 - Password: (twoje hasło testowe)
@@ -181,6 +182,7 @@ const testUser = authUser.users.find((user) => user.email === testUserEmail);
 ```
 
 **Zalety:**
+
 - ✅ Bezpieczne - nie usuwa innych danych
 - ✅ Szybkie - usuwa tylko potrzebne rekordy
 - ✅ Idealne dla współdzielonej bazy testowej
@@ -197,6 +199,7 @@ await supabase.from("ai_requests").delete().neq("id", "00000000-0000-0000-0000-0
 ```
 
 **Użyj TYLKO jeśli:**
+
 - ✅ Masz dedykowaną bazę testową
 - ✅ Jesteś pewien, że to nie jest produkcja
 - ✅ Chcesz całkowicie czyścić bazę po każdym uruchomieniu
@@ -208,6 +211,7 @@ await supabase.from("ai_requests").delete().neq("id", "00000000-0000-0000-0000-0
 **Przyczyna:** Brak credentials użytkownika testowego w zmiennych środowiskowych
 
 **Rozwiązanie:**
+
 1. Sprawdź czy `.env.test` istnieje w głównym katalogu projektu
 2. Dodaj `E2E_USERNAME=...` i `E2E_PASSWORD=...` do `.env.test`
 3. Upewnij się, że Playwright wczytuje `.env.test` (sprawdź `playwright.config.ts`)
@@ -218,6 +222,7 @@ await supabase.from("ai_requests").delete().neq("id", "00000000-0000-0000-0000-0
 **Przyczyna:** Brak URL Supabase w zmiennych środowiskowych
 
 **Rozwiązanie:**
+
 1. Sprawdź czy `.env.test` zawiera `SUPABASE_URL`
 2. Sprawdź czy wartość to poprawny URL (https://xxx.supabase.co)
 
@@ -226,6 +231,7 @@ await supabase.from("ai_requests").delete().neq("id", "00000000-0000-0000-0000-0
 **Przyczyna:** Użytkownik testowy nie ma uprawnień do usuwania danych lub RLS blokuje operację
 
 **Rozwiązanie:**
+
 1. Sprawdź czy użytkownik testowy jest właścicielem danych (owner_id)
 2. Sprawdź RLS policies w Supabase Dashboard
 3. Upewnij się, że użytkownik może się zalogować (sprawdź E2E_PASSWORD)
@@ -236,6 +242,7 @@ await supabase.from("ai_requests").delete().neq("id", "00000000-0000-0000-0000-0
 **Przyczyna:** Może nie być danych do usunięcia lub użytkownik testowy nie istnieje
 
 **Rozwiązanie:**
+
 1. Sprawdź logi: `npm run test:e2e` - powinieneś zobaczyć "🧹 Starting E2E Global Teardown..."
 2. Sprawdź czy użytkownik testowy istnieje w bazie
 3. Sprawdź czy `E2E_USERNAME` w `.env.test` zgadza się z email użytkownika w bazie
@@ -245,6 +252,7 @@ await supabase.from("ai_requests").delete().neq("id", "00000000-0000-0000-0000-0
 **Przyczyna:** Timeout lub problem z połączeniem do Supabase
 
 **Rozwiązanie:**
+
 1. Sprawdź czy `SUPABASE_URL` jest poprawny
 2. Zwiększ timeout w `playwright.config.ts`
 3. Sprawdź połączenie internetowe
@@ -268,6 +276,7 @@ npm run test:e2e
 ```
 
 Poszukaj w output:
+
 ```
 🧹 Starting E2E Global Teardown...
 ✅ E2E Global Teardown completed successfully
@@ -276,6 +285,7 @@ Poszukaj w output:
 ### Test 2: Sprawdź bazę danych przed i po
 
 1. **Przed testami:** Sprawdź ile rekordów w tabeli `boards`:
+
    ```sql
    SELECT COUNT(*) FROM boards WHERE owner_id = 'test_user_uuid';
    ```
@@ -307,28 +317,28 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
-      
+          node-version: "18"
+
       - name: Install dependencies
         run: npm ci
-      
+
       - name: Install Playwright
         run: npx playwright install --with-deps chromium
-      
+
       - name: Create .env.test
         run: |
           echo "SUPABASE_URL=${{ secrets.TEST_SUPABASE_URL }}" >> .env.test
           echo "SUPABASE_KEY=${{ secrets.TEST_SUPABASE_KEY }}" >> .env.test
           echo "E2E_USERNAME=${{ secrets.E2E_USERNAME }}" >> .env.test
           echo "E2E_PASSWORD=${{ secrets.E2E_PASSWORD }}" >> .env.test
-      
+
       - name: Run E2E Tests
         run: npm run test:e2e
-      
+
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v3
@@ -338,6 +348,7 @@ jobs:
 ```
 
 **Secrets do dodania w GitHub:**
+
 - `TEST_SUPABASE_URL`
 - `TEST_SUPABASE_KEY`
 - `E2E_USERNAME`
@@ -355,10 +366,12 @@ const { error: deleteUserError } = await supabase.auth.admin.deleteUser(testUser
 ```
 
 **Kiedy to użyć:**
+
 - Jeśli tworzysz nowego użytkownika testowego w każdym teście
 - Jeśli testujesz rejestrację użytkowników
 
 **Kiedy NIE używać:**
+
 - Jeśli używasz tego samego użytkownika testowego wielokrotnie (szybsze)
 
 ### Czyszczenie selektywne
@@ -416,4 +429,3 @@ A: Zwykle 1-3 sekundy, w zależności od ilości danych do usunięcia.
 
 **Ostatnia aktualizacja:** 2025-11-20  
 **Wersja:** 1.0.0
-

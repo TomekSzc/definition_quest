@@ -5,7 +5,9 @@ Ten katalog zawiera testy end-to-end dla funkcjonalności związanych z tablicam
 ## Struktura testów
 
 ### `create-board.spec.ts`
+
 Testy dla procesu tworzenia nowych tablic, w tym:
+
 - Tworzenie tablicy ręcznie z pełnym zestawem danych
 - Dodawanie/usuwanie par dynamicznie
 - Zarządzanie tagami
@@ -16,9 +18,11 @@ Testy dla procesu tworzenia nowych tablic, w tym:
 ## Page Object Models (POM)
 
 ### `CreateBoardPage`
+
 Obsługuje stronę tworzenia nowej tablicy (`/boards/create`).
 
 **Najważniejsze metody:**
+
 ```typescript
 // Nawigacja
 await createBoardPage.goto();
@@ -52,9 +56,11 @@ await createBoardPage.submit();
 ```
 
 ### `MyBoardsPage`
+
 Rozszerza `BoardsPage` o funkcjonalność zarządzania własnymi tablicami (`/my-boards`).
 
 **Najważniejsze metody:**
+
 ```typescript
 // Nawigacja
 await myBoardsPage.goto();
@@ -70,9 +76,11 @@ const count = await myBoardsPage.getBoardsCount();
 ```
 
 ### `BoardGamePage`
+
 Obsługuje stronę gry/podglądu tablicy (`/boards/{id}`).
 
 **Najważniejsze metody:**
+
 ```typescript
 // Nawigacja
 await boardGamePage.gotoBoard(boardId);
@@ -119,8 +127,8 @@ test("complete workflow", async ({ page }) => {
     cardCount: 16,
     pairs: [
       { term: "apple", definition: "fruit" },
-      { term: "car", definition: "vehicle" }
-    ]
+      { term: "car", definition: "vehicle" },
+    ],
   });
 
   // 3. Zweryfikuj przekierowanie
@@ -174,4 +182,3 @@ Wszystkie elementy używają atrybutu `data-testid`:
 - `create-board-submit` - submit formularza
 - `board-tile-{id}` - kafelek tablicy
 - `nav--boards-create` - link w nawigacji
-
