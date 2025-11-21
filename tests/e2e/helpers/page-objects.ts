@@ -1,74 +1,74 @@
-import { Page, Locator, expect } from "@playwright/test";
+import type { Page, Locator } from "@playwright/test";
+import { expect } from "@playwright/test";
 
 /**
- * Utility class dla wspólnych operacji nawigacji i autoryzacji
+ * Utility functions dla wspólnych operacji nawigacji i autoryzacji
  */
-export class TestHelpers {
-  /**
-   * Szybkie logowanie użytkownika ze zmiennych środowiskowych
-   * Przydatne w beforeEach hooks
-   */
-  static async quickLogin(page: Page): Promise<void> {
-    const loginPage = new LoginPage(page);
-    await loginPage.goto();
-    await loginPage.loginWithEnvCredentials();
-    await loginPage.waitForSuccessfulLogin();
-  }
 
-  /**
-   * Szybkie logowanie i nawigacja do Create Board
-   */
-  static async loginAndGoToCreateBoard(page: Page): Promise<CreateBoardPage> {
-    await TestHelpers.quickLogin(page);
-    const createBoardPage = new CreateBoardPage(page);
-    
-    // Bezpośrednia nawigacja zamiast przez sidebar (bardziej niezawodne w testach)
-    await createBoardPage.goto();
-    return createBoardPage;
-  }
+/**
+ * Szybkie logowanie użytkownika ze zmiennych środowiskowych
+ * Przydatne w beforeEach hooks
+ */
+export async function quickLogin(page: Page): Promise<void> {
+  const loginPage = new LoginPage(page);
+  await loginPage.goto();
+  await loginPage.loginWithEnvCredentials();
+  await loginPage.waitForSuccessfulLogin();
+}
 
-  /**
-   * Szybkie logowanie i nawigacja do My Boards
-   */
-  static async loginAndGoToMyBoards(page: Page): Promise<MyBoardsPage> {
-    await TestHelpers.quickLogin(page);
-    const myBoardsPage = new MyBoardsPage(page);
-    await myBoardsPage.goto();
-    return myBoardsPage;
-  }
+/**
+ * Szybkie logowanie i nawigacja do Create Board
+ */
+export async function loginAndGoToCreateBoard(page: Page): Promise<CreateBoardPage> {
+  await quickLogin(page);
+  const createBoardPage = new CreateBoardPage(page);
 
-  /**
-   * Szybkie logowanie i nawigacja do Edit Board
-   */
-  static async loginAndGoToEditBoard(page: Page, boardId: string): Promise<EditBoardPage> {
-    await TestHelpers.quickLogin(page);
-    const editBoardPage = new EditBoardPage(page);
-    await editBoardPage.goto(boardId);
-    return editBoardPage;
-  }
+  // Bezpośrednia nawigacja zamiast przez sidebar (bardziej niezawodne w testach)
+  await createBoardPage.goto();
+  return createBoardPage;
+}
 
-  /**
-   * Czeka na konkretny URL pattern z retry
-   */
-  static async waitForUrlPattern(page: Page, pattern: RegExp, timeout = 10000): Promise<void> {
-    await page.waitForURL(pattern, { timeout });
-  }
+/**
+ * Szybkie logowanie i nawigacja do My Boards
+ */
+export async function loginAndGoToMyBoards(page: Page): Promise<MyBoardsPage> {
+  await quickLogin(page);
+  const myBoardsPage = new MyBoardsPage(page);
+  await myBoardsPage.goto();
+  return myBoardsPage;
+}
 
-  /**
-   * Sprawdza czy element jest w viewport
-   */
-  static async isInViewport(locator: Locator): Promise<boolean> {
-    return await locator.isVisible();
-  }
+/**
+ * Szybkie logowanie i nawigacja do Edit Board
+ */
+export async function loginAndGoToEditBoard(page: Page, boardId: string): Promise<EditBoardPage> {
+  await quickLogin(page);
+  const editBoardPage = new EditBoardPage(page);
+  await editBoardPage.goto(boardId);
+  return editBoardPage;
+}
 
-  /**
-   * Symuluje wolniejsze wpisywanie tekstu (bardziej realistyczne)
-   */
-  static async typeSlowly(locator: Locator, text: string, delay = 50): Promise<void> {
-    await locator.click();
-    for (const char of text) {
-      await locator.type(char, { delay });
-    }
+/**
+ * Czeka na konkretny URL pattern z retry
+ */
+export async function waitForUrlPattern(page: Page, pattern: RegExp, timeout = 10000): Promise<void> {
+  await page.waitForURL(pattern, { timeout });
+}
+
+/**
+ * Sprawdza czy element jest w viewport
+ */
+export async function isInViewport(locator: Locator): Promise<boolean> {
+  return await locator.isVisible();
+}
+
+/**
+ * Symuluje wolniejsze wpisywanie tekstu (bardziej realistyczne)
+ */
+export async function typeSlowly(locator: Locator, text: string, delay = 50): Promise<void> {
+  await locator.click();
+  for (const char of text) {
+    await locator.type(char, { delay });
   }
 }
 
@@ -349,7 +349,7 @@ export class CreateBoardPage extends BasePage {
 
   // Navigation
   readonly navCreateBoard: Locator;
-  
+
   // Sidebar
   readonly sidebar: Locator;
 
@@ -368,11 +368,11 @@ export class CreateBoardPage extends BasePage {
 
     // Navigation
     this.navCreateBoard = this.getByTestId("nav--boards-create");
-    
+
     // Sidebar (może przysłaniać formularz)
     this.sidebar = page.locator("aside");
   }
-  
+
   /**
    * Klika poza sidebar aby go zwinąć (jeśli przysłania formularz)
    */
@@ -380,7 +380,13 @@ export class CreateBoardPage extends BasePage {
     const sidebarVisible = await this.sidebar.isVisible().catch(() => false);
     if (sidebarVisible) {
       // Kliknij w main content area aby zwinąć sidebar
-      await this.page.locator("main, form, body").first().click({ position: { x: 500, y: 200 } }).catch(() => {});
+      await this.page
+        .locator("main, form, body")
+        .first()
+        .click({ position: { x: 500, y: 200 } })
+        .catch(() => {
+          /* Ignore click errors - dropdown may already be closed */
+        });
       await this.page.waitForTimeout(300); // Czekaj na animację
     }
   }
@@ -402,22 +408,24 @@ export class CreateBoardPage extends BasePage {
     // Czekaj aż sidebar będzie załadowany (React hydration)
     await this.page.waitForLoadState("domcontentloaded");
     await this.page.waitForTimeout(500); // Dodatkowe czekanie na React hydration
-    
+
     // Sprawdź czy element jest w DOM
     const navElement = this.navCreateBoard;
     await navElement.waitFor({ state: "attached", timeout: 10000 });
-    
+
     // Sprawdź czy element jest widoczny (może być ukryty na mobile)
     const isVisible = await navElement.isVisible().catch(() => false);
-    
+
     if (!isVisible) {
       // Jeśli nie jest widoczny, może być poza viewport - spróbuj zescrollować
-      await navElement.scrollIntoViewIfNeeded().catch(() => {});
+      await navElement.scrollIntoViewIfNeeded().catch(() => {
+        /* Ignore scroll errors - element may have moved */
+      });
     }
-    
+
     // Kliknij bezpośrednio w link (ikona + jest częścią <a>)
     await navElement.click({ timeout: 10000 });
-    
+
     // Czekaj na nawigację i załadowanie formularza
     await this.page.waitForURL(/\/boards\/create/, { timeout: 15000 });
     await this.titleInput.waitFor({ state: "visible", timeout: 15000 });
@@ -534,7 +542,7 @@ export class CreateBoardPage extends BasePage {
    * Wypełnia wiele par (automatycznie dodaje brakujące)
    * @param pairs - tablica obiektów {term, definition}
    */
-  async fillPairs(pairs: Array<{ term: string; definition: string }>) {
+  async fillPairs(pairs: { term: string; definition: string }[]) {
     for (let i = 0; i < pairs.length; i++) {
       // Jeśli to nie pierwsza para, dodaj nowy wiersz
       if (i > 0) {
@@ -566,7 +574,7 @@ export class CreateBoardPage extends BasePage {
     title: string;
     tags?: string[];
     cardCount?: 16 | 24;
-    pairs: Array<{ term: string; definition: string }>;
+    pairs: { term: string; definition: string }[];
   }) {
     await this.fillTitle(data.title);
 
@@ -603,10 +611,6 @@ export class CreateBoardPage extends BasePage {
  * Rozszerza BoardsPage o funkcjonalność zarządzania własnymi tablicami
  */
 export class MyBoardsPage extends BoardsPage {
-  constructor(page: Page) {
-    super(page);
-  }
-
   /**
    * Przechodzi do strony My Boards
    */
@@ -614,9 +618,11 @@ export class MyBoardsPage extends BoardsPage {
     await this.page.goto("/my-boards", { waitUntil: "networkidle" });
     await this.page.waitForLoadState("domcontentloaded");
     await this.sidebar.waitFor({ state: "visible", timeout: 15000 });
-    
+
     // Czekaj na załadowanie listy tablic z API
-    await this.page.waitForLoadState("networkidle", { timeout: 10000 }).catch(() => {});
+    await this.page.waitForLoadState("networkidle", { timeout: 10000 }).catch(() => {
+      /* Ignore timeout - page may load differently */
+    });
     await this.page.waitForTimeout(1000);
   }
 
@@ -640,9 +646,11 @@ export class MyBoardsPage extends BoardsPage {
    */
   async clickBoardTile(boardId: string) {
     // Czekaj na zakończenie ładowania
-    await this.page.waitForLoadState("networkidle", { timeout: 10000 }).catch(() => {});
+    await this.page.waitForLoadState("networkidle", { timeout: 10000 }).catch(() => {
+      /* Ignore timeout - page may load differently */
+    });
     await this.page.waitForTimeout(1000);
-    
+
     const tile = this.getBoardTile(boardId);
     await tile.waitFor({ state: "visible", timeout: 15000 });
     await tile.click();
@@ -654,15 +662,17 @@ export class MyBoardsPage extends BoardsPage {
    */
   async clickBoardTileByTitle(title: string) {
     // Czekaj na zakończenie ładowania (może być komunikat "Ładowanie...")
-    await this.page.waitForLoadState("networkidle", { timeout: 10000 }).catch(() => {});
-    
+    await this.page.waitForLoadState("networkidle", { timeout: 10000 }).catch(() => {
+      /* Ignore timeout - page may load differently */
+    });
+
     // Poczekaj chwilę na rendering po fetch
     await this.page.waitForTimeout(1000);
-    
+
     // Czekaj aż tablica pojawi się w DOM
     const tile = this.getBoardTileByTitle(title);
     await tile.waitFor({ state: "visible", timeout: 15000 });
-    
+
     // Kliknij w tablicę
     await tile.click();
   }
@@ -673,9 +683,11 @@ export class MyBoardsPage extends BoardsPage {
    */
   async clickFirstBoard() {
     // Czekaj na zakończenie ładowania
-    await this.page.waitForLoadState("networkidle", { timeout: 10000 }).catch(() => {});
+    await this.page.waitForLoadState("networkidle", { timeout: 10000 }).catch(() => {
+      /* Ignore timeout - page may load differently */
+    });
     await this.page.waitForTimeout(1000);
-    
+
     const firstTile = this.page.locator('[data-testid^="board-tile-"]').first();
     await firstTile.waitFor({ state: "visible", timeout: 15000 });
     await firstTile.click();
@@ -687,9 +699,11 @@ export class MyBoardsPage extends BoardsPage {
    */
   async getBoardsCount(): Promise<number> {
     // Czekaj na załadowanie listy
-    await this.page.waitForLoadState("networkidle", { timeout: 10000 }).catch(() => {});
+    await this.page.waitForLoadState("networkidle", { timeout: 10000 }).catch(() => {
+      /* Ignore timeout - page may load differently */
+    });
     await this.page.waitForTimeout(500);
-    
+
     return await this.page.locator('[data-testid^="board-tile-"]').count();
   }
 
@@ -699,9 +713,11 @@ export class MyBoardsPage extends BoardsPage {
    */
   async isBoardVisible(title: string): Promise<boolean> {
     // Czekaj na załadowanie listy z API
-    await this.page.waitForLoadState("networkidle", { timeout: 10000 }).catch(() => {});
+    await this.page.waitForLoadState("networkidle", { timeout: 10000 }).catch(() => {
+      /* Ignore timeout - page may load differently */
+    });
     await this.page.waitForTimeout(1000);
-    
+
     const tile = this.getBoardTileByTitle(title);
     return await tile.isVisible({ timeout: 5000 }).catch(() => false);
   }
@@ -732,15 +748,15 @@ export class BoardGamePage extends BasePage {
     super(page);
 
     // Board grid - główny kontener z kartami
-    this.boardGrid = page.locator('div.flex.flex-wrap.bg-secondary').first();
-    this.cards = page.locator('[data-card]'); // Zakładam że karty mają ten atrybut
+    this.boardGrid = page.locator("div.flex.flex-wrap.bg-secondary").first();
+    this.cards = page.locator("[data-card]"); // Zakładam że karty mają ten atrybut
     this.sidebar = page.locator("aside");
-    
+
     // Game controls
-    this.startButton = page.getByRole('button', { name: /start/i });
-    this.stopButton = page.getByRole('button', { name: /stop/i });
-    this.resetButton = page.getByRole('button', { name: /reset/i });
-    this.timer = page.locator('text=/\\d+:\\d+/'); // Timer w formacie MM:SS
+    this.startButton = page.getByRole("button", { name: /start/i });
+    this.stopButton = page.getByRole("button", { name: /stop/i });
+    this.resetButton = page.getByRole("button", { name: /reset/i });
+    this.timer = page.locator("text=/\\d+:\\d+/"); // Timer w formacie MM:SS
   }
 
   /**
@@ -779,14 +795,14 @@ export class BoardGamePage extends BasePage {
    */
   async clickCardByText(text: string) {
     const card = this.getCardByText(text);
-    
+
     // Sprawdź czy karta istnieje i jest widoczna (może już być dopasowana)
     const isVisible = await card.isVisible().catch(() => false);
     if (!isVisible) {
       // Karta już dopasowana lub nie istnieje
       return;
     }
-    
+
     await card.click();
     // Czekaj chwilę na animację
     await this.page.waitForTimeout(300);
@@ -803,7 +819,7 @@ export class BoardGamePage extends BasePage {
       // Karta już dopasowana lub nie istnieje
       return;
     }
-    
+
     await card.click();
     // Czekaj chwilę na animację
     await this.page.waitForTimeout(200);
@@ -858,19 +874,19 @@ export class BoardGamePage extends BasePage {
    * Szuka kart po tekście (nie po indeksie, bo są shufflowane)
    * @param pairs - tablica par {term, definition} używana do stworzenia tablicy
    */
-  async solveBoard(pairs: Array<{ term: string; definition: string }>) {
+  async solveBoard(pairs: { term: string; definition: string }[]) {
     // Dla każdej pary, znajdź karty po tekście i kliknij
     for (const pair of pairs) {
       // Kliknij w kartę z term (np. "book")
       await this.clickCardByText(pair.term);
-      
+
       // Kliknij w kartę z definition (np. "reading")
       await this.clickCardByText(pair.definition);
-      
+
       // Czekaj na animację dopasowania (karty staną się zielone)
       await this.page.waitForTimeout(800);
     }
-    
+
     // Poczekaj na fanfare lub animację końcową
     await this.page.waitForTimeout(2000);
   }
@@ -881,10 +897,10 @@ export class BoardGamePage extends BasePage {
   async isGameCompleted(): Promise<boolean> {
     // Poczekaj chwilę na aktualizację stanu
     await this.page.waitForTimeout(500);
-    
+
     const cardsCount = await this.getCardsCount();
     let successCount = 0;
-    
+
     for (let i = 0; i < cardsCount; i++) {
       const card = this.getCardByIndex(i);
       const classes = await card.getAttribute("class");
@@ -892,7 +908,7 @@ export class BoardGamePage extends BasePage {
         successCount++;
       }
     }
-    
+
     return successCount === cardsCount;
   }
 
@@ -900,7 +916,7 @@ export class BoardGamePage extends BasePage {
    * Pobiera aktualny czas z timera
    */
   async getTimerValue(): Promise<string> {
-    return await this.timer.textContent() || "0";
+    return (await this.timer.textContent()) || "0";
   }
 
   /**
@@ -915,11 +931,15 @@ export class BoardGamePage extends BasePage {
    */
   async waitForBoardLoaded() {
     // Czekaj na załadowanie danych
-    await this.page.waitForLoadState("networkidle", { timeout: 10000 }).catch(() => {});
-    
+    await this.page.waitForLoadState("networkidle", { timeout: 10000 }).catch(() => {
+      /* Ignore timeout - page may load differently */
+    });
+
     // Czekaj na pojawienie się głównego kontenera planszy lub komunikatu
-    await this.page.waitForSelector('div.flex.flex-wrap.bg-secondary', { timeout: 15000 }).catch(() => {});
-    
+    await this.page.waitForSelector("div.flex.flex-wrap.bg-secondary", { timeout: 15000 }).catch(() => {
+      /* Ignore timeout - element may not appear */
+    });
+
     // Poczekaj chwilę na pełne renderowanie
     await this.page.waitForTimeout(1000);
   }
@@ -961,7 +981,13 @@ export class EditBoardPage extends BasePage {
    */
   async getPairsCount(): Promise<number> {
     // Czekaj na pojawienie się przynajmniej jednej pary
-    await this.page.locator('[data-testid^="pair-edit-row-"]').first().waitFor({ state: "visible", timeout: 10000 }).catch(() => {});
+    await this.page
+      .locator('[data-testid^="pair-edit-row-"]')
+      .first()
+      .waitFor({ state: "visible", timeout: 10000 })
+      .catch(() => {
+        /* Ignore timeout - rows may not be present */
+      });
     await this.page.waitForTimeout(500);
     return await this.page.locator('[data-testid^="pair-edit-row-"]').count();
   }
@@ -1068,7 +1094,7 @@ export class EditBoardPage extends BasePage {
     // Zapisz
     const saveButton = this.getSavePairButton(pairId);
     await saveButton.click();
-    
+
     // Czekaj na zakończenie zapisu
     await this.page.waitForTimeout(1000);
   }
@@ -1111,10 +1137,10 @@ export class EditBoardPage extends BasePage {
     await termInput.waitFor({ state: "visible" });
     await termInput.fill(term);
     await defInput.fill(definition);
-    
+
     // Zapisz
     await saveButton.click();
-    
+
     // Czekaj na zapisanie
     await this.page.waitForTimeout(1000);
   }
@@ -1141,14 +1167,14 @@ export class EditBoardPage extends BasePage {
   async editBoard(operations: {
     deletePairAtIndex?: number;
     editFirstPair?: { term?: string; definition?: string };
-    addNewPairs?: Array<{ term: string; definition: string }>;
+    addNewPairs?: { term: string; definition: string }[];
   }) {
     // Usuń parę jeśli podano
     if (operations.deletePairAtIndex !== undefined) {
       const pairRow = this.page.locator('[data-testid^="pair-edit-row-"]').nth(operations.deletePairAtIndex);
       const pairTestId = await pairRow.getAttribute("data-testid");
       const pairId = pairTestId?.replace("pair-edit-row-", "") || "";
-      
+
       if (pairId) {
         await this.clickDeletePair(pairId);
       }
@@ -1158,11 +1184,7 @@ export class EditBoardPage extends BasePage {
     if (operations.editFirstPair) {
       const firstPairId = await this.getFirstPairId();
       if (firstPairId) {
-        await this.editPair(
-          firstPairId,
-          operations.editFirstPair.term,
-          operations.editFirstPair.definition
-        );
+        await this.editPair(firstPairId, operations.editFirstPair.term, operations.editFirstPair.definition);
       }
     }
 
@@ -1250,16 +1272,18 @@ export class AddLevelPage extends BasePage {
    * Wypełnia wiele par (automatycznie dodaje brakujące)
    * Uwaga: AddLevelForm domyślnie ma jedną pustą parę (index 0)
    */
-  async fillPairs(pairs: Array<{ term: string; definition: string }>) {
+  async fillPairs(pairs: { term: string; definition: string }[]) {
     for (let i = 0; i < pairs.length; i++) {
       // Jeśli to nie pierwsza para, sprawdź czy musimy dodać nowy wiersz
       if (i > 0) {
         // Czekaj chwilę na re-render po wypełnieniu poprzedniej pary
         await this.page.waitForTimeout(300);
-        
+
         // Sprawdź czy para o tym indeksie już istnieje
-        const pairExists = await this.getPairTermInput(i).count().then(c => c > 0);
-        
+        const pairExists = await this.getPairTermInput(i)
+          .count()
+          .then((c) => c > 0);
+
         if (!pairExists) {
           // Para nie istnieje - musimy ją dodać
           const addButtonExists = await this.addPairButton.isVisible().catch(() => false);
@@ -1271,7 +1295,7 @@ export class AddLevelPage extends BasePage {
           }
         }
       }
-      
+
       // Wypełnij parę
       await this.fillPair(i, pairs[i].term, pairs[i].definition);
     }
@@ -1312,9 +1336,9 @@ export class AddLevelPage extends BasePage {
    * @param pairs - tablica par do dodania
    * @param saveAndContinue - czy użyć przycisku "Zapisz i kontynuuj" zamiast "Zapisz"
    */
-  async createLevel(pairs: Array<{ term: string; definition: string }>, saveAndContinue = false) {
+  async createLevel(pairs: { term: string; definition: string }[], saveAndContinue = false) {
     await this.fillPairs(pairs);
-    
+
     if (saveAndContinue) {
       await this.saveAndContinueLevel();
     } else {

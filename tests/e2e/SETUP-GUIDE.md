@@ -192,6 +192,7 @@ SELECT COUNT(*) FROM boards WHERE owner_id = (
 ### Problem: "Loaded environment from: .env.test" nie pojawia się
 
 **Rozwiązanie:**
+
 1. Sprawdź czy `.env.test` jest w głównym katalogu projektu
 2. Sprawdź czy plik nie ma błędnej składni
 3. Uruchom ponownie: `npm run test:e2e`
@@ -199,6 +200,7 @@ SELECT COUNT(*) FROM boards WHERE owner_id = (
 ### Problem: "E2E_USERNAME or E2E_PASSWORD not found"
 
 **Rozwiązanie:**
+
 1. Sprawdź czy `E2E_USERNAME` i `E2E_PASSWORD` są w `.env.test`
 2. Upewnij się, że użytkownik testowy istnieje w bazie danych
 3. Hasło musi być poprawne - użytkownik będzie logowany w cleanup
@@ -206,6 +208,7 @@ SELECT COUNT(*) FROM boards WHERE owner_id = (
 ### Problem: Testy failują z "Target closed"
 
 **Rozwiązanie:**
+
 1. Sprawdź czy serwer dev działa: `npm run dev`
 2. Sprawdź czy `BASE_URL` w `.env.test` jest poprawny
 3. Zwiększ timeout w `playwright.config.ts`
@@ -213,6 +216,7 @@ SELECT COUNT(*) FROM boards WHERE owner_id = (
 ### Problem: "Authentication failed" podczas testów
 
 **Rozwiązanie:**
+
 1. Sprawdź czy użytkownik testowy istnieje w bazie
 2. Sprawdź czy `E2E_USERNAME` i `E2E_PASSWORD` są poprawne
 3. Sprawdź czy email jest confirmed (w auth.users)
@@ -220,6 +224,7 @@ SELECT COUNT(*) FROM boards WHERE owner_id = (
 ### Problem: Cleanup nie działa
 
 **Rozwiązanie:**
+
 1. Sprawdź logi - powinieneś zobaczyć "🧹 Starting E2E Global Teardown..."
 2. Jeśli nie widzisz logów, sprawdź `playwright.config.ts` - powinien zawierać:
    ```typescript
@@ -273,4 +278,3 @@ Po skonfigurowaniu środowiska:
 ---
 
 **Happy Testing! 🚀**
-

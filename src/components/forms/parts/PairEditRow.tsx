@@ -58,20 +58,20 @@ const PairEditRow: React.FC<IPairEditRow> = ({ pair, boardId, onSave, onDelete }
             placeholder="Definicja"
           />
           <div className="flex gap-2 justify-end">
-            <Button 
+            <Button
               data-testid={`pair-edit-save-${pair.id}`}
-              size="icon" 
-              variant="ghost" 
-              className="cursor-pointer" 
+              size="icon"
+              variant="ghost"
+              className="cursor-pointer"
               onClick={handleConfirm}
             >
               <CheckIcon className="w-5 h-5 text-green-600" />
             </Button>
-            <Button 
+            <Button
               data-testid={`pair-edit-cancel-${pair.id}`}
-              size="icon" 
-              variant="ghost" 
-              className="cursor-pointer" 
+              size="icon"
+              variant="ghost"
+              className="cursor-pointer"
               onClick={reset}
             >
               <XIcon className="w-5 h-5 text-red-600" />
@@ -82,13 +82,17 @@ const PairEditRow: React.FC<IPairEditRow> = ({ pair, boardId, onSave, onDelete }
         <>
           <div className="flex justify-between items-start gap-2">
             <div className="flex-1">
-              <p className="font-semibold break-words" data-testid={`pair-term-${pair.id}`}>{pair.term}</p>
-              <p className="text-sm break-words mt-1 opacity-80" data-testid={`pair-definition-${pair.id}`}>{pair.definition}</p>
+              <p className="font-semibold break-words" data-testid={`pair-term-${pair.id}`}>
+                {pair.term}
+              </p>
+              <p className="text-sm break-words mt-1 opacity-80" data-testid={`pair-definition-${pair.id}`}>
+                {pair.definition}
+              </p>
             </div>
             <div className="flex gap-2">
-              <button 
+              <button
                 data-testid={`pair-edit-button-${pair.id}`}
-                onClick={() => setIsEditing(true)} 
+                onClick={() => setIsEditing(true)}
                 className="cursor-pointer"
               >
                 <EditIcon className="w-[30px] h-[30px] text-[var(--color-primary)] hover:bg-[var(--color-primary)] hover:text-white rounded p-1 transition-colors" />

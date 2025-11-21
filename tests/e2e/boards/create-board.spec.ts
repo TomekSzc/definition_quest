@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { TestHelpers, CreateBoardPage, MyBoardsPage, BoardGamePage } from "../helpers/page-objects";
+import { loginAndGoToCreateBoard, MyBoardsPage, BoardGamePage } from "../helpers/page-objects";
 
 /**
  * Test suite dla scenariusza tworzenia tablicy
@@ -12,7 +12,7 @@ test.describe("Create Board Flow", () => {
   });
   /**
    * Test przypadek: Użytkownik tworzy tablicę ręcznie i przechodzi do niej
-   * 
+   *
    * Scenariusz:
    * 1. Zaloguj się i przejdź na stronę create board
    * 2. Wypełnij formularz:
@@ -25,7 +25,7 @@ test.describe("Create Board Flow", () => {
   test("should create board manually and navigate to it", async ({ page }) => {
     test.setTimeout(60000); // 60s timeout
     // ARRANGE - Zaloguj się i przejdź do Create Board
-    const createBoardPage = await TestHelpers.loginAndGoToCreateBoard(page);
+    const createBoardPage = await loginAndGoToCreateBoard(page);
 
     // ACT - Wypełnij formularz
     const boardData = {
@@ -51,7 +51,7 @@ test.describe("Create Board Flow", () => {
 
     // Przejdź do nowo utworzonej tablicy
     const myBoardsPage = new MyBoardsPage(page);
-    
+
     // Zweryfikuj czy tablica jest widoczna
     const isBoardVisible = await myBoardsPage.isBoardVisible(boardData.title);
     expect(isBoardVisible).toBeTruthy();
@@ -67,7 +67,7 @@ test.describe("Create Board Flow", () => {
    * Test: Tworzenie tablicy z minimalną liczbą par
    */
   test("should create board with minimum required pairs", async ({ page }) => {
-    const createBoardPage = await TestHelpers.loginAndGoToCreateBoard(page);
+    const createBoardPage = await loginAndGoToCreateBoard(page);
 
     await createBoardPage.fillTitle("Minimalna tablica");
     await createBoardPage.selectCardCount(16);
@@ -85,7 +85,7 @@ test.describe("Create Board Flow", () => {
    * Test: Dodawanie i usuwanie par
    */
   test("should add and remove pairs dynamically", async ({ page }) => {
-    const createBoardPage = await TestHelpers.loginAndGoToCreateBoard(page);
+    const createBoardPage = await loginAndGoToCreateBoard(page);
 
     await createBoardPage.fillTitle("Test dynamicznych par");
 
@@ -110,7 +110,7 @@ test.describe("Create Board Flow", () => {
    * Test: Dodawanie i usuwanie tagów
    */
   test("should add and remove tags", async ({ page }) => {
-    const createBoardPage = await TestHelpers.loginAndGoToCreateBoard(page);
+    const createBoardPage = await loginAndGoToCreateBoard(page);
 
     await createBoardPage.fillTitle("Test tagów");
 
@@ -135,7 +135,7 @@ test.describe("Create Board Flow", () => {
    * Test: Wybór liczby kart
    */
   test("should select card count", async ({ page }) => {
-    const createBoardPage = await TestHelpers.loginAndGoToCreateBoard(page);
+    const createBoardPage = await loginAndGoToCreateBoard(page);
 
     await createBoardPage.fillTitle("Test liczby kart");
 
@@ -156,7 +156,7 @@ test.describe("Create Board Flow", () => {
    * Test: Walidacja formularza - pusty tytuł
    */
   test("should not submit with empty title", async ({ page }) => {
-    const createBoardPage = await TestHelpers.loginAndGoToCreateBoard(page);
+    const createBoardPage = await loginAndGoToCreateBoard(page);
 
     // Wypełnij tylko parę, bez tytułu
     await createBoardPage.fillPair(0, "test", "definition");
@@ -170,7 +170,7 @@ test.describe("Create Board Flow", () => {
    * Test: Wypełnianie formularza krok po kroku
    */
   test("should fill form step by step with validations", async ({ page }) => {
-    const createBoardPage = await TestHelpers.loginAndGoToCreateBoard(page);
+    const createBoardPage = await loginAndGoToCreateBoard(page);
 
     // Krok 1: Tytuł
     await createBoardPage.fillTitle("Testowa tablica krok po kroku");
@@ -217,9 +217,9 @@ test.describe("Complete Board Workflow", () => {
   test("should create board and play it", async ({ page }) => {
     // Zwiększ timeout - rozwiązywanie planszy zajmuje czas
     test.setTimeout(120000); // 2 minuty
-    
+
     // 1. Utwórz tablicę
-    const createBoardPage = await TestHelpers.loginAndGoToCreateBoard(page);
+    const createBoardPage = await loginAndGoToCreateBoard(page);
 
     const boardTitle = `E2E Test Board ${Date.now()}`;
     const testPairs = [
@@ -252,7 +252,7 @@ test.describe("Complete Board Workflow", () => {
 
     // 6. Rozpocznij grę
     await boardGamePage.startGame();
-    
+
     // Sprawdź że gra się rozpoczęła (karty są klikalne)
     const cardsCount = await boardGamePage.getCardsCount();
     expect(cardsCount).toBe(8); // 4 pary * 2 karty = 8 kart
@@ -266,9 +266,8 @@ test.describe("Complete Board Workflow", () => {
 
     // 9. Kliknij Reset
     await boardGamePage.resetGame();
-    
+
     // 10. Sprawdź że plansza została zresetowana (można znowu rozpocząć grę)
     await expect(boardGamePage.startButton).toBeVisible();
   });
 });
-

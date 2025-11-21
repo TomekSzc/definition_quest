@@ -195,6 +195,7 @@ BASE_URL=http://localhost:3000
 ```
 
 **WAŻNE:**
+
 - ⚠️ **Używaj ODRĘBNEJ bazy testowej, NIGDY produkcyjnej!**
 - 🔑 `E2E_USERNAME` i `E2E_PASSWORD` są wymagane dla automatycznego czyszczenia bazy danych
 - 👤 Użytkownik testowy musi istnieć w bazie danych

@@ -39,9 +39,17 @@ const TagsInput: React.FC<TagsInputProps> = ({ value = [], onChange, error }) =>
       </label>
       <div className="flex flex-wrap gap-2 mb-2" data-testid="tags-list">
         {value.map((tag) => (
-          <Badge key={tag} className="flex items-center gap-1 bg-[var(--color-primary)] text-white" data-testid={`tag-${tag}`}>
+          <Badge
+            key={tag}
+            className="flex items-center gap-1 bg-[var(--color-primary)] text-white"
+            data-testid={`tag-${tag}`}
+          >
             {tag}
-            <CloseIcon className="w-4 h-4 cursor-pointer font-bold" onClick={() => removeTag(tag)} data-testid={`remove-tag-${tag}`} />
+            <CloseIcon
+              className="w-4 h-4 cursor-pointer font-bold"
+              onClick={() => removeTag(tag)}
+              data-testid={`remove-tag-${tag}`}
+            />
           </Badge>
         ))}
       </div>

@@ -22,8 +22,12 @@ const CardCountToggle: React.FC<CardCountToggleProps> = ({ value, onChange }) =>
         }}
         className="flex gap-2"
       >
-        <ToggleGroupItem value="16" data-testid="card-count-16">16</ToggleGroupItem>
-        <ToggleGroupItem value="24" data-testid="card-count-24">24</ToggleGroupItem>
+        <ToggleGroupItem value="16" data-testid="card-count-16">
+          16
+        </ToggleGroupItem>
+        <ToggleGroupItem value="24" data-testid="card-count-24">
+          24
+        </ToggleGroupItem>
       </ToggleGroup>
     </div>
   );
