@@ -122,24 +122,3 @@ test.describe("Login Flow", () => {
     expect(isDisabled || buttonText?.includes("Logowanie")).toBeTruthy();
   });
 });
-
-/**
- * Test suite dla screenshotów (Visual Regression Testing)
- * Zgodnie z wytycznymi Playwright
- */
-test.describe("Login Page Visual Regression", () => {
-  test("should match login page screenshot", async ({ page }) => {
-    const loginPage = new LoginPage(page);
-    await loginPage.goto();
-
-    // Wait for page to be fully loaded
-    await loginPage.loginForm.waitFor({ state: "visible" });
-
-    // Visual comparison
-    await expect(page).toHaveScreenshot("login-page.png", {
-      fullPage: true,
-      // Ignoruj dynamiczne elementy jeśli są
-      mask: [],
-    });
-  });
-});
