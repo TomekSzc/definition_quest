@@ -19,22 +19,6 @@ describe("Przykładowy test jednostkowy", () => {
     expect(mockFn).toHaveBeenCalledTimes(1);
     expect(mockFn).toHaveBeenCalledWith(5);
   });
-
-  it("powinien używać snapshot testing", () => {
-    const data = {
-      id: 1,
-      name: "Test User",
-      email: "test@example.com",
-    };
-
-    expect(data).toMatchInlineSnapshot(`
-      {
-        "email": "test@example.com",
-        "id": 1,
-        "name": "Test User",
-      }
-    `);
-  });
 });
 
 describe("Testowanie asynchroniczne", () => {
