@@ -70,7 +70,13 @@ vi.mock("@/components/ui/ToggleGroup/Toggle-group", () => ({
     );
   },
   ToggleGroupItem: ({ children, value, ...props }: { children: React.ReactNode; value: string }) => (
-    <button data-testid={props["data-testid"] || `toggle-item-${value}`} data-value={value} role="radio" aria-checked={false} {...props}>
+    <button
+      data-testid={props["data-testid"] || `toggle-item-${value}`}
+      data-value={value}
+      role="radio"
+      aria-checked={false}
+      {...props}
+    >
       {children}
     </button>
   ),

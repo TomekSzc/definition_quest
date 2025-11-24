@@ -590,7 +590,7 @@ describe("TagsInput", () => {
       const mockOnChange = vi.fn();
 
       // Act
-      const { container } = render(<TagsInput onChange={mockOnChange} />);
+      render(<TagsInput onChange={mockOnChange} />);
 
       // Assert
       const tagsContainer = screen.getByTestId("tags-list");
