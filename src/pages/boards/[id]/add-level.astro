@@ -1,0 +1,10 @@
+---
+import React from "react";
+import Layout from "@/layouts/Layout.astro";
+import AddLevelPage from "@/components/pages/AddLevelPage";
+const { id } = Astro.params;
+---
+
+<Layout>
+  <AddLevelPage boardId={id} client:load />
+</Layout>

@@ -1,8 +1,6 @@
 # build output
 dist/
-
-# generated types
-.astro/
+.output/
 
 # dependencies
 node_modules/
@@ -16,9 +14,25 @@ pnpm-debug.log*
 # environment variables
 .env
 .env.production
+.env.test
+.env.*
 
 # macOS-specific files
 .DS_Store
 
-# jetbrains setting folder
-.idea/
+# jetbrains ide
+.idea
+
+# typescript
+*.tsbuildinfo
+
+# Playwright
+test-results/
+playwright-report/
+playwright/.cache/
+
+# Vitest
+coverage/
+
+# VS Code
+.vscode/

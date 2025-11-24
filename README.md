@@ -1,94 +1,410 @@
-# 10x Astro Starter
+# Definition Quest
 
-A modern, opinionated starter template for building fast, accessible, and AI-friendly web applications.
+> A memory-match web application that turns any text into an engaging flash-card style game powered by AI.
+
+Definition Quest helps students, educators and lifelong learners master definitions faster. Paste your notes or add term–definition pairs manually and play a desktop-friendly memory game that tracks your time and progress. Boards can be shared publicly, stored in your account and regenerated anytime.
+
+---
+
+## Table of Contents
+
+1. [Tech Stack](#tech-stack)
+2. [Getting Started Locally](#getting-started-locally)
+3. [Available Scripts](#available-scripts)
+4. [Testing](#testing)
+5. [Project Scope](#project-scope)
+6. [Project Status](#project-status)
+7. [License](#license)
+
+---
 
 ## Tech Stack
 
-- [Astro](https://astro.build/) v5.5.5 - Modern web framework for building fast, content-focused websites
-- [React](https://react.dev/) v19.0.0 - UI library for building interactive components
-- [TypeScript](https://www.typescriptlang.org/) v5 - Type-safe JavaScript
-- [Tailwind CSS](https://tailwindcss.com/) v4.0.17 - Utility-first CSS framework
+### Front-end
 
-## Prerequisites
+- **Astro 5** – lightning-fast static-first framework
+- **React 19** – interactive components when required
+- **TypeScript 5** – type-safe development & better DX
+- **Tailwind CSS 4** – utility-first styling
+- **Shadcn/ui** – accessible React component collection
 
-- Node.js v22.14.0 (as specified in `.nvmrc`)
-- npm (comes with Node.js)
+### Back-end
 
-## Getting Started
+- **Supabase** – PostgreSQL database, authentication & edge functions
 
-1. Clone the repository:
+### AI Layer
+
+- **Openrouter.ai** – unified access to multiple LLM providers (OpenAI, Anthropic, Google …) with quota management
+
+### Tooling & Dev Ops
+
+- **Node 22.14.0** (see `.nvmrc`)
+- **ESLint**, **Prettier**, **Husky** & **lint-staged** – code quality
+- **GitHub Actions** – CI / CD pipelines
+- **Docker + DigitalOcean** – production hosting
+- **Vitest** & **ts-vitest** – blazing-fast unit & integration tests for TypeScript
+- **React Testing Library** – UI component tests
+- **Playwright** – cross-browser e2e & accessibility tests
+
+---
+
+## Getting Started Locally
+
+### Prerequisites
+
+1. **Node 22.14.0** & npm ≥ 10 (or pnpm / yarn)
+2. A Supabase project (URL & service role key)
+3. An Openrouter.ai API key
+
+### Installation
 
 ```bash
-git clone https://github.com/przeprogramowani/10x-astro-starter.git
-cd 10x-astro-starter
+# 1. Clone repository
+$ git clone https://github.com/<your-org>/definition-quest.git
+$ cd definition-quest
+
+# 2. Install dependencies
+$ npm install
+
+# 3. Configure environment variables
+$ cp .env.example .env
+# then fill in SUPABASE_URL, SUPABASE_ANON_KEY, OPENROUTER_API_KEY, …
+
+# 4. Start dev server
+$ npm run dev
 ```
 
-2. Install dependencies:
+The app will be available at `http://localhost:4321` (default Astro port).
+
+### OpenRouter Configuration
+
+The application uses [OpenRouter.ai](https://openrouter.ai) to access multiple LLM providers through a unified API. To configure:
+
+1. **Get an API key**
+   - Sign up at [openrouter.ai](https://openrouter.ai)
+   - Navigate to [Keys](https://openrouter.ai/keys) and create a new API key
+   - Add credits to your account (minimum $5 recommended)
+
+2. **Configure environment**
+
+   ```bash
+   # Add to your .env file
+   OPENROUTER_API_KEY=sk-or-v1-...
+   ```
+
+3. **Test the connection**
+
+   ```bash
+   # Run the test script to verify API connectivity
+   $ npx tsx scripts/test-openrouter.ts
+   ```
+
+4. **Default model**
+   - Current default: `openai/gpt-4o-mini`
+   - Cost: ~$0.15 per 1M input tokens, ~$0.60 per 1M output tokens
+   - Average board generation (8-12 pairs): ~2000 tokens = $0.001-0.002
+
+5. **Rate limits**
+   - Application enforces 50 AI generations per user per day
+   - OpenRouter has its own rate limits per model
+   - Automatic retry with exponential backoff for transient failures
+
+### Building for production
 
 ```bash
-npm install
+# Generate optimized client & server output
+$ npm run build
+
+# Preview the production build locally
+$ npm run preview
 ```
 
-3. Run the development server:
-
-```bash
-npm run dev
-```
-
-4. Build for production:
-
-```bash
-npm run build
-```
+---
 
 ## Available Scripts
 
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build
-- `npm run lint` - Run ESLint
-- `npm run lint:fix` - Fix ESLint issues
+| Script                       | Purpose                                            |
+| ---------------------------- | -------------------------------------------------- |
+| `npm run dev`                | Start Astro in development mode with hot reloading |
+| `npm run build`              | Generate static client & server output             |
+| `npm run preview`            | Preview the production build locally               |
+| `npm run astro`              | Expose the underlying Astro CLI                    |
+| `npm run lint`               | Run ESLint on the entire codebase                  |
+| `npm run lint:fix`           | Auto-fix lint issues where possible                |
+| `npm run format`             | Format all supported files with Prettier           |
+| `npm test`                   | Run unit tests once                                |
+| `npm run test:watch`         | Run unit tests in watch mode                       |
+| `npm run test:ui`            | Run unit tests with UI interface                   |
+| `npm run test:coverage`      | Run unit tests with coverage report                |
+| `npm run test:e2e`           | Run end-to-end tests with Playwright               |
+| `npm run test:e2e:ui`        | Run e2e tests with Playwright UI                   |
+| `npm run test:e2e:debug`     | Run e2e tests in debug mode                        |
+| `npm run test:e2e:codegen`   | Generate e2e tests using Playwright codegen        |
+| `npm run test:e2e:report`    | Show Playwright test report                        |
+| `npm run test:openrouter`    | Test OpenRouter API connection and functionality   |
+| `npm run test:ai-generation` | Test AI board pair generation end-to-end           |
 
-## Project Structure
+---
 
-```md
-.
-├── src/
-│   ├── layouts/    # Astro layouts
-│   ├── pages/      # Astro pages
-│   │   └── api/    # API endpoints
-│   ├── components/ # UI components (Astro & React)
-│   └── assets/     # Static assets
-├── public/         # Public assets
+## Testing
+
+The project includes comprehensive testing infrastructure for unit, integration, and end-to-end tests.
+
+### Quick Start
+
+```bash
+# Run unit tests in watch mode
+npm run test:watch
+
+# Run unit tests with UI
+npm run test:ui
+
+# Run e2e tests
+npm run test:e2e
+
+# Run e2e tests with UI
+npm run test:e2e:ui
 ```
 
-## AI Development Support
+### Documentation
 
-This project is configured with AI development tools to enhance the development experience, providing guidelines for:
+For detailed testing documentation, best practices, and examples:
 
-- Project structure
-- Coding practices
-- Frontend development
-- Styling with Tailwind
-- Accessibility best practices
-- Astro and React guidelines
+- **[TESTING.md](./TESTING.md)** - Complete testing guide
+- **[tests/README.md](./tests/README.md)** - Test structure and examples
 
-### Cursor IDE
+### Test Structure
 
-The project includes AI rules in `.cursor/rules/` directory that help Cursor IDE understand the project structure and provide better code suggestions.
+```
+tests/
+├── unit/          # Vitest unit tests
+├── integration/   # Vitest integration tests
+├── e2e/          # Playwright e2e tests
+└── __mocks__/    # Shared mocks
+```
 
-### GitHub Copilot
+### CI/CD
 
-AI instructions for GitHub Copilot are available in `.github/copilot-instructions.md`
+Tests run automatically on:
 
-### Windsurf
+- Every push to `main` and `develop`
+- Every pull request to `main` and `develop`
 
-The `.windsurfrules` file contains AI configuration for Windsurf.
+See `.github/workflows/test.yml` for the complete CI configuration.
 
-## Contributing
+---
 
-Please follow the AI guidelines and coding practices defined in the AI configuration files when contributing to this project.
+## Project Scope
+
+### MVP Features
+
+- **Board creation**  
+  • Paste up to 5 000 chars of text and let AI extract up to 24 term-definition pairs  
+  • Manually add / edit / delete pairs with validation (16 / 24 cards limit)
+- **Memory-match gameplay**  
+  • Desktop-only board, select max 2 cards at a time  
+  • Correct pairs disappear, timer stops when board is cleared  
+  • Page refresh resets the board & timer (anti-cheat)
+- **User accounts** – registration & login via Supabase Auth (OAuth / JWT)
+- **Results storage** – completion times saved to Postgres
+- **Public boards** – browse, search & solve other users’ boards
+- **AI usage limits** – 50 generations per user per day
+- **Analytics** – Google Analytics events (`create_board`, `solve_board`, `time_spent`) with GDPR consent banner & IP anonymization
+- **Basic accessibility** – proper contrast, focus rings, ARIA labels, full keyboard navigation
+- **i18n-ready** – English hard-coded for MVP, JSON structure prepared for future locales
+
+### Out of Scope (MVP)
+
+- Mobile gameplay & full responsive layout
+- Teacher / student roles & advanced permissions
+- Content moderation & board versioning
+- Advanced WCAG compliance beyond the basics
+- Paid AI models (initial phase uses free tier)
+
+---
+
+## Project Status
+
+🚧 **MVP in active development** – core gameplay and board generation are functional, remaining features are tracked in the [issue tracker](../../issues). Contributions & feedback are welcome!
+
+Planned milestones:
+
+- [ ] User profile & stats page
+- [ ] Public board browsing with filters
+- [ ] Dockerised production deployment
+
+---
 
 ## License
 
-MIT
+This project is licensed under the **MIT License** – see the [LICENSE](LICENSE) file for details.
+
+## API Reference
+
+### Submit Board Score
+
+```
+POST /api/boards/:boardId/scores
+```
+
+Saves the user’s completion time (in milliseconds) for a given board. If a record for the same user & board already exists, it is overwritten.
+
+| Status | Meaning                     | Body                                  |
+| ------ | --------------------------- | ------------------------------------- |
+| 201    | Created (first score)       | `{ id, elapsedMs }`                   |
+| 200    | Updated (score overwritten) | `{ id, elapsedMs }`                   |
+| 400    | Invalid input               | `{ error: "invalid_input", details }` |
+| 401    | Unauthorized                | `{ error: "unauthorized" }`           |
+| 404    | Board not found / no access | `{ error: "board_not_found" }`        |
+| 500    | Server error                | `{ error: "server_error" }`           |
+
+#### Request Parameters
+
+- **URL Param** `boardId` – `uuid` of the board (required)
+
+#### Request Body
+
+```jsonc
+{
+  "elapsedMs": 93400, // positive integer > 0
+}
+```
+
+#### Headers
+
+- `Authorization: Bearer <JWT>` – Supabase access token
+
+### Add Pair to Board
+
+```
+POST /api/boards/:boardId/pairs
+```
+
+Adds a new term–definition pair to the specified board level. Owner-only and only while the board has not yet reached its card limit (`card_count / 2` pairs).
+
+| Status | Meaning                               | Body                 |
+| ------ | ------------------------------------- | -------------------- |
+| 201    | Pair created                          | `PairDTO`            |
+| 400    | Validation error / card limit reached | `{ error, message }` |
+| 401    | Unauthorized / not owner              | `{ error, message }` |
+| 404    | Board not found                       | `{ error, message }` |
+| 409    | Duplicate term                        | `{ error, message }` |
+| 500    | Server error                          | `{ error, message }` |
+
+#### Request Parameters
+
+- **URL Param** `boardId` – `uuid` of the board (required)
+
+#### Request Body
+
+```jsonc
+{
+  "term": "Mitochondria",
+  "definition": "Powerhouse of the cell",
+}
+```
+
+#### Headers
+
+- `Authorization: Bearer <JWT>` – Supabase access token (required)
+- `Content-Type: application/json`
+
+### List Boards Played By User
+
+```
+GET /api/boards/played
+```
+
+Returns a paginated list of boards (public _or_ private) in which the authenticated user has at least one recorded score. Each item includes the user’s last recorded completion time (`lastTime`).
+
+The response type is `Paged<PlayedBoardDTO>`.
+
+| Status | Meaning              | Body                                      |
+| ------ | -------------------- | ----------------------------------------- |
+| 200    | OK                   | `Paged<BoardSummaryDTO>`                  |
+| 400    | Invalid query params | `{ error: "validation_failed", details }` |
+| 401    | Unauthorized         | `{ error: "unauthorized" }`               |
+| 500    | Server error         | `{ error: "server_error" }`               |
+
+#### Query Parameters
+
+| Name        | Type                              | Default   | Notes                             |
+| ----------- | --------------------------------- | --------- | --------------------------------- |
+| `page`      | `number >= 1`                     | `1`       | Page number                       |
+| `pageSize`  | `number 1–100`                    | `20`      | Items per page                    |
+| `q`         | `string ≤ 100`                    | —         | Full-text search on title         |
+| `tags`      | `string`                          | —         | Comma-separated list, max 10 tags |
+| `sort`      | `created \| updated \| cardCount` | `created` | Sort column                       |
+| `direction` | `asc \| desc`                     | `desc`    | Sort order                        |
+
+#### Headers
+
+- `Authorization: Bearer <JWT>` – Supabase access token (required)
+
+---
+
+### Update Board Metadata
+
+```
+PATCH /api/boards/:boardId
+```
+
+Partially updates board meta fields (title, public status, archived flag, tags). Owner-only.
+
+| Status | Meaning                           | Body                 |
+| ------ | --------------------------------- | -------------------- |
+| 200    | Updated                           | `BoardDetailDTO`     |
+| 400    | Validation error / archived board | `{ error, message }` |
+| 401    | Unauthorized / not owner          | `{ error, message }` |
+| 404    | Board not found                   | `{ error, message }` |
+| 409    | Duplicate title                   | `{ error, message }` |
+| 500    | Server error                      | `{ error, message }` |
+
+#### Request Parameters
+
+| Name      | Type   | Required | Notes     |
+| --------- | ------ | -------- | --------- |
+| `boardId` | `uuid` | Yes      | URL param |
+
+#### Request Body (any combination)
+
+```jsonc
+{
+  "title": "New title", // optional, 1-255 chars
+  "isPublic": true, // optional
+  "archived": false, // optional
+  "tags": ["biology", "cells"], // optional, ≤10 tags
+}
+```
+
+#### Headers
+
+- `Authorization: Bearer <JWT>` – Supabase access token (required)
+- `Content-Type: application/json`
+
+### Archive Board
+
+```
+DELETE /api/boards/:boardId
+```
+
+Soft-archives a board level (sets `archived = true`). Owner-only.
+
+| Status | Meaning                  | Body                            |
+| ------ | ------------------------ | ------------------------------- |
+| 200    | Archived                 | `{ message: "Board archived" }` |
+| 400    | Validation error         | `{ error, message }`            |
+| 401    | Unauthorized / not owner | `{ error, message }`            |
+| 404    | Board not found          | `{ error, message }`            |
+| 409    | Already archived         | `{ error, message }`            |
+| 500    | Server error             | `{ error, message }`            |
+
+#### Request Parameters
+
+| Name      | Type   | Required | Notes     |
+| --------- | ------ | -------- | --------- |
+| `boardId` | `uuid` | Yes      | URL param |
+
+#### Headers
+
+- `Authorization: Bearer <JWT>` – Supabase access token (required)
