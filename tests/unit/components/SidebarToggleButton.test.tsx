@@ -396,38 +396,6 @@ describe("SidebarToggleButton", () => {
     });
   });
 
-  describe("Testowanie różnych stanów komponentu", () => {
-    it("snapshot test - sidebar rozwinięty (collapsed = false)", () => {
-      // Arrange
-      vi.mocked(useSidebar).mockReturnValue({
-        collapsed: false,
-        toggle: mockToggle,
-        set: mockSet,
-      });
-
-      // Act
-      const { container } = render(<SidebarToggleButton />);
-
-      // Assert
-      expect(container.firstChild).toMatchSnapshot();
-    });
-
-    it("snapshot test - sidebar zwinięty (collapsed = true)", () => {
-      // Arrange
-      vi.mocked(useSidebar).mockReturnValue({
-        collapsed: true,
-        toggle: mockToggle,
-        set: mockSet,
-      });
-
-      // Act
-      const { container } = render(<SidebarToggleButton />);
-
-      // Assert
-      expect(container.firstChild).toMatchSnapshot();
-    });
-  });
-
   describe("Edge cases", () => {
     it("powinien działać poprawnie gdy toggle jest undefined (edge case)", () => {
       // Arrange

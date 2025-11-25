@@ -24,6 +24,7 @@
     "test:e2e:report": "playwright show-report"
   },
   "dependencies": {
+    "@astrojs/cloudflare": "^12.6.11",
     "@astrojs/node": "^9.4.3",
     "@astrojs/react": "^4.3.1",
     "@astrojs/sitemap": "^3.5.1",
@@ -68,6 +69,7 @@
     "@typescript-eslint/eslint-plugin": "8.28.0",
     "@typescript-eslint/parser": "8.28.0",
     "@vitejs/plugin-react": "^5.1.1",
+    "@vitest/coverage-v8": "^4.0.13",
     "@vitest/ui": "^4.0.9",
     "dotenv": "^17.2.3",
     "eslint": "9.23.0",
