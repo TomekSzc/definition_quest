@@ -6,7 +6,7 @@ export type Feature = "auth";
 // Static configuration of feature flags per environment
 const FEATURE_MATRIX: Record<Env, Record<Feature, boolean>> = {
   dev: { auth: true },
-  test: { auth: false },
+  test: { auth: true },
   prod: { auth: true },
 };
 
