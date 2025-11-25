@@ -1,6 +1,7 @@
 import type { APIRoute } from "astro";
 import { createErrorResponse, createSuccessResponse } from "../../../lib/utils/api-response";
 import { HttpError } from "../../../lib/utils/http-error";
+import { isEnabled } from "../../../features/featureFlags";
 
 export const prerender = false;
 
@@ -14,6 +15,9 @@ export const prerender = false;
  * @returns 500 Internal Server Error - Unexpected errors
  */
 export const POST: APIRoute = async ({ locals }) => {
+  if (!isEnabled("auth")) {
+    return createErrorResponse("FEATURE_DISABLED", 503);
+  }
   try {
     // Sign out from Supabase Auth
     const { error } = await locals.supabase.auth.signOut();

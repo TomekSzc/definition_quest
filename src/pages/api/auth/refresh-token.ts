@@ -7,6 +7,7 @@ import {
   getErrorMapping,
 } from "../../../lib/utils/api-response";
 import { HttpError, ValidationError } from "../../../lib/utils/http-error";
+import { isEnabled } from "../../../features/featureFlags";
 
 export const prerender = false;
 
@@ -22,6 +23,9 @@ export const prerender = false;
  * @returns 500 Internal Server Error - Unexpected errors
  */
 export const POST: APIRoute = async ({ request, locals }) => {
+  if (!isEnabled("auth")) {
+    return createErrorResponse("FEATURE_DISABLED", 503);
+  }
   try {
     // 1. Parse & validate body
     const body = await request.json().catch(() => undefined);
