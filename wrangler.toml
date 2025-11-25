@@ -1,0 +1,9 @@
+# Cloudflare Pages configuration for Astro
+name = "definition-quest"
+compatibility_date = "2025-11-25"
+pages_build_output_dir = "./dist"
+
+# This ensures Wrangler knows this is a Pages project, not a Worker
+[env.production]
+compatibility_date = "2025-11-25"
+
