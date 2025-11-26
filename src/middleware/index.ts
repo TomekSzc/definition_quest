@@ -1,25 +1,35 @@
 import { defineMiddleware } from "astro:middleware";
-import { supabaseClient } from "../db/supabase.client.ts";
+import { createSupabaseClient } from "../db/supabase.client.ts";
 
 /**
  * Public endpoints that don't require authentication.
- * Add endpoint paths that should be accessible without login.
+ * Format: "METHOD /path" or "/path" (matches all methods)
  */
 const PUBLIC_ENDPOINTS = [
-  // New auth endpoints
+  // Auth endpoints (all methods)
   "/api/auth/login",
   "/api/auth/signUp",
   "/api/auth/logout",
   "/api/auth/forgot-password",
   "/api/auth/reset-password",
   "/api/auth/refresh-token",
+  // Public board endpoints (specific methods only)
+  "GET /api/boards", // List boards - anonymous access
 ];
 
 /**
- * Checks if the given URL path is a public endpoint.
+ * Checks if the given URL path and method combination is a public endpoint.
  */
-function isPublicEndpoint(pathname: string): boolean {
-  return PUBLIC_ENDPOINTS.some((endpoint) => pathname.startsWith(endpoint));
+function isPublicEndpoint(pathname: string, method: string): boolean {
+  return PUBLIC_ENDPOINTS.some((endpoint) => {
+    // If endpoint has method prefix (e.g., "GET /api/boards")
+    if (endpoint.includes(" ")) {
+      const [endpointMethod, endpointPath] = endpoint.split(" ");
+      return method === endpointMethod && pathname.startsWith(endpointPath);
+    }
+    // Otherwise just match the path for any method
+    return pathname.startsWith(endpoint);
+  });
 }
 
 /**
@@ -30,8 +40,20 @@ function isPublicEndpoint(pathname: string): boolean {
  * 4. Enforces authentication for protected endpoints
  */
 export const onRequest = defineMiddleware(async (context, next) => {
-  // Always add Supabase client to locals
-  context.locals.supabase = supabaseClient;
+  // Create Supabase client with runtime environment variables
+  // For Cloudflare: use context.locals.runtime.env (available in runtime)
+  // For local dev: fallback to import.meta.env
+  const env = context.locals.runtime?.env || {
+    SUPABASE_URL: import.meta.env.SUPABASE_URL,
+    SUPABASE_KEY: import.meta.env.SUPABASE_KEY,
+  };
+
+  // Extract access token from Authorization header if present
+  const authHeader = context.request.headers.get("Authorization");
+  const accessToken = authHeader?.startsWith("Bearer ") ? authHeader.substring(7) : undefined;
+
+  // Always add Supabase client to locals with optional access token
+  context.locals.supabase = createSupabaseClient(env, accessToken);
 
   // Check if this is an API endpoint (not a page or asset)
   const isApiEndpoint = context.url.pathname.startsWith("/api/");
@@ -53,7 +75,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
   }
 
   // For protected endpoints, require authentication
-  const isPublic = isPublicEndpoint(context.url.pathname);
+  const isPublic = isPublicEndpoint(context.url.pathname, context.request.method);
   if (!isPublic && (!user || authError)) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
       status: 401,

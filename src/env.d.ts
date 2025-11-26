@@ -8,6 +8,14 @@ declare global {
     interface Locals {
       supabase: SupabaseClient<Database>;
       user?: User; // Authenticated user (available in protected endpoints)
+      runtime?: {
+        env: {
+          SUPABASE_URL: string;
+          SUPABASE_KEY: string;
+          OPENROUTER_API_KEY: string;
+          [key: string]: string;
+        };
+      };
     }
   }
 }

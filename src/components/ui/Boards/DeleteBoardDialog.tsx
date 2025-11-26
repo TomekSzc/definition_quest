@@ -1,7 +1,9 @@
 import { useState } from "react";
 import type { FC } from "react";
+import { useSelector } from "react-redux";
 import { Dialog, DialogContent, DialogTitle } from "../Dialog";
 import { Button } from "../Button";
+import { selectAccessToken } from "../../../store/slices/authSlice";
 
 interface DeleteBoardDialogProps {
   boardId: string;
@@ -16,15 +18,24 @@ interface DeleteBoardDialogProps {
  */
 export const DeleteBoardDialog: FC<DeleteBoardDialogProps> = ({ boardId, isVisible, onSubmit, onClose }) => {
   const [loading, setLoading] = useState(false);
+  const accessToken = useSelector(selectAccessToken);
+
   const archiveBoard = async () => {
     if (loading) return;
     setLoading(true);
     try {
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+
+      // Add Authorization header if token is available
+      if (accessToken) {
+        headers["Authorization"] = `Bearer ${accessToken}`;
+      }
+
       const res = await fetch(`/api/boards/${boardId}`, {
         method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers,
         credentials: "include",
       });
       if (!res.ok) {
