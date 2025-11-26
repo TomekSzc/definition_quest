@@ -3,12 +3,14 @@
 ## 📝 Cloudflare Configuration
 
 - [ ] **Cloudflare Account ID**
+
   ```
   Znajdź w URL: dash.cloudflare.com/{account_id}/pages
   Twoje Account ID: _______________________________
   ```
 
 - [ ] **Cloudflare Project Name**
+
   ```
   Nazwa projektu w Cloudflare Pages
   Twój Project Name: _______________________________
@@ -25,48 +27,53 @@
 
 Przejdź do: Settings → Secrets and variables → Actions
 
-- [ ] `CLOUDFLARE_API_TOKEN` = _______________________________
-- [ ] `CLOUDFLARE_ACCOUNT_ID` = _______________________________
-- [ ] `CLOUDFLARE_PROJECT_NAME` = _______________________________
-- [ ] `SUPABASE_URL` = _______________________________
-- [ ] `SUPABASE_KEY` = _______________________________
-- [ ] `OPENROUTER_API_KEY` = _______________________________
+- [ ] `CLOUDFLARE_API_TOKEN` = **************\_\_\_**************
+- [ ] `CLOUDFLARE_ACCOUNT_ID` = **************\_\_\_**************
+- [ ] `CLOUDFLARE_PROJECT_NAME` = **************\_\_\_**************
+- [ ] `SUPABASE_URL` = **************\_\_\_**************
+- [ ] `SUPABASE_KEY` = **************\_\_\_**************
+- [ ] `OPENROUTER_API_KEY` = **************\_\_\_**************
 
 ## 🌍 Cloudflare Environment Variables
 
 W Cloudflare Dashboard → Twój projekt → Settings → Environment variables (Production)
 
-- [ ] `SUPABASE_URL` = _______________________________
-- [ ] `SUPABASE_KEY` = _______________________________
-- [ ] `OPENROUTER_API_KEY` = _______________________________
+- [ ] `SUPABASE_URL` = **************\_\_\_**************
+- [ ] `SUPABASE_KEY` = **************\_\_\_**************
+- [ ] `OPENROUTER_API_KEY` = **************\_\_\_**************
 - [ ] `ENV_NAME` = `prod`
 
 ## 🚀 Deployment Steps
 
 - [ ] Wszystkie zmiany zacommitowane
+
   ```bash
   git status  # sprawdź czy wszystko jest zacommitowane
   ```
 
 - [ ] Jesteś na branchu master
+
   ```bash
   git branch --show-current  # powinno pokazać "master"
   ```
 
 - [ ] Push na master
+
   ```bash
   git push origin master
   ```
 
 - [ ] Sprawdzono workflow w GitHub Actions
+
   ```
   URL: https://github.com/{owner}/{repo}/actions
   ```
 
 - [ ] Deployment zakończony sukcesem
+
   ```
   ✓ Lint
-  ✓ Unit tests  
+  ✓ Unit tests
   ✓ Build
   ✓ Deploy
   ```
@@ -101,8 +108,10 @@ W Cloudflare Dashboard → Twój projekt → Settings → Environment variables 
 
 ---
 
-**Data pierwszego deployu**: _______________
-**URL produkcyjny**: _______________
-**Notatki**: 
+**Data pierwszego deployu**: ******\_\_\_******
+**URL produkcyjny**: ******\_\_\_******
+**Notatki**:
+
 ```
 
+```

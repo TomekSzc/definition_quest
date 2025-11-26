@@ -124,21 +124,22 @@ curl -X POST http://localhost:3000/api/auth/login \
 [alias]
   # Quick status
   st = status -sb
-  
+
   # Quick commit and push
   deploy = !git add -A && git commit -m 'deploy' && git push origin master
-  
+
   # Beautiful log
   lg = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
-  
+
   # Undo last commit (keep changes)
   undo = reset --soft HEAD~1
-  
+
   # Show current branch
   current = branch --show-current
 ```
 
 Użyj aliasów:
+
 ```bash
 git st          # status
 git deploy      # add, commit, push w jednej komendzie
@@ -146,4 +147,3 @@ git lg          # ładny log
 git undo        # cofnij ostatni commit
 git current     # pokaż obecny branch
 ```
-

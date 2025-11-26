@@ -34,6 +34,7 @@ W repozytorium GitHub przejdź do:
 Dodaj następujące secrets:
 
 ### Cloudflare Secrets
+
 ```
 CLOUDFLARE_API_TOKEN=<token z Kroku 2>
 CLOUDFLARE_ACCOUNT_ID=<twoje account ID>
@@ -41,6 +42,7 @@ CLOUDFLARE_PROJECT_NAME=<nazwa projektu, np. definition-quest>
 ```
 
 ### Application Secrets (produkcyjne wartości)
+
 ```
 SUPABASE_URL=<URL twojej produkcyjnej bazy Supabase>
 SUPABASE_KEY=<anon key z produkcyjnej bazy Supabase>
@@ -136,6 +138,7 @@ id = "your-kv-namespace-id"
 ```
 
 Utwórz KV namespace:
+
 ```bash
 npx wrangler kv:namespace create SESSION
 ```
@@ -143,6 +146,7 @@ npx wrangler kv:namespace create SESSION
 ### Błąd: Build failure
 
 Sprawdź logi w GitHub Actions, aby zidentyfikować problem:
+
 - Upewnij się, że wszystkie secrets są poprawnie ustawione
 - Sprawdź czy zmienne środowiskowe są dostępne podczas buildu
 
@@ -165,4 +169,3 @@ Sprawdź logi w GitHub Actions, aby zidentyfikować problem:
 3. Skonfiguruj Cloudflare Analytics
 4. Dodaj Web Analytics do strony
 5. Rozważ użycie Cloudflare Cache dla statycznych assetów
-
