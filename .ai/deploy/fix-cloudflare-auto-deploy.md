@@ -48,6 +48,7 @@ compatibility_date = "2025-11-25"
 ## Porównanie opcji:
 
 ### GitHub Actions (Opcja 1 - ZALECANE)
+
 ✅ Pełna kontrola nad CI/CD
 ✅ Testy przed deploymentem (lint, unit tests)
 ✅ Możliwość manual approval
@@ -56,10 +57,10 @@ compatibility_date = "2025-11-25"
 ❌ Wymaga konfiguracji secrets w GitHub
 
 ### Cloudflare Auto-deploy (Opcja 2)
+
 ✅ Szybszy setup (mniej konfiguracji)
 ✅ Natywna integracja z Cloudflare
 ✅ Nie wymaga GitHub secrets dla API token
 ❌ Mniej kontroli nad procesem
 ❌ Brak testów przed deploymentem
 ❌ Trudniejszy rollback
-

@@ -16,5 +16,8 @@ export default defineConfig({
   },
   adapter: cloudflare({
     mode: "directory",
+    runtime: {
+      mode: "local", // Wyłącza Cloudflare-specific features jak KV session storage
+    },
   }),
 });
