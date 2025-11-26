@@ -1,7 +1,8 @@
 import type { ReactNode } from "react";
+import { useMemo } from "react";
 import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
-import { store, persistor } from "@/store";
+import { store, getPersistor } from "@/store";
 import Toast from "../ui/Toast";
 import type { FC } from "react";
 import { ProtectedRoute } from "./ProtectedRoute";
@@ -15,6 +16,10 @@ interface IProvidersProps {
 }
 
 export const Providers: FC<IProvidersProps> = ({ children }) => {
+  // Lazy initialization for Cloudflare Workers compatibility
+  // Initialize persistor inside React component (which runs in fetch handler)
+  const persistor = useMemo(() => getPersistor(), []);
+
   return (
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
