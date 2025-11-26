@@ -1,5 +1,5 @@
 import { defineMiddleware } from "astro:middleware";
-import { supabaseClient } from "../db/supabase.client.ts";
+import { getSupabaseClient } from "../db/supabase.client.ts";
 
 /**
  * Public endpoints that don't require authentication.
@@ -30,8 +30,8 @@ function isPublicEndpoint(pathname: string): boolean {
  * 4. Enforces authentication for protected endpoints
  */
 export const onRequest = defineMiddleware(async (context, next) => {
+  context.locals.supabase = getSupabaseClient();
   // Always add Supabase client to locals
-  context.locals.supabase = supabaseClient;
 
   // Check if this is an API endpoint (not a page or asset)
   const isApiEndpoint = context.url.pathname.startsWith("/api/");

@@ -1,6 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
 import type { SupabaseClient as SupabaseClientBase } from "@supabase/supabase-js";
-
 import type { Database } from "../db/database.types.ts";
 
 const supabaseUrl = import.meta.env.SUPABASE_URL;
@@ -12,7 +11,13 @@ if (!supabaseUrl || !supabaseAnonKey) {
   );
 }
 
-export const supabaseClient = createClient<Database>(supabaseUrl, supabaseAnonKey);
+let cachedClient: SupabaseClientBase<Database> | null = null;
 
-// Export typed SupabaseClient for use across the application
+export function getSupabaseClient() {
+  if (!cachedClient) {
+    cachedClient = createClient<Database>(supabaseUrl, supabaseAnonKey);
+  }
+  return cachedClient;
+}
+
 export type SupabaseClient = SupabaseClientBase<Database>;
