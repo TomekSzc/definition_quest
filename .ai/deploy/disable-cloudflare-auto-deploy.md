@@ -34,6 +34,7 @@ curl -X PATCH \
 ## Weryfikacja:
 
 Po wyłączeniu automatycznych deploymentów:
+
 - Pushe na master NIE będą automatycznie triggerować buildu w Cloudflare
 - Tylko GitHub Actions workflow będzie wykonywać deployment
 - Masz pełną kontrolę nad procesem CI/CD
@@ -47,4 +48,3 @@ git push origin master
 ```
 
 Tym razem uruchomi się TYLKO GitHub Actions workflow, który używa poprawnej komendy.
-
