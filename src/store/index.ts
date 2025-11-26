@@ -52,7 +52,9 @@ export const store = configureStore({
   devTools: process.env.NODE_ENV !== "production",
 });
 
-export const persistor = persistStore(store);
+// Initialize persistor only in browser environment to avoid Cloudflare Workers errors
+// Cloudflare Workers don't allow async I/O (like localStorage access) in global scope
+export const persistor = typeof window !== "undefined" ? persistStore(store) : null;
 
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;

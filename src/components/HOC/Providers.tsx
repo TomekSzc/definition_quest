@@ -17,10 +17,17 @@ interface IProvidersProps {
 export const Providers: FC<IProvidersProps> = ({ children }) => {
   return (
     <Provider store={store}>
-      <PersistGate loading={null} persistor={persistor}>
-        <ProtectedRoute>{children}</ProtectedRoute>
-        <Toast />
-      </PersistGate>
+      {persistor ? (
+        <PersistGate loading={null} persistor={persistor}>
+          <ProtectedRoute>{children}</ProtectedRoute>
+          <Toast />
+        </PersistGate>
+      ) : (
+        <>
+          <ProtectedRoute>{children}</ProtectedRoute>
+          <Toast />
+        </>
+      )}
     </Provider>
   );
 };
