@@ -70,7 +70,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/tszczygiel/definition_quest
+          images: ghcr.io/TomekSzc/definition_quest
           tags: |
             type=sha,prefix=
             type=raw,value=latest
