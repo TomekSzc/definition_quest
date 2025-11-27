@@ -24,7 +24,7 @@ if (fs.existsSync(envTestPath)) {
 export default defineConfig({
   // Ścieżka do foldera z testami
   testDir: "./tests/e2e",
-
+  envPrefix: ["VITE_", "PUBLIC_", "SUPABASE_", "OPENROUTER_", "E2E_"],
   // Global Teardown - czyszczenie bazy danych po WSZYSTKICH testach
   globalTeardown: "./tests/e2e/global-teardown.ts",
 
