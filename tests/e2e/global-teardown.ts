@@ -1,5 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "../../src/db/database.types";
+import fs from "fs";
+import path from "path";
 
 /**
  * Global Teardown dla Playwright
@@ -132,6 +134,13 @@ async function globalTeardown() {
   } catch (error) {
     console.error("❌ Error during global teardown:", error);
     // Nie rzucamy błędu, żeby nie blokować raportów testowych
+  } finally {
+    // Usuń .env.local utworzony podczas testów E2E
+    const envLocalPath = path.resolve(process.cwd(), ".env.local");
+    if (fs.existsSync(envLocalPath)) {
+      fs.unlinkSync(envLocalPath);
+      console.log("🧹 Cleaned up .env.local");
+    }
   }
 }
 

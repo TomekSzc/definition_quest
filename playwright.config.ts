@@ -6,8 +6,24 @@ import fs from "fs";
 // Załaduj .env.test jeśli istnieje, w przeciwnym razie .env
 const envTestPath = path.resolve(process.cwd(), ".env.test");
 const envPath = path.resolve(process.cwd(), ".env");
+const envLocalPath = path.resolve(process.cwd(), ".env.local");
 
+// Skopiuj .env.test do .env.local aby Astro załadował zmienne testowe
+// (.env.local ma wysoki priorytet w astro:env i działa w obu trybach)
 if (fs.existsSync(envTestPath)) {
+  // Kopiuj tylko jeśli plik nie istnieje lub jest starszy
+  if (!fs.existsSync(envLocalPath) || fs.statSync(envTestPath).mtime > fs.statSync(envLocalPath).mtime) {
+    try {
+      fs.copyFileSync(envTestPath, envLocalPath);
+      // eslint-disable-next-line no-console
+      console.log("✅ Copied .env.test to .env.local for Astro");
+    } catch (error) {
+      // Ignoruj błędy file lock - plik prawdopodobnie już został skopiowany przez inny proces
+      if ((error as NodeJS.ErrnoException).code !== "EBUSY") {
+        throw error;
+      }
+    }
+  }
   dotenv.config({ path: envTestPath });
   // eslint-disable-next-line no-console
   console.log("✅ Loaded environment from: .env.test");
@@ -25,7 +41,7 @@ export default defineConfig({
   // Ścieżka do foldera z testami
   testDir: "./tests/e2e",
 
-  // Global Teardown - czyszczenie bazy danych po WSZYSTKICH testach
+  // Global Teardown - czyszczenie bazy danych po WSZYSTKICH testach i usunięcie .env.local
   globalTeardown: "./tests/e2e/global-teardown.ts",
 
   // Maksymalny czas wykonania jednego testu

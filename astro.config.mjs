@@ -1,5 +1,5 @@
 // @ts-check
-import { defineConfig } from "astro/config";
+import { defineConfig, envField } from "astro/config";
 
 import react from "@astrojs/react";
 import sitemap from "@astrojs/sitemap";
@@ -15,7 +15,35 @@ export default defineConfig({
     plugins: [tailwindcss()],
   },
   adapter: cloudflare({
-    mode: "directory",
-    // Runtime mode removed for production - allows Cloudflare Pages to access environment variables
+    // Cloudflare Pages configuration - environment variables are accessible via astro:env
   }),
+  env: {
+    schema: {
+      // Supabase configuration (accessible on both client and server)
+      SUPABASE_URL: envField.string({
+        context: "client",
+        access: "public",
+        optional: false,
+      }),
+      SUPABASE_KEY: envField.string({
+        context: "client",
+        access: "public",
+        optional: false,
+      }),
+      // OpenRouter API configuration (server-only)
+      OPENROUTER_API_KEY: envField.string({
+        context: "server",
+        access: "secret",
+        optional: false,
+      }),
+      // Environment name for feature flags (server-only)
+      ENV_NAME: envField.enum({
+        context: "server",
+        access: "public",
+        optional: true,
+        default: "dev",
+        values: ["dev", "test", "prod"],
+      }),
+    },
+  },
 });

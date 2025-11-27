@@ -1,5 +1,7 @@
 // Feature flag module – universal (frontend & backend)
 
+import { ENV_NAME } from "astro:env/server";
+
 export type Env = "dev" | "test" | "prod";
 export type Feature = "auth";
 
@@ -11,16 +13,17 @@ const FEATURE_MATRIX: Record<Env, Record<Feature, boolean>> = {
 };
 
 // Resolve current execution environment.
-// 1. Tries Astro/Build-time import.meta.env.ENV_NAME (statically accessed for Cloudflare compatibility)
+// 1. Tries Astro env schema (ENV_NAME from astro:env/server)
 // 2. Falls back to Node's process.env.ENV_NAME when available
 // 3. Defaults to "dev" when unset or invalid
 function resolveEnv(): Env {
-  // Direct static access to avoid dynamic import.meta.env access (required for Cloudflare workerd)
-  const fromImportMeta = import.meta.env.ENV_NAME as Env | undefined;
-  const fromProcess = typeof process !== "undefined" ? (process.env.ENV_NAME as Env | undefined) : undefined;
+  // Use astro:env/server which handles Cloudflare compatibility
+  if (ENV_NAME && isValidEnv(ENV_NAME)) return ENV_NAME;
 
-  if (fromImportMeta && isValidEnv(fromImportMeta)) return fromImportMeta;
+  // Fallback to process.env for Node.js contexts (e.g., scripts)
+  const fromProcess = typeof process !== "undefined" ? (process.env.ENV_NAME as Env | undefined) : undefined;
   if (fromProcess && isValidEnv(fromProcess)) return fromProcess;
+
   return "dev";
 }
 
