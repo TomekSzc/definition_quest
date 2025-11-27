@@ -53,6 +53,5 @@ export default defineConfig({
         optional: true,
       }),
     },
-    validateSecrets: false,
   },
 });
