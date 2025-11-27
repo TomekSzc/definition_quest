@@ -4,17 +4,18 @@
  */
 
 import { OpenRouterService, AuthenticationError } from "./openrouter.service";
+import { OPENROUTER_API_KEY } from "astro:env/server";
 
 /**
  * Gets API key from environment (works in both Astro and Node.js contexts)
  */
 function getApiKeyFromEnv(): string | undefined {
-  // Try import.meta.env first (Astro context)
-  if (typeof import.meta !== "undefined" && import.meta.env) {
-    return import.meta.env.OPENROUTER_API_KEY;
+  // Try astro:env first (Astro context with env schema)
+  if (OPENROUTER_API_KEY) {
+    return OPENROUTER_API_KEY;
   }
 
-  // Fallback to process.env (Node.js context)
+  // Fallback to process.env (Node.js context, e.g., test scripts)
   if (typeof process !== "undefined" && process.env) {
     return process.env.OPENROUTER_API_KEY;
   }

@@ -36,3 +36,5 @@ coverage/
 
 # VS Code
 .vscode/
+
+.env.local
