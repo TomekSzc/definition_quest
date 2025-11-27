@@ -9,14 +9,16 @@ import { OpenRouterService, AuthenticationError } from "./openrouter.service";
  * Gets API key from environment (works in both Astro and Node.js contexts)
  */
 function getApiKeyFromEnv(): string | undefined {
-  // Try import.meta.env first (Astro context)
-  if (typeof import.meta !== "undefined" && import.meta.env) {
-    return import.meta.env.OPENROUTER_API_KEY;
+  // 1. Try process.env first (Node.js Runtime - Production)
+  // This is critical for Docker/Node adapter where env vars are injected at runtime
+  if (typeof process !== "undefined" && process.env && process.env.OPENROUTER_API_KEY) {
+    return process.env.OPENROUTER_API_KEY;
   }
 
-  // Fallback to process.env (Node.js context)
-  if (typeof process !== "undefined" && process.env) {
-    return process.env.OPENROUTER_API_KEY;
+  // 2. Fallback to import.meta.env (Astro Build/Dev context)
+  // Note: In production build, this might be statically replaced with undefined if not present at build time
+  if (typeof import.meta !== "undefined" && import.meta.env && import.meta.env.OPENROUTER_API_KEY) {
+    return import.meta.env.OPENROUTER_API_KEY;
   }
 
   return undefined;
@@ -33,6 +35,7 @@ export function createOpenRouterService(apiKey?: string): OpenRouterService {
   const key = apiKey || getApiKeyFromEnv();
 
   if (!key || key.trim() === "") {
+    console.error("[OpenRouter] API Key is missing. Checked process.env and import.meta.env.");
     throw new AuthenticationError("OPENROUTER_API_KEY environment variable is not set");
   }
 

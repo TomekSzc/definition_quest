@@ -9,7 +9,7 @@ interface NavItemProps {
 }
 
 export const NavItem: FC<NavItemProps> = ({ item }) => {
-  const { collapsed } = useSidebar();
+  const { collapsed, toggle } = useSidebar();
   const Icon = item.icon;
 
   const [currentPath, setCurrentPath] = useState<string>("");
@@ -20,11 +20,19 @@ export const NavItem: FC<NavItemProps> = ({ item }) => {
     }
   }, []);
 
+  const handleClick = () => {
+    // Always collapse sidebar on mobile/desktop after navigation
+    if (!collapsed) {
+      toggle();
+    }
+  };
+
   const isActive = currentPath === item.route;
 
   return (
     <a
       href={item.route}
+      onClick={handleClick}
       data-testid={`nav-${item.route.replace(/\//g, "-")}`}
       className={clsx(
         "flex items-center gap-3 rounded-md px-3 py-2 transition-colors",

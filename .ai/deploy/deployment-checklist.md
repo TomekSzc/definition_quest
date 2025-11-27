@@ -27,20 +27,20 @@
 
 Przejdź do: Settings → Secrets and variables → Actions
 
-- [ ] `CLOUDFLARE_API_TOKEN` = **************\_\_\_**************
-- [ ] `CLOUDFLARE_ACCOUNT_ID` = **************\_\_\_**************
-- [ ] `CLOUDFLARE_PROJECT_NAME` = **************\_\_\_**************
-- [ ] `SUPABASE_URL` = **************\_\_\_**************
-- [ ] `SUPABASE_KEY` = **************\_\_\_**************
-- [ ] `OPENROUTER_API_KEY` = **************\_\_\_**************
+- [ ] `CLOUDFLARE_API_TOKEN` = ******\*\*******\_\_\_******\*\*******
+- [ ] `CLOUDFLARE_ACCOUNT_ID` = ******\*\*******\_\_\_******\*\*******
+- [ ] `CLOUDFLARE_PROJECT_NAME` = ******\*\*******\_\_\_******\*\*******
+- [ ] `SUPABASE_URL` = ******\*\*******\_\_\_******\*\*******
+- [ ] `SUPABASE_KEY` = ******\*\*******\_\_\_******\*\*******
+- [ ] `OPENROUTER_API_KEY` = ******\*\*******\_\_\_******\*\*******
 
 ## 🌍 Cloudflare Environment Variables
 
 W Cloudflare Dashboard → Twój projekt → Settings → Environment variables (Production)
 
-- [ ] `SUPABASE_URL` = **************\_\_\_**************
-- [ ] `SUPABASE_KEY` = **************\_\_\_**************
-- [ ] `OPENROUTER_API_KEY` = **************\_\_\_**************
+- [ ] `SUPABASE_URL` = ******\*\*******\_\_\_******\*\*******
+- [ ] `SUPABASE_KEY` = ******\*\*******\_\_\_******\*\*******
+- [ ] `OPENROUTER_API_KEY` = ******\*\*******\_\_\_******\*\*******
 - [ ] `ENV_NAME` = `prod`
 
 ## 🚀 Deployment Steps
@@ -108,8 +108,8 @@ W Cloudflare Dashboard → Twój projekt → Settings → Environment variables 
 
 ---
 
-**Data pierwszego deployu**: ******\_\_\_******
-**URL produkcyjny**: ******\_\_\_******
+**Data pierwszego deployu**: **\*\***\_\_\_**\*\***
+**URL produkcyjny**: **\*\***\_\_\_**\*\***
 **Notatki**:
 
 ```
