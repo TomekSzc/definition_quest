@@ -11,8 +11,8 @@ console.log("SUPABASE_KEY z astro:env/client jest dostępny:", !!SUPABASE_KEY);
 console.log("SUPABASE_URL z astro:env/client wartość:", SUPABASE_URL);
 
 // Oryginalna logika używająca import.meta.env
-const supabaseUrl = import.meta.env.SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.SUPABASE_KEY;
+const supabaseUrl = import.meta.env.SUPABASE_URL || SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.SUPABASE_KEY || SUPABASE_KEY;
 
 if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error(
