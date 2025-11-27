@@ -11,7 +11,7 @@ export interface UIState {
 
 const initialState: UIState = {
   layout: {
-    sidebarCollapsed: false,
+    sidebarCollapsed: true,
   },
   loading: false,
 };
