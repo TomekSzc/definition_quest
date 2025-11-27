@@ -6,9 +6,6 @@ import sitemap from "@astrojs/sitemap";
 import tailwindcss from "@tailwindcss/vite";
 import cloudflare from "@astrojs/cloudflare";
 
-console.log("🔍 Current mode:", import.meta.env.MODE);
-console.log("🔍 SUPABASE_URL from process.env:", process.env.SUPABASE_URL);
-
 // https://astro.build/config
 export default defineConfig({
   output: "server",
