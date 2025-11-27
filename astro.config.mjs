@@ -19,24 +19,24 @@ export default defineConfig({
   }),
   env: {
     schema: {
-      // Supabase configuration
+      // Supabase configuration (accessible on both client and server)
       SUPABASE_URL: envField.string({
-        context: "server",
+        context: "client",
         access: "public",
         optional: false,
       }),
       SUPABASE_KEY: envField.string({
-        context: "server",
+        context: "client",
         access: "public",
         optional: false,
       }),
-      // OpenRouter API configuration
+      // OpenRouter API configuration (server-only)
       OPENROUTER_API_KEY: envField.string({
         context: "server",
         access: "secret",
         optional: false,
       }),
-      // Environment name for feature flags
+      // Environment name for feature flags (server-only)
       ENV_NAME: envField.enum({
         context: "server",
         access: "public",
