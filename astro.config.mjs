@@ -20,21 +20,23 @@ export default defineConfig({
   env: {
     schema: {
       // Supabase configuration (accessible on both client and server)
+      // Optional to allow GitHub Actions builds with process.env
       SUPABASE_URL: envField.string({
         context: "client",
         access: "public",
-        optional: false,
+        optional: true,
       }),
       SUPABASE_KEY: envField.string({
         context: "client",
         access: "public",
-        optional: false,
+        optional: true,
       }),
       // OpenRouter API configuration (server-only)
+      // Optional to allow GitHub Actions builds with process.env
       OPENROUTER_API_KEY: envField.string({
         context: "server",
         access: "secret",
-        optional: false,
+        optional: true,
       }),
       // Environment name for feature flags (server-only)
       ENV_NAME: envField.enum({

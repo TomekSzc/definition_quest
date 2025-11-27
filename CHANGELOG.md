@@ -4,6 +4,18 @@
 
 ### Added
 
+- **Astro Env API Integration** – Wdrożono `astro:env` dla lepszej obsługi zmiennych środowiskowych
+  - Konfiguracja schema w `astro.config.mjs` z opcjonalnymi zmiennymi
+  - Zmienne `SUPABASE_URL` i `SUPABASE_KEY` z `context: "client"` (dostępne w przeglądarce)
+  - Zmienna `OPENROUTER_API_KEY` z `context: "server"` i `access: "secret"`
+  - Zmienna `ENV_NAME` z typem enum dla feature flags
+  - Wykorzystanie `import.meta.env` dla uniwersalności (działa lokalnie, w testach, GitHub Actions i Cloudflare)
+  - Automatyczne kopiowanie `.env.test` → `.env.local` w testach E2E przez `playwright.config.ts`
+  - Czyszczenie `.env.local` po testach w `global-teardown.ts`
+  - Dodano `ENV_SETUP.md` z dokumentacją konfiguracji dla wszystkich środowisk
+  - Kompatybilność z GitHub Actions builds (zmienne z `process.env` → `import.meta.env`)
+  - Kompatybilność z Cloudflare Pages runtime environment variables
+
 - **OpenRouter AI Integration** – Full implementation of AI-powered board generation
   - `OpenRouterService` class for standardized API communication with openrouter.ai
   - Support for chat completions with JSON schema response formatting
