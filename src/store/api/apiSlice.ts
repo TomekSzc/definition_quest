@@ -325,6 +325,23 @@ export const apiSlice = createApi({
         invalidatesTags: (result, error, { boardId }) => [{ type: "Boards", id: boardId }],
       }
     ),
+    deleteBoard: builder.mutation<{ message: string }, string>({
+      query: (boardId) => ({
+        url: `/api/boards/${boardId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Boards"],
+      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+        try {
+          await queryFulfilled;
+          dispatch(showToast({ type: "success", title: "Sukces", message: "Tablica została usunięta" }));
+        } catch (err: unknown) {
+          const errorMessage =
+            (err as { error?: { data?: { message?: string } } }).error?.data?.message ?? "Nie udało się usunąć tablicy";
+          dispatch(showToast({ type: "error", title: "Błąd", message: errorMessage }));
+        }
+      },
+    }),
   }),
 });
 
@@ -348,5 +365,6 @@ export const {
   useUpdatePairMutation,
   useAddPairMutation,
   useDeletePairMutation,
+  useDeleteBoardMutation,
   useAddLevelMutation,
 } = apiSlice;

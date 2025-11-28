@@ -419,7 +419,7 @@ describe("BoardListTile", () => {
 
       // Assert
       expect(screen.getByText("Last score")).toBeInTheDocument();
-      expect(screen.getByText("5000ms")).toBeInTheDocument();
+      expect(screen.getByText("00:05 min")).toBeInTheDocument();
     });
 
     it("nie powinien wyświetlić lastTime gdy użytkownik nie jest właścicielem", () => {
@@ -434,7 +434,7 @@ describe("BoardListTile", () => {
 
       // Assert
       expect(screen.queryByText("Last score")).not.toBeInTheDocument();
-      expect(screen.queryByText("5000ms")).not.toBeInTheDocument();
+      expect(screen.queryByText("00:05 min")).not.toBeInTheDocument();
     });
 
     it("nie powinien wyświetlić lastTime gdy nie istnieje mimo że użytkownik jest właścicielem", () => {
@@ -682,7 +682,8 @@ describe("BoardListTile", () => {
       });
 
       // Assert - lastTime jest renderowane tylko dla właściciela
-      expect(screen.getByText("9999999ms")).toBeInTheDocument();
+      // 9999999ms = 9999 sekund = 166 minut 39 sekund
+      expect(screen.getByText("166:39 min")).toBeInTheDocument();
     });
 
     it("powinien obsłużyć tablicę z wieloma tagami (> 10)", () => {

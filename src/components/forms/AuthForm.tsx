@@ -10,6 +10,8 @@ import { z } from "zod";
 import type { FC } from "react";
 import { Routes } from "@/lib/routes";
 export type AuthFormData = z.infer<typeof LoginSchema>;
+import { useQueryParams } from "@/hooks/useQueryParams";
+import { useMemo } from "react";
 
 export const AuthForm: FC = () => {
   const {
@@ -22,11 +24,21 @@ export const AuthForm: FC = () => {
   });
 
   const [login, { isLoading }] = useLoginMutation();
+  const { params } = useQueryParams();
+
+  const getRouteAddress = useMemo(() => {
+    const returnUrl = params.return;
+    const returnRoute = Object.values(Routes).find((route) => route === returnUrl);
+    if (!returnUrl || !returnRoute) {
+      return Routes.Boards;
+    }
+    return returnRoute;
+  }, [params.return]);
 
   async function onSubmit(data: LoginRequest) {
     const res = await login(data).unwrap();
     if (res.data?.user) {
-      window.location.assign(Routes.Boards);
+      window.location.assign(getRouteAddress);
     }
   }
 

@@ -14,8 +14,11 @@ export const prerender = false;
 /**
  * GET /api/boards
  *
- * Lists public, non-archived boards with pagination, optional FTS search, tag filter,
+ * Lists non-archived boards with pagination, optional FTS search, tag filter,
  * author filter and sorting. Anonymous access permitted.
+ *
+ * When ownerId query param is provided, returns all boards (public + private) for that owner.
+ * Without ownerId, returns only public boards.
  *
  * @returns 200 OK - Paged<BoardSummaryDTO>
  * @returns 400 Bad Request - Invalid query params

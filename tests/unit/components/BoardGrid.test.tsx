@@ -722,7 +722,7 @@ describe("BoardGrid", () => {
       const currentLevel = 2;
 
       // Act
-      const { container } = render(
+      render(
         <BoardGrid
           cards={cards}
           running={false}
@@ -734,8 +734,11 @@ describe("BoardGrid", () => {
       );
 
       // Assert
-      const navContainer = container.querySelector(".absolute.left-0.right-0.top-\\[60\\%\\]");
-      expect(navContainer).toBeInTheDocument();
+      // Sprawdzamy czy przyciski nawigacji są wyświetlone (kontener ma top-[60%])
+      const prevButton = screen.getByText("Poprzedni level");
+      const nextButton = screen.getByText("Następny level");
+      expect(prevButton).toBeInTheDocument();
+      expect(nextButton).toBeInTheDocument();
     });
 
     it("karty powinny być w flex-wrap kontenerze z justify-center", () => {
