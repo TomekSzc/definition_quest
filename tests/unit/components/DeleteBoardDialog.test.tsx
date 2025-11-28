@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { DeleteBoardDialog } from "@/components/ui/Boards/DeleteBoardDialog";
+import type { MutationTrigger } from "@reduxjs/toolkit/query/react";
 
 /**
  * Testy jednostkowe dla komponentu DeleteBoardDialog
@@ -19,14 +20,33 @@ import { DeleteBoardDialog } from "@/components/ui/Boards/DeleteBoardDialog";
  * - Accessibility (dialog, przyciski)
  */
 
-// Mock dla fetch API
-const mockFetch = vi.fn();
+// Mock dla RTK Query hook
+type MockDeleteBoard = MutationTrigger<unknown, string, never> & ReturnType<typeof vi.fn>;
+const mockDeleteBoard = vi.fn() as unknown as MockDeleteBoard;
+let mockIsLoading = false;
+
+vi.mock("@/store/api/apiSlice", () => ({
+  useDeleteBoardMutation: vi.fn(),
+}));
+
+// Import the mocked module
+import { useDeleteBoardMutation } from "@/store/api/apiSlice";
 
 describe("DeleteBoardDialog", () => {
   beforeEach(() => {
-    // Setup fetch mock
-    global.fetch = mockFetch;
-    mockFetch.mockClear();
+    mockDeleteBoard.mockClear();
+    mockIsLoading = false;
+
+    // Setup default mock implementation
+    vi.mocked(useDeleteBoardMutation).mockReturnValue([
+      mockDeleteBoard,
+      { isLoading: mockIsLoading, isError: false, isSuccess: false, isUninitialized: true },
+    ]);
+
+    // Setup mockDeleteBoard to return a Promise with unwrap
+    mockDeleteBoard.mockReturnValue({
+      unwrap: vi.fn().mockResolvedValue({}),
+    });
   });
 
   afterEach(() => {
@@ -110,16 +130,12 @@ describe("DeleteBoardDialog", () => {
     });
   });
 
-  describe("Wywołanie API DELETE", () => {
-    it("powinien wywołać DELETE API przy kliknięciu OK", async () => {
+  describe("Wywołanie RTK Query mutation", () => {
+    it("powinien wywołać deleteBoard mutation przy kliknięciu OK", async () => {
       // Arrange
       const user = userEvent.setup();
       const mockOnSubmit = vi.fn();
       const mockOnClose = vi.fn();
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        text: async () => "",
-      });
 
       // Act
       render(<DeleteBoardDialog boardId="board-456" isVisible={true} onSubmit={mockOnSubmit} onClose={mockOnClose} />);
@@ -129,25 +145,15 @@ describe("DeleteBoardDialog", () => {
 
       // Assert
       await waitFor(() => {
-        expect(mockFetch).toHaveBeenCalledWith("/api/boards/board-456", {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-        });
+        expect(mockDeleteBoard).toHaveBeenCalledWith("board-456");
       });
     });
 
-    it("powinien użyć poprawnego boardId w URL", async () => {
+    it("powinien użyć poprawnego boardId", async () => {
       // Arrange
       const user = userEvent.setup();
       const mockOnSubmit = vi.fn();
       const mockOnClose = vi.fn();
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        text: async () => "",
-      });
 
       // Act
       render(
@@ -158,41 +164,7 @@ describe("DeleteBoardDialog", () => {
 
       // Assert
       await waitFor(() => {
-        expect(mockFetch).toHaveBeenCalledWith(
-          "/api/boards/test-board-789",
-          expect.objectContaining({
-            method: "DELETE",
-          })
-        );
-      });
-    });
-
-    it("powinien przesłać poprawne headers", async () => {
-      // Arrange
-      const user = userEvent.setup();
-      const mockOnSubmit = vi.fn();
-      const mockOnClose = vi.fn();
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        text: async () => "",
-      });
-
-      // Act
-      render(<DeleteBoardDialog boardId="board-123" isVisible={true} onSubmit={mockOnSubmit} onClose={mockOnClose} />);
-
-      await user.click(screen.getByText("OK"));
-
-      // Assert
-      await waitFor(() => {
-        expect(mockFetch).toHaveBeenCalledWith(
-          expect.any(String),
-          expect.objectContaining({
-            headers: {
-              "Content-Type": "application/json",
-            },
-            credentials: "include",
-          })
-        );
+        expect(mockDeleteBoard).toHaveBeenCalledWith("test-board-789");
       });
     });
 
@@ -201,10 +173,6 @@ describe("DeleteBoardDialog", () => {
       const user = userEvent.setup();
       const mockOnSubmit = vi.fn();
       const mockOnClose = vi.fn();
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        text: async () => "",
-      });
 
       // Act
       render(<DeleteBoardDialog boardId="board-123" isVisible={true} onSubmit={mockOnSubmit} onClose={mockOnClose} />);
@@ -222,10 +190,6 @@ describe("DeleteBoardDialog", () => {
       const user = userEvent.setup();
       const mockOnSubmit = vi.fn();
       const mockOnClose = vi.fn();
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        text: async () => "",
-      });
 
       // Act
       render(<DeleteBoardDialog boardId="board-123" isVisible={true} onSubmit={mockOnSubmit} onClose={mockOnClose} />);
@@ -238,100 +202,63 @@ describe("DeleteBoardDialog", () => {
       });
     });
 
-    it("nie powinien wywołać fetch gdy już trwa loading", async () => {
+    it("nie powinien wywołać deleteBoard gdy już trwa loading", async () => {
       // Arrange
       const user = userEvent.setup();
       const mockOnSubmit = vi.fn();
       const mockOnClose = vi.fn();
-      // Symuluj długie opóźnienie
-      mockFetch.mockImplementationOnce(
-        () =>
-          new Promise((resolve) =>
-            setTimeout(
-              () =>
-                resolve({
-                  ok: true,
-                  text: async () => "",
-                }),
-              100
-            )
-          )
-      );
+
+      // Mock loading state
+      mockIsLoading = true;
+      vi.mocked(useDeleteBoardMutation).mockReturnValue([
+        mockDeleteBoard,
+        { isLoading: true, isError: false, isSuccess: false, isUninitialized: false },
+      ]);
 
       // Act
       render(<DeleteBoardDialog boardId="board-123" isVisible={true} onSubmit={mockOnSubmit} onClose={mockOnClose} />);
 
-      const okButton = screen.getByText("OK");
-      await user.click(okButton); // Pierwsze kliknięcie
-      await user.click(okButton); // Drugie kliknięcie podczas loading
+      const okButton = screen.getByText("Usuwanie…");
+      await user.click(okButton);
 
-      // Assert
-      await waitFor(() => {
-        expect(mockFetch).toHaveBeenCalledTimes(1); // Tylko jedno wywołanie
-      });
+      // Assert - nie powinno wywołać deleteBoard bo isLoading
+      expect(mockDeleteBoard).not.toHaveBeenCalled();
     });
   });
 
   describe("Stan loading", () => {
-    it("powinien wyświetlić 'Usuwanie…' podczas loading", async () => {
+    it("powinien wyświetlić 'Usuwanie…' podczas loading", () => {
       // Arrange
-      const user = userEvent.setup();
       const mockOnSubmit = vi.fn();
       const mockOnClose = vi.fn();
-      // Symuluj opóźnienie
-      mockFetch.mockImplementationOnce(
-        () =>
-          new Promise((resolve) =>
-            setTimeout(
-              () =>
-                resolve({
-                  ok: true,
-                  text: async () => "",
-                }),
-              50
-            )
-          )
-      );
+
+      // Mock loading state
+      vi.mocked(useDeleteBoardMutation).mockReturnValue([
+        mockDeleteBoard,
+        { isLoading: true, isError: false, isSuccess: false, isUninitialized: false },
+      ]);
 
       // Act
       render(<DeleteBoardDialog boardId="board-123" isVisible={true} onSubmit={mockOnSubmit} onClose={mockOnClose} />);
-
-      const okButton = screen.getByText("OK");
-      await user.click(okButton);
 
       // Assert
       expect(screen.getByText("Usuwanie…")).toBeInTheDocument();
       expect(screen.queryByText("OK")).not.toBeInTheDocument();
-
-      // Cleanup - czekaj na zakończenie
-      await waitFor(() => {
-        expect(mockOnClose).toHaveBeenCalled();
-      });
     });
 
-    it("powinien zdisablować przyciski podczas loading", async () => {
+    it("powinien zdisablować przyciski podczas loading", () => {
       // Arrange
-      const user = userEvent.setup();
       const mockOnSubmit = vi.fn();
       const mockOnClose = vi.fn();
-      mockFetch.mockImplementationOnce(
-        () =>
-          new Promise((resolve) =>
-            setTimeout(
-              () =>
-                resolve({
-                  ok: true,
-                  text: async () => "",
-                }),
-              50
-            )
-          )
-      );
+
+      // Mock loading state
+      vi.mocked(useDeleteBoardMutation).mockReturnValue([
+        mockDeleteBoard,
+        { isLoading: true, isError: false, isSuccess: false, isUninitialized: false },
+      ]);
 
       // Act
       render(<DeleteBoardDialog boardId="board-123" isVisible={true} onSubmit={mockOnSubmit} onClose={mockOnClose} />);
-
-      await user.click(screen.getByText("OK"));
 
       // Assert
       const cancelButton = screen.getByText("Anuluj");
@@ -339,11 +266,6 @@ describe("DeleteBoardDialog", () => {
 
       expect(cancelButton).toBeDisabled();
       expect(okButton).toBeDisabled();
-
-      // Cleanup
-      await waitFor(() => {
-        expect(mockOnClose).toHaveBeenCalled();
-      });
     });
 
     it("powinien wrócić do normalnego stanu po zakończeniu", async () => {
@@ -351,17 +273,13 @@ describe("DeleteBoardDialog", () => {
       const user = userEvent.setup();
       const mockOnSubmit = vi.fn();
       const mockOnClose = vi.fn();
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        text: async () => "",
-      });
 
       // Act
       render(<DeleteBoardDialog boardId="board-123" isVisible={true} onSubmit={mockOnSubmit} onClose={mockOnClose} />);
 
       await user.click(screen.getByText("OK"));
 
-      // Assert - loading zakończone
+      // Assert - loading zakończone, callbacki wywołane
       await waitFor(() => {
         expect(mockOnClose).toHaveBeenCalled();
       });
@@ -369,16 +287,16 @@ describe("DeleteBoardDialog", () => {
   });
 
   describe("Obsługa błędów API", () => {
-    it("nie powinien wywołać onSubmit gdy API zwraca błąd 404", async () => {
+    it("nie powinien wywołać onSubmit gdy mutation zwraca błąd", async () => {
       // Arrange
       const user = userEvent.setup();
       const mockOnSubmit = vi.fn();
       const mockOnClose = vi.fn();
       const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => vi.fn());
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        status: 404,
-        text: async () => "Board not found",
+
+      // Mock error response
+      mockDeleteBoard.mockReturnValue({
+        unwrap: vi.fn().mockRejectedValue(new Error("Board not found")),
       });
 
       // Act
@@ -391,34 +309,7 @@ describe("DeleteBoardDialog", () => {
         expect(mockOnClose).toHaveBeenCalled();
       });
       expect(mockOnSubmit).not.toHaveBeenCalled();
-      expect(consoleErrorSpy).toHaveBeenCalledWith("Failed to archive board", "Board not found");
-
-      consoleErrorSpy.mockRestore();
-    });
-
-    it("nie powinien wywołać onSubmit gdy API zwraca błąd 500", async () => {
-      // Arrange
-      const user = userEvent.setup();
-      const mockOnSubmit = vi.fn();
-      const mockOnClose = vi.fn();
-      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => vi.fn());
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        status: 500,
-        text: async () => "Internal server error",
-      });
-
-      // Act
-      render(<DeleteBoardDialog boardId="board-123" isVisible={true} onSubmit={mockOnSubmit} onClose={mockOnClose} />);
-
-      await user.click(screen.getByText("OK"));
-
-      // Assert
-      await waitFor(() => {
-        expect(mockOnClose).toHaveBeenCalled();
-      });
-      expect(mockOnSubmit).not.toHaveBeenCalled();
-      expect(consoleErrorSpy).toHaveBeenCalled();
+      expect(consoleErrorSpy).toHaveBeenCalledWith("Unexpected error while archiving board", expect.any(Error));
 
       consoleErrorSpy.mockRestore();
     });
@@ -429,7 +320,10 @@ describe("DeleteBoardDialog", () => {
       const mockOnSubmit = vi.fn();
       const mockOnClose = vi.fn();
       const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => vi.fn());
-      mockFetch.mockRejectedValueOnce(new Error("Network error"));
+
+      mockDeleteBoard.mockReturnValue({
+        unwrap: vi.fn().mockRejectedValue(new Error("Network error")),
+      });
 
       // Act
       render(<DeleteBoardDialog boardId="board-123" isVisible={true} onSubmit={mockOnSubmit} onClose={mockOnClose} />);
@@ -452,7 +346,10 @@ describe("DeleteBoardDialog", () => {
       const mockOnSubmit = vi.fn();
       const mockOnClose = vi.fn();
       const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => vi.fn());
-      mockFetch.mockRejectedValueOnce(new Error("Test error"));
+
+      mockDeleteBoard.mockReturnValue({
+        unwrap: vi.fn().mockRejectedValue(new Error("Test error")),
+      });
 
       // Act
       render(<DeleteBoardDialog boardId="board-123" isVisible={true} onSubmit={mockOnSubmit} onClose={mockOnClose} />);
@@ -473,9 +370,9 @@ describe("DeleteBoardDialog", () => {
       const mockOnSubmit = vi.fn();
       const mockOnClose = vi.fn();
       const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => vi.fn());
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        text: async () => "Error message",
+
+      mockDeleteBoard.mockReturnValue({
+        unwrap: vi.fn().mockRejectedValue(new Error("Error message")),
       });
 
       // Act
@@ -509,7 +406,7 @@ describe("DeleteBoardDialog", () => {
       expect(mockOnClose).toHaveBeenCalledTimes(1);
     });
 
-    it("nie powinien wywołać fetch API przy kliknięciu Anuluj", async () => {
+    it("nie powinien wywołać deleteBoard mutation przy kliknięciu Anuluj", async () => {
       // Arrange
       const user = userEvent.setup();
       const mockOnSubmit = vi.fn();
@@ -521,7 +418,7 @@ describe("DeleteBoardDialog", () => {
       await user.click(screen.getByText("Anuluj"));
 
       // Assert
-      expect(mockFetch).not.toHaveBeenCalled();
+      expect(mockDeleteBoard).not.toHaveBeenCalled();
     });
 
     it("nie powinien wywołać onSubmit przy kliknięciu Anuluj", async () => {
@@ -646,7 +543,7 @@ describe("DeleteBoardDialog", () => {
       expect(mockOnClose).toHaveBeenCalled();
     });
 
-    it("nie powinien wywołać fetch API przy zamknięciu przez X", async () => {
+    it("nie powinien wywołać deleteBoard mutation przy zamknięciu przez X", async () => {
       // Arrange
       const user = userEvent.setup();
       const mockOnSubmit = vi.fn();
@@ -659,7 +556,7 @@ describe("DeleteBoardDialog", () => {
       await user.click(closeButton);
 
       // Assert
-      expect(mockFetch).not.toHaveBeenCalled();
+      expect(mockDeleteBoard).not.toHaveBeenCalled();
     });
   });
 
@@ -733,10 +630,6 @@ describe("DeleteBoardDialog", () => {
       const mockOnSubmit = vi.fn();
       const mockOnClose = vi.fn();
       const longBoardId = "a".repeat(500);
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        text: async () => "",
-      });
 
       // Act
       render(
@@ -747,7 +640,7 @@ describe("DeleteBoardDialog", () => {
 
       // Assert
       await waitFor(() => {
-        expect(mockFetch).toHaveBeenCalledWith(`/api/boards/${longBoardId}`, expect.any(Object));
+        expect(mockDeleteBoard).toHaveBeenCalledWith(longBoardId);
       });
     });
 
@@ -757,10 +650,6 @@ describe("DeleteBoardDialog", () => {
       const mockOnSubmit = vi.fn();
       const mockOnClose = vi.fn();
       const specialBoardId = "board-123!@#$%";
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        text: async () => "",
-      });
 
       // Act
       render(
@@ -771,7 +660,7 @@ describe("DeleteBoardDialog", () => {
 
       // Assert
       await waitFor(() => {
-        expect(mockFetch).toHaveBeenCalledWith(`/api/boards/${specialBoardId}`, expect.any(Object));
+        expect(mockDeleteBoard).toHaveBeenCalledWith(specialBoardId);
       });
     });
 
@@ -829,10 +718,6 @@ describe("DeleteBoardDialog", () => {
       const user = userEvent.setup();
       const mockOnSubmit = vi.fn();
       const mockOnClose = vi.fn();
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        text: async () => "",
-      });
 
       // Act
       render(<DeleteBoardDialog boardId="" isVisible={true} onSubmit={mockOnSubmit} onClose={mockOnClose} />);
@@ -841,79 +726,47 @@ describe("DeleteBoardDialog", () => {
 
       // Assert
       await waitFor(() => {
-        expect(mockFetch).toHaveBeenCalledWith("/api/boards/", expect.any(Object));
+        expect(mockDeleteBoard).toHaveBeenCalledWith("");
       });
     });
 
-    it("powinien obsłużyć szybkie kliknięcie OK wielokrotnie", async () => {
+    it("powinien obsłużyć szybkie kliknięcie OK wielokrotnie gdy loading", () => {
       // Arrange
-      const user = userEvent.setup();
       const mockOnSubmit = vi.fn();
       const mockOnClose = vi.fn();
-      mockFetch.mockImplementationOnce(
-        () =>
-          new Promise((resolve) =>
-            setTimeout(
-              () =>
-                resolve({
-                  ok: true,
-                  text: async () => "",
-                }),
-              100
-            )
-          )
-      );
+
+      // Mock loading state
+      vi.mocked(useDeleteBoardMutation).mockReturnValue([
+        mockDeleteBoard,
+        { isLoading: true, isError: false, isSuccess: false, isUninitialized: false },
+      ]);
 
       // Act
       render(<DeleteBoardDialog boardId="board-123" isVisible={true} onSubmit={mockOnSubmit} onClose={mockOnClose} />);
 
-      const okButton = screen.getByText("OK");
+      const okButton = screen.getByText("Usuwanie…");
 
-      // Pierwsze kliknięcie rozpoczyna operację
-      await user.click(okButton);
-
-      // Podczas ładowania przyciski są disabled - kolejne kliknięcia są blokowane przez disabled state
-      // userEvent automatycznie nie pozwoli kliknąć disabled przycisku
+      // Assert - przycisk disabled podczas ładowania
       expect(okButton).toBeDisabled();
-
-      // Assert - tylko jedno wywołanie fetch (ochrana przez loading state)
-      await waitFor(() => {
-        expect(mockFetch).toHaveBeenCalledTimes(1);
-        expect(mockOnClose).toHaveBeenCalled();
-      });
     });
 
-    it("powinien obsłużyć timeout przy długim request", async () => {
+    it("powinien wyświetlić stan loading gdy mutation jest w trakcie", () => {
       // Arrange
-      const user = userEvent.setup();
       const mockOnSubmit = vi.fn();
       const mockOnClose = vi.fn();
-      // Symuluj bardzo długie opóźnienie
-      mockFetch.mockImplementationOnce(
-        () =>
-          new Promise((resolve) =>
-            setTimeout(
-              () =>
-                resolve({
-                  ok: true,
-                  text: async () => "",
-                }),
-              5000
-            )
-          )
-      );
+
+      // Mock loading state
+      vi.mocked(useDeleteBoardMutation).mockReturnValue([
+        mockDeleteBoard,
+        { isLoading: true, isError: false, isSuccess: false, isUninitialized: false },
+      ]);
 
       // Act
       render(<DeleteBoardDialog boardId="board-123" isVisible={true} onSubmit={mockOnSubmit} onClose={mockOnClose} />);
-
-      await user.click(screen.getByText("OK"));
 
       // Assert - loading state
       expect(screen.getByText("Usuwanie…")).toBeInTheDocument();
-
-      // Cleanup mock timers
-      vi.clearAllTimers();
-    }, 10000); // Zwiększony timeout dla tego testu
+    });
   });
 
   describe("Integracja z Dialog component", () => {
@@ -962,10 +815,6 @@ describe("DeleteBoardDialog", () => {
       const callOrder: string[] = [];
       const mockOnSubmit = vi.fn(() => callOrder.push("onSubmit"));
       const mockOnClose = vi.fn(() => callOrder.push("onClose"));
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        text: async () => "",
-      });
 
       // Act
       render(<DeleteBoardDialog boardId="board-123" isVisible={true} onSubmit={mockOnSubmit} onClose={mockOnClose} />);
@@ -978,15 +827,15 @@ describe("DeleteBoardDialog", () => {
       });
     });
 
-    it("przy błędzie API nie powinien wywołać onSubmit, ale powinien wywołać onClose", async () => {
+    it("przy błędzie mutation nie powinien wywołać onSubmit, ale powinien wywołać onClose", async () => {
       // Arrange
       const user = userEvent.setup();
       const mockOnSubmit = vi.fn();
       const mockOnClose = vi.fn();
       const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => vi.fn());
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        text: async () => "Error",
+
+      mockDeleteBoard.mockReturnValue({
+        unwrap: vi.fn().mockRejectedValue(new Error("Error")),
       });
 
       // Act

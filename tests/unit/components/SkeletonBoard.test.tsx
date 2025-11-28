@@ -7,25 +7,23 @@ import SkeletonBoard from "@/components/ui/Game/SkeletonBoard";
  *
  * Testowane funkcjonalności:
  * - Renderowanie odpowiedniej liczby skeleton cards
- * - Dynamiczne obliczanie liczby kolumn grid (Math.sqrt)
- * - Stylowanie kontenera (grid, gap-4, flex-1, animate-pulse)
- * - Inline styles dla gridTemplateColumns
- * - Stylowanie pojedynczych skeleton cards (h-24, bg-neutral-200, rounded-md)
+ * - Flex wrap layout dla responsywności
+ * - Stylowanie kontenera (flex, flex-wrap, animate-pulse)
+ * - Stylowanie pojedynczych skeleton cards (w-[250px], h-[200px], bg-neutral-200, rounded-md)
  * - Edge cases (różne liczby kart: 4, 9, 16, 25, 36)
- * - Accessibility (lista semantyczna)
  * - Performance (klucze w iteracji)
  */
 
 describe("SkeletonBoard", () => {
   describe("Renderowanie i struktura DOM", () => {
-    it("powinien wyrenderować listę <ul>", () => {
+    it("powinien wyrenderować kontener zewnętrzny", () => {
       // Act
       const { container } = render(<SkeletonBoard cardCount={4} />);
 
       // Assert
-      const list = container.querySelector("ul");
-      expect(list).toBeInTheDocument();
-      expect(list?.tagName).toBe("UL");
+      const outerContainer = container.querySelector("div.flex.flex-wrap");
+      expect(outerContainer).toBeInTheDocument();
+      expect(outerContainer?.tagName).toBe("DIV");
     });
 
     it("powinien wyrenderować odpowiednią liczbę skeleton cards", () => {
@@ -36,7 +34,7 @@ describe("SkeletonBoard", () => {
       const { container } = render(<SkeletonBoard cardCount={cardCount} />);
 
       // Assert
-      const skeletonCards = container.querySelectorAll("li");
+      const skeletonCards = container.querySelectorAll("div.bg-neutral-200");
       expect(skeletonCards).toHaveLength(cardCount);
     });
 
@@ -45,7 +43,7 @@ describe("SkeletonBoard", () => {
       const { container } = render(<SkeletonBoard cardCount={4} />);
 
       // Assert
-      const skeletonCards = container.querySelectorAll("li");
+      const skeletonCards = container.querySelectorAll("div.bg-neutral-200");
       expect(skeletonCards).toHaveLength(4);
     });
 
@@ -54,7 +52,7 @@ describe("SkeletonBoard", () => {
       const { container } = render(<SkeletonBoard cardCount={9} />);
 
       // Assert
-      const skeletonCards = container.querySelectorAll("li");
+      const skeletonCards = container.querySelectorAll("div.bg-neutral-200");
       expect(skeletonCards).toHaveLength(9);
     });
 
@@ -63,11 +61,11 @@ describe("SkeletonBoard", () => {
       const { container } = render(<SkeletonBoard cardCount={25} />);
 
       // Assert
-      const skeletonCards = container.querySelectorAll("li");
+      const skeletonCards = container.querySelectorAll("div.bg-neutral-200");
       expect(skeletonCards).toHaveLength(25);
     });
 
-    it("powinien mieć unikalny key dla każdego elementu listy", () => {
+    it("powinien mieć unikalny key dla każdego elementu", () => {
       // Arrange
       const cardCount = 9;
 
@@ -75,161 +73,156 @@ describe("SkeletonBoard", () => {
       const { container } = render(<SkeletonBoard cardCount={cardCount} />);
 
       // Assert
-      const skeletonCards = container.querySelectorAll("li");
-      const keys = Array.from(skeletonCards).map((card, idx) => card.getAttribute("key") || idx);
-      const uniqueKeys = new Set(keys);
-      expect(uniqueKeys.size).toBe(cardCount);
+      const skeletonCards = container.querySelectorAll("div.bg-neutral-200");
+      expect(skeletonCards.length).toBe(cardCount);
     });
   });
 
-  describe("Dynamiczny Grid Layout", () => {
-    it("powinien ustawić gridTemplateColumns na 2 kolumny dla 4 kart", () => {
-      // Arrange
-      const cardCount = 4;
-      const expectedColumns = Math.sqrt(cardCount); // 2
-
+  describe("Flex Wrap Layout", () => {
+    it("powinien używać flex layout na kontenerze zewnętrznym", () => {
       // Act
-      const { container } = render(<SkeletonBoard cardCount={cardCount} />);
+      const { container } = render(<SkeletonBoard cardCount={4} />);
 
       // Assert
-      const list = container.querySelector("ul");
-      expect(list).toHaveStyle({
-        gridTemplateColumns: `repeat(${expectedColumns}, minmax(0, 1fr))`,
+      const outerContainer = container.firstChild as HTMLElement;
+      expect(outerContainer).toHaveClass("flex", "flex-wrap");
+    });
+
+    it("powinien używać flex layout na kontenerze wewnętrznym z kartami", () => {
+      // Act
+      const { container } = render(<SkeletonBoard cardCount={9} />);
+
+      // Assert
+      const innerContainer = container.querySelector("div.animate-pulse");
+      expect(innerContainer).toHaveClass("flex", "flex-wrap");
+    });
+
+    it("kontener wewnętrzny powinien mieć justify-center dla wyśrodkowania kart", () => {
+      // Act
+      const { container } = render(<SkeletonBoard cardCount={16} />);
+
+      // Assert
+      const innerContainer = container.querySelector("div.animate-pulse");
+      expect(innerContainer).toHaveClass("justify-center");
+    });
+
+    it("kontener wewnętrzny powinien mieć mx-auto dla centrowania", () => {
+      // Act
+      const { container } = render(<SkeletonBoard cardCount={25} />);
+
+      // Assert
+      const innerContainer = container.querySelector("div.animate-pulse");
+      expect(innerContainer).toHaveClass("mx-auto");
+    });
+
+    it("karty powinny mieć stałą szerokość w-[250px]", () => {
+      // Act
+      const { container } = render(<SkeletonBoard cardCount={4} />);
+
+      // Assert
+      const cards = container.querySelectorAll("div.bg-neutral-200");
+      cards.forEach((card) => {
+        expect(card).toHaveClass("w-[250px]");
       });
     });
 
-    it("powinien ustawić gridTemplateColumns na 3 kolumny dla 9 kart", () => {
-      // Arrange
-      const cardCount = 9;
-      const expectedColumns = Math.sqrt(cardCount); // 3
-
+    it("karty powinny mieć marginesy mx-2 i mb-6 dla odstępów", () => {
       // Act
-      const { container } = render(<SkeletonBoard cardCount={cardCount} />);
+      const { container } = render(<SkeletonBoard cardCount={9} />);
 
       // Assert
-      const list = container.querySelector("ul");
-      expect(list).toHaveStyle({
-        gridTemplateColumns: `repeat(${expectedColumns}, minmax(0, 1fr))`,
-      });
-    });
-
-    it("powinien ustawić gridTemplateColumns na 4 kolumny dla 16 kart", () => {
-      // Arrange
-      const cardCount = 16;
-      const expectedColumns = Math.sqrt(cardCount); // 4
-
-      // Act
-      const { container } = render(<SkeletonBoard cardCount={cardCount} />);
-
-      // Assert
-      const list = container.querySelector("ul");
-      expect(list).toHaveStyle({
-        gridTemplateColumns: `repeat(${expectedColumns}, minmax(0, 1fr))`,
-      });
-    });
-
-    it("powinien ustawić gridTemplateColumns na 5 kolumn dla 25 kart", () => {
-      // Arrange
-      const cardCount = 25;
-      const expectedColumns = Math.sqrt(cardCount); // 5
-
-      // Act
-      const { container } = render(<SkeletonBoard cardCount={cardCount} />);
-
-      // Assert
-      const list = container.querySelector("ul");
-      expect(list).toHaveStyle({
-        gridTemplateColumns: `repeat(${expectedColumns}, minmax(0, 1fr))`,
-      });
-    });
-
-    it("powinien ustawić gridTemplateColumns na 6 kolumn dla 36 kart", () => {
-      // Arrange
-      const cardCount = 36;
-      const expectedColumns = Math.sqrt(cardCount); // 6
-
-      // Act
-      const { container } = render(<SkeletonBoard cardCount={cardCount} />);
-
-      // Assert
-      const list = container.querySelector("ul");
-      expect(list).toHaveStyle({
-        gridTemplateColumns: `repeat(${expectedColumns}, minmax(0, 1fr))`,
-      });
-    });
-
-    it("powinien poprawnie obliczyć kolumny dla nieidealnego kwadratu (12 kart)", () => {
-      // Arrange
-      const cardCount = 12;
-      const expectedColumns = Math.sqrt(cardCount); // ~3.46
-
-      // Act
-      const { container } = render(<SkeletonBoard cardCount={cardCount} />);
-
-      // Assert
-      const list = container.querySelector("ul");
-      expect(list).toHaveStyle({
-        gridTemplateColumns: `repeat(${expectedColumns}, minmax(0, 1fr))`,
+      const cards = container.querySelectorAll("div.bg-neutral-200");
+      cards.forEach((card) => {
+        expect(card).toHaveClass("mx-2", "mb-6");
       });
     });
   });
 
   describe("Stylowanie kontenera", () => {
-    it("powinien mieć klasę 'grid'", () => {
+    it("kontener zewnętrzny powinien mieć klasę 'flex' i 'flex-wrap'", () => {
       // Act
       const { container } = render(<SkeletonBoard cardCount={4} />);
 
       // Assert
-      const list = container.querySelector("ul");
-      expect(list).toHaveClass("grid");
+      const outerContainer = container.firstChild as HTMLElement;
+      expect(outerContainer).toHaveClass("flex", "flex-wrap");
     });
 
-    it("powinien mieć klasę 'gap-4' (odstęp między elementami)", () => {
+    it("kontener zewnętrzny powinien mieć klasę 'bg-secondary'", () => {
       // Act
       const { container } = render(<SkeletonBoard cardCount={4} />);
 
       // Assert
-      const list = container.querySelector("ul");
-      expect(list).toHaveClass("gap-4");
+      const outerContainer = container.firstChild as HTMLElement;
+      expect(outerContainer).toHaveClass("bg-secondary");
     });
 
-    it("powinien mieć klasę 'flex-1' (rozciągnięcie na całą przestrzeń)", () => {
+    it("kontener zewnętrzny powinien mieć padding p-[32px]", () => {
       // Act
       const { container } = render(<SkeletonBoard cardCount={4} />);
 
       // Assert
-      const list = container.querySelector("ul");
-      expect(list).toHaveClass("flex-1");
+      const outerContainer = container.firstChild as HTMLElement;
+      expect(outerContainer).toHaveClass("p-[32px]");
     });
 
-    it("powinien mieć klasę 'animate-pulse' (animacja ładowania)", () => {
+    it("kontener zewnętrzny powinien mieć min-h-[80vh]", () => {
       // Act
       const { container } = render(<SkeletonBoard cardCount={4} />);
 
       // Assert
-      const list = container.querySelector("ul");
-      expect(list).toHaveClass("animate-pulse");
+      const outerContainer = container.firstChild as HTMLElement;
+      expect(outerContainer).toHaveClass("min-h-[80vh]");
     });
 
-    it("powinien mieć wszystkie wymagane klasy równocześnie", () => {
+    it("kontener wewnętrzny powinien mieć klasę 'animate-pulse' (animacja ładowania)", () => {
       // Act
       const { container } = render(<SkeletonBoard cardCount={4} />);
 
       // Assert
-      const list = container.querySelector("ul");
-      expect(list).toHaveClass("grid", "gap-4", "flex-1", "animate-pulse");
+      const innerContainer = container.querySelector("div.animate-pulse");
+      expect(innerContainer).toBeInTheDocument();
+      expect(innerContainer).toHaveClass("animate-pulse");
+    });
+
+    it("kontener zewnętrzny powinien mieć wszystkie wymagane klasy równocześnie", () => {
+      // Act
+      const { container } = render(<SkeletonBoard cardCount={4} />);
+
+      // Assert
+      const outerContainer = container.firstChild as HTMLElement;
+      expect(outerContainer).toHaveClass(
+        "flex",
+        "flex-wrap",
+        "bg-secondary",
+        "w-full",
+        "p-[32px]",
+        "min-h-[80vh]",
+        "relative"
+      );
     });
   });
 
   describe("Stylowanie skeleton cards", () => {
-    it("każda skeleton card powinna mieć klasę 'h-24' (wysokość)", () => {
+    it("każda skeleton card powinna mieć klasę 'h-[200px]' (wysokość)", () => {
       // Act
       const { container } = render(<SkeletonBoard cardCount={4} />);
 
       // Assert
-      const skeletonCards = container.querySelectorAll("li");
+      const skeletonCards = container.querySelectorAll("div.bg-neutral-200");
       skeletonCards.forEach((card) => {
-        expect(card).toHaveClass("h-24");
+        expect(card).toHaveClass("h-[200px]");
+      });
+    });
+
+    it("każda skeleton card powinna mieć klasę 'w-[250px]' (szerokość)", () => {
+      // Act
+      const { container } = render(<SkeletonBoard cardCount={4} />);
+
+      // Assert
+      const skeletonCards = container.querySelectorAll("div.bg-neutral-200");
+      skeletonCards.forEach((card) => {
+        expect(card).toHaveClass("w-[250px]");
       });
     });
 
@@ -238,7 +231,7 @@ describe("SkeletonBoard", () => {
       const { container } = render(<SkeletonBoard cardCount={4} />);
 
       // Assert
-      const skeletonCards = container.querySelectorAll("li");
+      const skeletonCards = container.querySelectorAll("div.bg-neutral-200");
       skeletonCards.forEach((card) => {
         expect(card).toHaveClass("bg-neutral-200");
       });
@@ -249,9 +242,20 @@ describe("SkeletonBoard", () => {
       const { container } = render(<SkeletonBoard cardCount={4} />);
 
       // Assert
-      const skeletonCards = container.querySelectorAll("li");
+      const skeletonCards = container.querySelectorAll("div.bg-neutral-200");
       skeletonCards.forEach((card) => {
         expect(card).toHaveClass("rounded-md");
+      });
+    });
+
+    it("każda skeleton card powinna mieć border", () => {
+      // Act
+      const { container } = render(<SkeletonBoard cardCount={4} />);
+
+      // Assert
+      const skeletonCards = container.querySelectorAll("div.bg-neutral-200");
+      skeletonCards.forEach((card) => {
+        expect(card).toHaveClass("border", "border-neutral-300");
       });
     });
 
@@ -260,9 +264,18 @@ describe("SkeletonBoard", () => {
       const { container } = render(<SkeletonBoard cardCount={9} />);
 
       // Assert
-      const skeletonCards = container.querySelectorAll("li");
+      const skeletonCards = container.querySelectorAll("div.bg-neutral-200");
       skeletonCards.forEach((card) => {
-        expect(card).toHaveClass("h-24", "bg-neutral-200", "rounded-md");
+        expect(card).toHaveClass(
+          "mb-6",
+          "mx-2",
+          "bg-neutral-200",
+          "w-[250px]",
+          "h-[200px]",
+          "rounded-md",
+          "border",
+          "border-neutral-300"
+        );
       });
     });
 
@@ -271,18 +284,18 @@ describe("SkeletonBoard", () => {
       const { container } = render(<SkeletonBoard cardCount={4} />);
 
       // Assert
-      const skeletonCards = container.querySelectorAll("li");
+      const skeletonCards = container.querySelectorAll("div.bg-neutral-200");
       skeletonCards.forEach((card) => {
         expect(card.textContent).toBe("");
       });
     });
 
-    it("skeleton cards powinny być pustymi elementami li", () => {
+    it("skeleton cards powinny być pustymi elementami div", () => {
       // Act
       const { container } = render(<SkeletonBoard cardCount={4} />);
 
       // Assert
-      const skeletonCards = container.querySelectorAll("li");
+      const skeletonCards = container.querySelectorAll("div.bg-neutral-200");
       skeletonCards.forEach((card) => {
         expect(card.children).toHaveLength(0);
       });
@@ -295,13 +308,12 @@ describe("SkeletonBoard", () => {
       const { container } = render(<SkeletonBoard cardCount={1} />);
 
       // Assert
-      const skeletonCards = container.querySelectorAll("li");
+      const skeletonCards = container.querySelectorAll("div.bg-neutral-200");
       expect(skeletonCards).toHaveLength(1);
 
-      const list = container.querySelector("ul");
-      expect(list).toHaveStyle({
-        gridTemplateColumns: `repeat(${Math.sqrt(1)}, minmax(0, 1fr))`,
-      });
+      const innerContainer = container.querySelector("div.animate-pulse");
+      expect(innerContainer).toBeInTheDocument();
+      expect(innerContainer).toHaveClass("flex", "flex-wrap");
     });
 
     it("powinien obsłużyć zero kart (cardCount=0)", () => {
@@ -309,12 +321,12 @@ describe("SkeletonBoard", () => {
       const { container } = render(<SkeletonBoard cardCount={0} />);
 
       // Assert
-      const skeletonCards = container.querySelectorAll("li");
+      const skeletonCards = container.querySelectorAll("div.bg-neutral-200");
       expect(skeletonCards).toHaveLength(0);
 
-      const list = container.querySelector("ul");
-      expect(list).toBeInTheDocument();
-      expect(list).toHaveClass("grid", "gap-4", "flex-1", "animate-pulse");
+      const innerContainer = container.querySelector("div.animate-pulse");
+      expect(innerContainer).toBeInTheDocument();
+      expect(innerContainer).toHaveClass("flex", "flex-wrap", "animate-pulse");
     });
 
     it("powinien obsłużyć dużą liczbę kart (cardCount=100)", () => {
@@ -322,73 +334,64 @@ describe("SkeletonBoard", () => {
       const { container } = render(<SkeletonBoard cardCount={100} />);
 
       // Assert
-      const skeletonCards = container.querySelectorAll("li");
+      const skeletonCards = container.querySelectorAll("div.bg-neutral-200");
       expect(skeletonCards).toHaveLength(100);
 
-      const list = container.querySelector("ul");
-      expect(list).toHaveStyle({
-        gridTemplateColumns: `repeat(${Math.sqrt(100)}, minmax(0, 1fr))`,
-      });
+      const innerContainer = container.querySelector("div.animate-pulse");
+      expect(innerContainer).toHaveClass("flex", "flex-wrap");
     });
 
     it("powinien obsłużyć liczbę niebędącą idealnym kwadratem (cardCount=7)", () => {
       // Arrange
       const cardCount = 7;
-      const expectedColumns = Math.sqrt(cardCount); // ~2.65
 
       // Act
       const { container } = render(<SkeletonBoard cardCount={cardCount} />);
 
       // Assert
-      const skeletonCards = container.querySelectorAll("li");
+      const skeletonCards = container.querySelectorAll("div.bg-neutral-200");
       expect(skeletonCards).toHaveLength(cardCount);
 
-      const list = container.querySelector("ul");
-      expect(list).toHaveStyle({
-        gridTemplateColumns: `repeat(${expectedColumns}, minmax(0, 1fr))`,
-      });
+      const innerContainer = container.querySelector("div.animate-pulse");
+      expect(innerContainer).toHaveClass("flex", "flex-wrap");
     });
 
     it("powinien obsłużyć liczbę pierwszą (cardCount=13)", () => {
       // Arrange
       const cardCount = 13;
-      const expectedColumns = Math.sqrt(cardCount); // ~3.61
 
       // Act
       const { container } = render(<SkeletonBoard cardCount={cardCount} />);
 
       // Assert
-      const skeletonCards = container.querySelectorAll("li");
+      const skeletonCards = container.querySelectorAll("div.bg-neutral-200");
       expect(skeletonCards).toHaveLength(cardCount);
 
-      const list = container.querySelector("ul");
-      expect(list).toHaveStyle({
-        gridTemplateColumns: `repeat(${expectedColumns}, minmax(0, 1fr))`,
-      });
+      const innerContainer = container.querySelector("div.animate-pulse");
+      expect(innerContainer).toHaveClass("flex", "flex-wrap");
     });
   });
 
-  describe("Accessibility", () => {
-    it("powinien używać semantycznego elementu <ul>", () => {
+  describe("Struktura komponentu", () => {
+    it("powinien używać elementu <div> jako kontenera", () => {
       // Act
       const { container } = render(<SkeletonBoard cardCount={4} />);
 
       // Assert
-      const list = container.querySelector("ul");
-      expect(list).toBeInTheDocument();
-      expect(list?.tagName).toBe("UL");
+      const outerContainer = container.firstChild as HTMLElement;
+      expect(outerContainer).toBeInTheDocument();
+      expect(outerContainer?.tagName).toBe("DIV");
     });
 
-    it("elementy listy powinny być semantycznymi <li>", () => {
+    it("elementy kart powinny być elementami <div>", () => {
       // Act
       const { container } = render(<SkeletonBoard cardCount={4} />);
 
       // Assert
-      const list = container.querySelector("ul");
-      const listItems = list?.querySelectorAll(":scope > li");
-      expect(listItems).toHaveLength(4);
-      listItems?.forEach((item) => {
-        expect(item.tagName).toBe("LI");
+      const cards = container.querySelectorAll("div.bg-neutral-200");
+      expect(cards).toHaveLength(4);
+      cards?.forEach((item) => {
+        expect(item.tagName).toBe("DIV");
       });
     });
 
@@ -397,8 +400,8 @@ describe("SkeletonBoard", () => {
       const { container } = render(<SkeletonBoard cardCount={4} />);
 
       // Assert
-      const list = container.querySelector("ul");
-      expect(list).not.toHaveAttribute("aria-hidden");
+      const outerContainer = container.firstChild as HTMLElement;
+      expect(outerContainer).not.toHaveAttribute("aria-hidden");
     });
   });
 
@@ -421,52 +424,51 @@ describe("SkeletonBoard", () => {
       const { container } = render(<SkeletonBoard cardCount={4} />);
 
       // Assert
-      const list = container.querySelector("ul");
-      const directChildren = list?.children;
-      expect(directChildren?.length).toBe(4); // Tylko bezpośrednie <li>, bez wrapper'ów
+      const innerContainer = container.querySelector("div.animate-pulse");
+      const directChildren = innerContainer?.children;
+      expect(directChildren?.length).toBe(4); // Tylko bezpośrednie div'y kart, bez wrapper'ów
     });
 
-    it("każdy element <li> powinien być pustym elementem (brak dzieci)", () => {
+    it("każdy element karty powinien być pustym elementem (brak dzieci)", () => {
       // Act
       const { container } = render(<SkeletonBoard cardCount={4} />);
 
       // Assert
-      const listItems = container.querySelectorAll("li");
-      listItems.forEach((item) => {
+      const cards = container.querySelectorAll("div.bg-neutral-200");
+      cards.forEach((item) => {
         expect(item.children.length).toBe(0);
       });
     });
   });
 
   describe("Integracja z layout'em gry", () => {
-    it("powinien zachować spójność z rzeczywistymi kartami gry (grid layout)", () => {
+    it("powinien zachować spójność z rzeczywistymi kartami gry (flex layout)", () => {
       // Act
       const { container } = render(<SkeletonBoard cardCount={16} />);
 
       // Assert
-      const list = container.querySelector("ul");
-      expect(list).toHaveClass("grid");
-      expect(list).toHaveStyle({
-        gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
-      });
+      const innerContainer = container.querySelector("div.animate-pulse");
+      expect(innerContainer).toHaveClass("flex", "flex-wrap");
     });
 
-    it("powinien mieć gap-4 zgodny z rzeczywistą siatką gry", () => {
+    it("karty powinny mieć stałe wymiary w-[250px] h-[200px]", () => {
       // Act
       const { container } = render(<SkeletonBoard cardCount={9} />);
 
       // Assert
-      const list = container.querySelector("ul");
-      expect(list).toHaveClass("gap-4");
+      const cards = container.querySelectorAll("div.bg-neutral-200");
+      cards.forEach((card) => {
+        expect(card).toHaveClass("w-[250px]", "h-[200px]");
+      });
     });
 
-    it("flex-1 powinien pozwolić na rozciągnięcie w kontenerze flex", () => {
+    it("kontener zewnętrzny powinien mieć w-full dla pełnej szerokości", () => {
       // Act
       const { container } = render(<SkeletonBoard cardCount={4} />);
 
       // Assert
-      const list = container.querySelector("ul");
-      expect(list).toHaveClass("flex-1");
+      const outerContainer = container.firstChild as HTMLElement;
+      expect(outerContainer).toHaveClass("w-full");
     });
   });
 
@@ -476,20 +478,20 @@ describe("SkeletonBoard", () => {
       const { container } = render(<SkeletonBoard cardCount={4} />);
 
       // Assert
-      const list = container.querySelector("ul");
-      expect(list).toHaveClass("animate-pulse");
+      const innerContainer = container.querySelector("div.animate-pulse");
+      expect(innerContainer).toHaveClass("animate-pulse");
     });
 
-    it("animacja pulse powinna być na kontenerze, nie na pojedynczych kartach", () => {
+    it("animacja pulse powinna być na kontenerze wewnętrznym, nie na pojedynczych kartach", () => {
       // Act
       const { container } = render(<SkeletonBoard cardCount={4} />);
 
       // Assert
-      const list = container.querySelector("ul");
-      const listItems = container.querySelectorAll("li");
+      const innerContainer = container.querySelector("div.animate-pulse");
+      const cards = container.querySelectorAll("div.bg-neutral-200");
 
-      expect(list).toHaveClass("animate-pulse");
-      listItems.forEach((item) => {
+      expect(innerContainer).toHaveClass("animate-pulse");
+      cards.forEach((item) => {
         expect(item).not.toHaveClass("animate-pulse");
       });
     });
@@ -499,8 +501,8 @@ describe("SkeletonBoard", () => {
       const { container } = render(<SkeletonBoard cardCount={4} />);
 
       // Assert
-      const listItems = container.querySelectorAll("li");
-      listItems.forEach((item) => {
+      const cards = container.querySelectorAll("div.bg-neutral-200");
+      cards.forEach((item) => {
         expect(item).toHaveClass("bg-neutral-200");
       });
     });
@@ -524,7 +526,7 @@ describe("SkeletonBoard", () => {
       // Act & Assert
       typicalSizes.forEach((size) => {
         const { container } = render(<SkeletonBoard cardCount={size} />);
-        const skeletonCards = container.querySelectorAll("li");
+        const skeletonCards = container.querySelectorAll("div.bg-neutral-200");
         expect(skeletonCards).toHaveLength(size);
       });
     });

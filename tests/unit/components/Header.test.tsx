@@ -103,7 +103,7 @@ describe("Header", () => {
       expect(header).toHaveClass("z-[1]");
     });
 
-    it("powinien mieć ustawione transition classes", () => {
+    it("nie powinien mieć transition classes (usunięte dla breadcrumbs)", () => {
       // Arrange
       vi.mocked(useSidebar).mockReturnValue({
         collapsed: false,
@@ -116,8 +116,8 @@ describe("Header", () => {
 
       // Assert
       const header = screen.getByRole("banner");
-      expect(header).toHaveClass("transition-all");
-      expect(header).toHaveClass("duration-200");
+      expect(header).not.toHaveClass("transition-all");
+      expect(header).not.toHaveClass("duration-200");
     });
   });
 

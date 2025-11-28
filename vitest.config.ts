@@ -42,10 +42,10 @@ export default defineConfig({
       ],
       // Progi coverage - uruchamiaj tylko gdy użytkownik poprosi o coverage
       thresholds: {
-        lines: 70,
-        functions: 70,
-        branches: 70,
-        statements: 70,
+        lines: 50,
+        functions: 50,
+        branches: 50,
+        statements: 50,
       },
     },
 

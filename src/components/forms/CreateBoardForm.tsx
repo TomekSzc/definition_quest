@@ -6,6 +6,7 @@ import { CreateBoardSchema } from "@/lib/validation/boards";
 import { Button } from "@/components/ui/Button";
 import TagsInput from "../ui/TagsInput";
 import CardCountToggle from "../ui/ToggleGroup/CardCountToggle";
+import BoardVisibilityToggle from "../ui/ToggleGroup/BoardVisibilityToggle";
 import { useToast } from "@/store/hooks";
 import { Routes } from "@/lib/routes";
 import PairForm from "./PairForm";
@@ -102,6 +103,9 @@ const CreateBoardForm = forwardRef<CreateBoardFormHandle, ICreateBoardForm>(({ s
 
       {/* Card Count Toggle */}
       <Controller control={control} name="cardCount" render={({ field }) => <CardCountToggle {...field} />} />
+
+      {/* Board Visibility Toggle */}
+      <Controller control={control} name="isPublic" render={({ field }) => <BoardVisibilityToggle {...field} />} />
 
       {/* Pairs Field Array */}
       <div className="space-y-4">
