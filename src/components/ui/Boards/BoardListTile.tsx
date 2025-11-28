@@ -6,6 +6,7 @@ import Chip from "../Chip";
 import type { RootState } from "@/store";
 import { useState } from "react";
 import { DeleteBoardDialog } from "./DeleteBoardDialog";
+import { useTime } from "@/hooks/useTime";
 
 interface IBoardListTileProps {
   board: BoardSummaryDTO;
@@ -16,6 +17,7 @@ export const BoardListTile: FC<IBoardListTileProps> = ({ board }) => {
   const authUserId = useAppSelector((s: RootState) => s.auth.user?.id);
   const canManage = authUserId && authUserId === board.ownerId;
   const [showDelete, setShowDelete] = useState(false);
+  const { msToMin } = useTime();
   return (
     <a
       href={href}
@@ -76,7 +78,7 @@ export const BoardListTile: FC<IBoardListTileProps> = ({ board }) => {
           {board?.lastTime && (
             <div className="text-sm text-gray-500 flex flex-col lowercase">
               <span>Last score</span>
-              <span>{board.lastTime}ms</span>
+              <span>{msToMin(board.lastTime)} min</span>
             </div>
           )}
           <EditIcon
