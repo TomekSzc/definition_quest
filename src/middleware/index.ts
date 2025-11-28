@@ -13,6 +13,7 @@ const PUBLIC_ENDPOINTS = [
   "/api/auth/forgot-password",
   "/api/auth/reset-password",
   "/api/auth/refresh-token",
+  "api/auth/exchange-code",
 ];
 
 /**
