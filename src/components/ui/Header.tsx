@@ -15,14 +15,14 @@ interface HeaderProps {
  */
 export const Header: FC<HeaderProps> = ({ className }) => {
   const { collapsed } = useSidebar();
-  // Determine title based on current pathname
 
-  const leftPadding = collapsed ? "pl-13" : "pl-72"; // +4rem for safety (header internal px-6)
+  const leftPadding = collapsed ? "pl-13" : "pl-72";
   const breadCrumbsVisible = !collapsed ? "hidden md:block" : "block";
+
   return (
     <header
       className={clsx(
-        "w-full z-[1] fixed top-0 h-[60px] flex items-center px-6 shadow-md bg-[var(--color-primary)] transition-all duration-200",
+        "w-full z-[1] fixed top-0 h-[60px] flex items-center px-6 shadow-md bg-[var(--color-primary)]",
         leftPadding,
         className
       )}
