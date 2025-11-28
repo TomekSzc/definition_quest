@@ -43,6 +43,8 @@ export type ForgotPasswordInput = z.infer<typeof ForgotPasswordSchema>;
  * Reset password using the token from email link
  */
 export const ResetPasswordSchema = z.object({
+  accessToken: z.string().min(1, "Access token is required"),
+  refreshToken: z.string().min(1, "Refresh token is required"),
   newPassword: z.string().min(6, "Password must be at least 6 characters"),
 });
 
@@ -57,14 +59,3 @@ export const RefreshTokenSchema = z.object({
 });
 
 export type RefreshTokenInput = z.infer<typeof RefreshTokenSchema>;
-
-/**
- * POST /api/auth/exchange-code
- * Exchange tokens from password reset email for session
- */
-export const ExchangeCodeSchema = z.object({
-  accessToken: z.string().min(1, "Access token is required"),
-  refreshToken: z.string().min(1, "Refresh token is required"),
-});
-
-export type ExchangeCodeInput = z.infer<typeof ExchangeCodeSchema>;
