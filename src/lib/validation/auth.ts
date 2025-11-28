@@ -57,3 +57,14 @@ export const RefreshTokenSchema = z.object({
 });
 
 export type RefreshTokenInput = z.infer<typeof RefreshTokenSchema>;
+
+/**
+ * POST /api/auth/exchange-code
+ * Exchange tokens from password reset email for session
+ */
+export const ExchangeCodeSchema = z.object({
+  accessToken: z.string().min(1, "Access token is required"),
+  refreshToken: z.string().min(1, "Refresh token is required"),
+});
+
+export type ExchangeCodeInput = z.infer<typeof ExchangeCodeSchema>;
