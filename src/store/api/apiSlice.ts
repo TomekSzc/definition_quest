@@ -5,6 +5,7 @@ import type {
   SignUpRequest,
   RefreshTokenRequest,
   ForgotPasswordRequest,
+  ExchangeCodeRequest,
   BoardSummaryDTO,
   PlayedBoardDTO,
   Paged,
@@ -189,6 +190,23 @@ export const apiSlice = createApi({
         }
       },
     }),
+    exchangeCode: builder.mutation<{ message: string }, ExchangeCodeRequest>({
+      query: (body) => ({
+        url: "/api/auth/exchange-code",
+        method: "POST",
+        body,
+      }),
+      async onQueryStarted(_, { dispatch, queryFulfilled }) {
+        try {
+          await queryFulfilled;
+        } catch (err: unknown) {
+          const errorMessage =
+            (err as { error?: { data?: { error?: string } } }).error?.data?.error ??
+            "Link resetujący jest nieprawidłowy lub wygasł.";
+          dispatch(showToast({ type: "error", title: "Błąd", message: errorMessage }));
+        }
+      },
+    }),
     resetPassword: builder.mutation<{ message: string }, { newPassword: string }>({
       query: (body) => ({
         url: "/api/auth/reset-password",
@@ -333,6 +351,7 @@ export const {
   useLogoutMutation,
   useGetBoardsQuery,
   useForgotPasswordMutation,
+  useExchangeCodeMutation,
   useResetPasswordMutation,
   useListPublicBoardsQuery,
   useLazyListPublicBoardsQuery,

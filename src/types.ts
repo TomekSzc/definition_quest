@@ -232,6 +232,11 @@ export interface RefreshTokenRequest {
   refreshToken: string;
 }
 
+export interface ExchangeCodeRequest {
+  accessToken: string;
+  refreshToken: string;
+}
+
 export interface AuthUserDTO {
   id: string;
   email: string;
