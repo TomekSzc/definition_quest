@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { DeleteBoardDialog } from "@/components/ui/Boards/DeleteBoardDialog";
+import type { MutationTrigger } from "@reduxjs/toolkit/query/react";
 
 /**
  * Testy jednostkowe dla komponentu DeleteBoardDialog
@@ -20,7 +21,8 @@ import { DeleteBoardDialog } from "@/components/ui/Boards/DeleteBoardDialog";
  */
 
 // Mock dla RTK Query hook
-const mockDeleteBoard = vi.fn();
+type MockDeleteBoard = MutationTrigger<unknown, string, never> & ReturnType<typeof vi.fn>;
+const mockDeleteBoard = vi.fn() as unknown as MockDeleteBoard;
 let mockIsLoading = false;
 
 vi.mock("@/store/api/apiSlice", () => ({
@@ -34,13 +36,13 @@ describe("DeleteBoardDialog", () => {
   beforeEach(() => {
     mockDeleteBoard.mockClear();
     mockIsLoading = false;
-    
+
     // Setup default mock implementation
     vi.mocked(useDeleteBoardMutation).mockReturnValue([
-      mockDeleteBoard as any,
-      { isLoading: mockIsLoading } as any,
+      mockDeleteBoard,
+      { isLoading: mockIsLoading, isError: false, isSuccess: false, isUninitialized: true },
     ]);
-    
+
     // Setup mockDeleteBoard to return a Promise with unwrap
     mockDeleteBoard.mockReturnValue({
       unwrap: vi.fn().mockResolvedValue({}),
@@ -205,12 +207,12 @@ describe("DeleteBoardDialog", () => {
       const user = userEvent.setup();
       const mockOnSubmit = vi.fn();
       const mockOnClose = vi.fn();
-      
+
       // Mock loading state
       mockIsLoading = true;
       vi.mocked(useDeleteBoardMutation).mockReturnValue([
-        mockDeleteBoard as any,
-        { isLoading: true } as any,
+        mockDeleteBoard,
+        { isLoading: true, isError: false, isSuccess: false, isUninitialized: false },
       ]);
 
       // Act
@@ -229,11 +231,11 @@ describe("DeleteBoardDialog", () => {
       // Arrange
       const mockOnSubmit = vi.fn();
       const mockOnClose = vi.fn();
-      
+
       // Mock loading state
       vi.mocked(useDeleteBoardMutation).mockReturnValue([
-        mockDeleteBoard as any,
-        { isLoading: true } as any,
+        mockDeleteBoard,
+        { isLoading: true, isError: false, isSuccess: false, isUninitialized: false },
       ]);
 
       // Act
@@ -248,11 +250,11 @@ describe("DeleteBoardDialog", () => {
       // Arrange
       const mockOnSubmit = vi.fn();
       const mockOnClose = vi.fn();
-      
+
       // Mock loading state
       vi.mocked(useDeleteBoardMutation).mockReturnValue([
-        mockDeleteBoard as any,
-        { isLoading: true } as any,
+        mockDeleteBoard,
+        { isLoading: true, isError: false, isSuccess: false, isUninitialized: false },
       ]);
 
       // Act
@@ -291,7 +293,7 @@ describe("DeleteBoardDialog", () => {
       const mockOnSubmit = vi.fn();
       const mockOnClose = vi.fn();
       const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => vi.fn());
-      
+
       // Mock error response
       mockDeleteBoard.mockReturnValue({
         unwrap: vi.fn().mockRejectedValue(new Error("Board not found")),
@@ -318,7 +320,7 @@ describe("DeleteBoardDialog", () => {
       const mockOnSubmit = vi.fn();
       const mockOnClose = vi.fn();
       const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => vi.fn());
-      
+
       mockDeleteBoard.mockReturnValue({
         unwrap: vi.fn().mockRejectedValue(new Error("Network error")),
       });
@@ -344,7 +346,7 @@ describe("DeleteBoardDialog", () => {
       const mockOnSubmit = vi.fn();
       const mockOnClose = vi.fn();
       const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => vi.fn());
-      
+
       mockDeleteBoard.mockReturnValue({
         unwrap: vi.fn().mockRejectedValue(new Error("Test error")),
       });
@@ -368,7 +370,7 @@ describe("DeleteBoardDialog", () => {
       const mockOnSubmit = vi.fn();
       const mockOnClose = vi.fn();
       const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => vi.fn());
-      
+
       mockDeleteBoard.mockReturnValue({
         unwrap: vi.fn().mockRejectedValue(new Error("Error message")),
       });
@@ -732,11 +734,11 @@ describe("DeleteBoardDialog", () => {
       // Arrange
       const mockOnSubmit = vi.fn();
       const mockOnClose = vi.fn();
-      
+
       // Mock loading state
       vi.mocked(useDeleteBoardMutation).mockReturnValue([
-        mockDeleteBoard as any,
-        { isLoading: true } as any,
+        mockDeleteBoard,
+        { isLoading: true, isError: false, isSuccess: false, isUninitialized: false },
       ]);
 
       // Act
@@ -752,11 +754,11 @@ describe("DeleteBoardDialog", () => {
       // Arrange
       const mockOnSubmit = vi.fn();
       const mockOnClose = vi.fn();
-      
+
       // Mock loading state
       vi.mocked(useDeleteBoardMutation).mockReturnValue([
-        mockDeleteBoard as any,
-        { isLoading: true } as any,
+        mockDeleteBoard,
+        { isLoading: true, isError: false, isSuccess: false, isUninitialized: false },
       ]);
 
       // Act
@@ -831,7 +833,7 @@ describe("DeleteBoardDialog", () => {
       const mockOnSubmit = vi.fn();
       const mockOnClose = vi.fn();
       const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => vi.fn());
-      
+
       mockDeleteBoard.mockReturnValue({
         unwrap: vi.fn().mockRejectedValue(new Error("Error")),
       });

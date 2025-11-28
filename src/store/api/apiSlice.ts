@@ -337,8 +337,7 @@ export const apiSlice = createApi({
           dispatch(showToast({ type: "success", title: "Sukces", message: "Tablica została usunięta" }));
         } catch (err: unknown) {
           const errorMessage =
-            (err as { error?: { data?: { message?: string } } }).error?.data?.message ??
-            "Nie udało się usunąć tablicy";
+            (err as { error?: { data?: { message?: string } } }).error?.data?.message ?? "Nie udało się usunąć tablicy";
           dispatch(showToast({ type: "error", title: "Błąd", message: errorMessage }));
         }
       },
