@@ -228,6 +228,8 @@ export async function createBoardNextLevel(
 
 /**
  * Lists public, non-archived boards with optional search, filters, sorting and pagination.
+ * When ownerId is provided, returns both public and private boards for that owner.
+ * Without ownerId, returns only public boards.
  */
 export async function listPublicBoards(
   supabase: SupabaseClient,
@@ -250,8 +252,15 @@ export async function listPublicBoards(
     .select("id, owner_id, title, card_count, level, is_public, archived, tags, created_at, updated_at", {
       count: "exact",
     })
-    .eq("archived", false)
-    .eq("is_public", true);
+    .eq("archived", false);
+
+  // When ownerId is provided, show all boards (public + private) for that owner
+  // Otherwise, show only public boards
+  if (ownerId) {
+    request = request.eq("owner_id", ownerId);
+  } else {
+    request = request.eq("is_public", true);
+  }
 
   // Perform case-insensitive substring search on the title.
   // Using ilike allows queries with single characters (e.g., "a") to match any title containing that substring.
@@ -262,10 +271,6 @@ export async function listPublicBoards(
 
   if (tags && tags.length) {
     request = request.contains("tags", tags);
-  }
-
-  if (ownerId) {
-    request = request.eq("owner_id", ownerId);
   }
 
   request = request.order(columnMap[sort], { ascending: direction === "asc" }).range(from, to);
