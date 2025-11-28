@@ -14,12 +14,12 @@ export const prerender = false;
 /**
  * POST /api/auth/reset-password
  *
- * Resets the user's password using the reset token from the email link.
- * The token is automatically verified by Supabase (must be in the session).
+ * Resets the user's password using tokens from the email link.
+ * Sets the session using the provided tokens and updates the password.
  *
  * @returns 200 OK - { message: "Password updated successfully" }
  * @returns 400 Bad Request - Invalid input
- * @returns 401 Unauthorized - Invalid or expired token
+ * @returns 422 Unprocessable Entity - Invalid or expired token
  * @returns 500 Internal Server Error - Unexpected errors
  */
 export const POST: APIRoute = async ({ request, locals }) => {
@@ -39,25 +39,27 @@ export const POST: APIRoute = async ({ request, locals }) => {
       throw new ValidationError("Validation failed", errors);
     }
 
-    const { newPassword } = parseResult.data;
+    const { accessToken, refreshToken, newPassword } = parseResult.data;
 
-    // 2. Verify that user has a valid reset token session
+    // 2. Set session with tokens from email link
     const {
-      data: { user },
-      error: userError,
-    } = await locals.supabase.auth.getUser();
+      data: { session },
+      error: sessionError,
+    } = await locals.supabase.auth.setSession({
+      access_token: accessToken,
+      refresh_token: refreshToken,
+    });
 
-    if (userError || !user) {
-      throw new HttpError("INVALID_RESET_TOKEN", 401);
+    if (sessionError || !session) {
+      throw new HttpError(`Token nieważny lub wygasł ${sessionError?.message}`, 422);
     }
 
-    // 3. Update the password
+    // 3. Update the password using the established session
     const { error: updateError } = await locals.supabase.auth.updateUser({
       password: newPassword,
     });
 
     if (updateError) {
-      console.error("Error updating password:", updateError);
       throw new HttpError(updateError.message, updateError.status || 500);
     }
 
@@ -70,7 +72,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     );
   } catch (error: unknown) {
     if (error instanceof ValidationError) {
-      return createErrorResponse(error.response, error.status);
+      return createErrorResponse(error.response as Record<string, unknown>, error.status);
     }
 
     if (error instanceof HttpError) {
