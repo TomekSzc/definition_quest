@@ -1,7 +1,6 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { ResetPasswordSchema } from "../../lib/validation/auth";
 import { useResetPasswordMutation } from "../../store/api/apiSlice";
 import type { ResetPasswordRequest } from "../../types";
 import * as Form from "@radix-ui/react-form";
@@ -9,17 +8,25 @@ import { FormInput } from "../ui/FormInput";
 import { SubmitButton } from "@/components/ui/SubmitButton";
 import type { FC } from "react";
 
-// Extend backend schema to include confirmPassword for client-side validation
-const ClientSchema = ResetPasswordSchema.extend({
-  confirmPassword: z.string(),
-}).refine((data) => data.newPassword === data.confirmPassword, {
-  message: "Hasła muszą być identyczne",
-  path: ["confirmPassword"],
-});
+// Client-side validation schema with confirmPassword
+const ClientSchema = z
+  .object({
+    newPassword: z.string().min(6, "Password must be at least 6 characters"),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: "Hasła muszą być identyczne",
+    path: ["confirmPassword"],
+  });
 
 export type ResetPasswordFormData = z.infer<typeof ClientSchema>;
 
-const ResetPasswordForm: FC = () => {
+interface ResetPasswordFormProps {
+  accessToken: string;
+  refreshToken: string;
+}
+
+const ResetPasswordForm: FC<ResetPasswordFormProps> = ({ accessToken, refreshToken }) => {
   const {
     register,
     handleSubmit,
@@ -32,7 +39,11 @@ const ResetPasswordForm: FC = () => {
   const [resetPassword, { isLoading }] = useResetPasswordMutation();
 
   async function onSubmit(data: ResetPasswordFormData) {
-    const payload: ResetPasswordRequest = { newPassword: data.newPassword };
+    const payload: ResetPasswordRequest = {
+      accessToken,
+      refreshToken,
+      newPassword: data.newPassword,
+    };
     await resetPassword(payload).unwrap(); // efekty uboczne obsługiwane globalnie
   }
 

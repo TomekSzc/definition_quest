@@ -225,15 +225,12 @@ export interface ForgotPasswordRequest {
 }
 
 export interface ResetPasswordRequest {
+  accessToken: string;
+  refreshToken: string;
   newPassword: string;
 }
 
 export interface RefreshTokenRequest {
-  refreshToken: string;
-}
-
-export interface ExchangeCodeRequest {
-  accessToken: string;
   refreshToken: string;
 }
 
