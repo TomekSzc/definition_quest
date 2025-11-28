@@ -34,7 +34,6 @@ export const POST: APIRoute = async ({ request, locals }) => {
     }
 
     const { accessToken, refreshToken } = parseResult.data;
-
     // 2. Set session with tokens
     const {
       data: { session },
