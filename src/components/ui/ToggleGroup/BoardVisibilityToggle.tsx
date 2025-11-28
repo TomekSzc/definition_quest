@@ -34,4 +34,3 @@ const BoardVisibilityToggle: React.FC<BoardVisibilityToggleProps> = ({ value, on
 };
 
 export default BoardVisibilityToggle;
-
