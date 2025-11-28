@@ -52,16 +52,7 @@ export const store = configureStore({
   devTools: process.env.NODE_ENV !== "production",
 });
 
-// Lazy initialization for Cloudflare Workers compatibility
-// persistStore must be called inside a handler, not in global scope
-let persistor: ReturnType<typeof persistStore> | null = null;
-
-export function getPersistor() {
-  if (!persistor) {
-    persistor = persistStore(store);
-  }
-  return persistor;
-}
+export const persistor = persistStore(store);
 
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;

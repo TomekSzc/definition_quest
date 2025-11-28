@@ -11,11 +11,10 @@ const FEATURE_MATRIX: Record<Env, Record<Feature, boolean>> = {
 };
 
 // Resolve current execution environment.
-// 1. Tries Astro/Build-time import.meta.env.ENV_NAME (statically accessed for Cloudflare compatibility)
+// 1. Tries Astro/Build-time import.meta.env.ENV_NAME
 // 2. Falls back to Node's process.env.ENV_NAME when available
 // 3. Defaults to "dev" when unset or invalid
 function resolveEnv(): Env {
-  // Direct static access to avoid dynamic import.meta.env access (required for Cloudflare workerd)
   const fromImportMeta = import.meta.env.ENV_NAME as Env | undefined;
   const fromProcess = typeof process !== "undefined" ? (process.env.ENV_NAME as Env | undefined) : undefined;
 
