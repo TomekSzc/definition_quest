@@ -66,7 +66,7 @@ const CreateBoardForm = forwardRef<CreateBoardFormHandle, ICreateBoardForm>(({ s
     setTimeout(() => {
       const currentPairs = getValues("pairs");
       const indicesToRemove: number[] = [];
-      
+
       currentPairs.forEach((pair, index) => {
         if (!pair.term.trim() && !pair.definition.trim()) {
           indicesToRemove.push(index);
