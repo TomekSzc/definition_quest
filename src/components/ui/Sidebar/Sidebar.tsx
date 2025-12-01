@@ -12,9 +12,9 @@ import { clsx } from "clsx";
 import { Routes } from "@/lib/routes";
 
 const navItems: NavItemVM[] = [
-  { label: "Public Boards", route: Routes.Boards, icon: BoardsIcon },
-  { label: "My Boards", route: Routes.MyBoards, icon: MyBoardsIcon },
-  { label: "Played Boards", route: Routes.MyPlayedBoards, icon: PlayedIcon },
+  { label: "Publiczne tablice", route: Routes.Boards, icon: BoardsIcon },
+  { label: "Moje tablice", route: Routes.MyBoards, icon: MyBoardsIcon },
+  { label: "Rozegrane Tablice", route: Routes.MyPlayedBoards, icon: PlayedIcon },
   { label: "Utwórz tablicę", route: "/boards/create", icon: PlusIcon },
 ];
 
@@ -55,7 +55,7 @@ export const Sidebar: FC = () => {
             )}
           >
             <PowerIcon className="h-5 w-5 cursor-pointer" />
-            {!collapsed && <span className="cursor-pointer">Log out</span>}
+            {!collapsed && <span className="cursor-pointer">Wyloguj</span>}
           </button>
         </nav>
       </div>

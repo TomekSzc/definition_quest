@@ -168,7 +168,7 @@ describe("Sidebar", () => {
       render(<Sidebar />);
 
       // Assert
-      const logoutButton = screen.getByText("Log out").closest("button");
+      const logoutButton = screen.getByText("Wyloguj").closest("button");
       expect(logoutButton).toBeInTheDocument();
       expect(screen.getByTestId("power-icon")).toBeInTheDocument();
     });
@@ -209,7 +209,7 @@ describe("Sidebar", () => {
       expect(navItems).toHaveLength(4);
     });
 
-    it("powinien wyrenderować NavItem z labelką 'Public Boards'", () => {
+    it("powinien wyrenderować NavItem z labelką 'Publiczne tablice'", () => {
       // Arrange
       vi.mocked(useSidebar).mockReturnValue({
         collapsed: false,
@@ -221,10 +221,10 @@ describe("Sidebar", () => {
       render(<Sidebar />);
 
       // Assert
-      expect(screen.getByText("Public Boards")).toBeInTheDocument();
+      expect(screen.getByText("Publiczne tablice")).toBeInTheDocument();
     });
 
-    it("powinien wyrenderować NavItem z labelką 'My Boards'", () => {
+    it("powinien wyrenderować NavItem z labelką 'Moje tablice'", () => {
       // Arrange
       vi.mocked(useSidebar).mockReturnValue({
         collapsed: false,
@@ -236,10 +236,10 @@ describe("Sidebar", () => {
       render(<Sidebar />);
 
       // Assert
-      expect(screen.getByText("My Boards")).toBeInTheDocument();
+      expect(screen.getByText("Moje tablice")).toBeInTheDocument();
     });
 
-    it("powinien wyrenderować NavItem z labelką 'Played Boards'", () => {
+    it("powinien wyrenderować NavItem z labelką 'Rozegrane Tablice'", () => {
       // Arrange
       vi.mocked(useSidebar).mockReturnValue({
         collapsed: false,
@@ -251,7 +251,7 @@ describe("Sidebar", () => {
       render(<Sidebar />);
 
       // Assert
-      expect(screen.getByText("Played Boards")).toBeInTheDocument();
+      expect(screen.getByText("Rozegrane Tablice")).toBeInTheDocument();
     });
 
     it("powinien wyrenderować NavItem z labelką 'Utwórz tablicę'", () => {
@@ -281,9 +281,9 @@ describe("Sidebar", () => {
       render(<Sidebar />);
 
       // Assert
-      expect(screen.getByText("Public Boards").closest("a")).toHaveAttribute("href", "/boards");
-      expect(screen.getByText("My Boards").closest("a")).toHaveAttribute("href", "/my-boards");
-      expect(screen.getByText("Played Boards").closest("a")).toHaveAttribute("href", "/played");
+      expect(screen.getByText("Publiczne tablice").closest("a")).toHaveAttribute("href", "/boards");
+      expect(screen.getByText("Moje tablice").closest("a")).toHaveAttribute("href", "/my-boards");
+      expect(screen.getByText("Rozegrane Tablice").closest("a")).toHaveAttribute("href", "/played");
       expect(screen.getByText("Utwórz tablicę").closest("a")).toHaveAttribute("href", "/boards/create");
     });
   });
@@ -323,7 +323,7 @@ describe("Sidebar", () => {
       expect(aside).not.toHaveClass("md:left-0");
     });
 
-    it("powinien renderować tekst 'Log out' w przycisku logout gdy sidebar jest rozwinięty", () => {
+    it("powinien renderować tekst 'Wyloguj' w przycisku logout gdy sidebar jest rozwinięty", () => {
       // Arrange
       vi.mocked(useSidebar).mockReturnValue({
         collapsed: false,
@@ -335,7 +335,7 @@ describe("Sidebar", () => {
       render(<Sidebar />);
 
       // Assert
-      expect(screen.getByText("Log out")).toBeInTheDocument();
+      expect(screen.getByText("Wyloguj")).toBeInTheDocument();
     });
 
     it("powinien NIE mieć justify-center na przycisku logout gdy sidebar jest rozwinięty", () => {
@@ -350,7 +350,7 @@ describe("Sidebar", () => {
       render(<Sidebar />);
 
       // Assert
-      const logoutButton = screen.getByText("Log out").closest("button");
+      const logoutButton = screen.getByText("Wyloguj").closest("button");
       expect(logoutButton).not.toHaveClass("justify-center");
     });
   });
@@ -389,7 +389,7 @@ describe("Sidebar", () => {
       expect(aside).not.toHaveClass("w-64");
     });
 
-    it("powinien ukryć tekst 'Log out' w przycisku logout gdy sidebar jest zwinięty", () => {
+    it("powinien ukryć tekst 'Wyloguj' w przycisku logout gdy sidebar jest zwinięty", () => {
       // Arrange
       vi.mocked(useSidebar).mockReturnValue({
         collapsed: true,
@@ -401,7 +401,7 @@ describe("Sidebar", () => {
       render(<Sidebar />);
 
       // Assert
-      expect(screen.queryByText("Log out")).not.toBeInTheDocument();
+      expect(screen.queryByText("Wyloguj")).not.toBeInTheDocument();
     });
 
     it("powinien mieć justify-center na przycisku logout gdy sidebar jest zwinięty", () => {
@@ -449,7 +449,7 @@ describe("Sidebar", () => {
 
       // Act
       render(<Sidebar />);
-      const logoutButton = screen.getByText("Log out").closest("button");
+      const logoutButton = screen.getByText("Wyloguj").closest("button");
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       fireEvent.click(logoutButton!);
 
@@ -490,7 +490,7 @@ describe("Sidebar", () => {
       render(<Sidebar />);
 
       // Assert
-      const logoutButton = screen.getByText("Log out").closest("button");
+      const logoutButton = screen.getByText("Wyloguj").closest("button");
       expect(logoutButton).toHaveClass("mt-5");
       expect(logoutButton).toHaveClass("flex");
       expect(logoutButton).toHaveClass("items-center");
@@ -524,7 +524,7 @@ describe("Sidebar", () => {
       expect(powerIcon).toHaveClass("cursor-pointer");
     });
 
-    it("powinien mieć cursor-pointer na tekście 'Log out'", () => {
+    it("powinien mieć cursor-pointer na tekście 'Wyloguj'", () => {
       // Arrange
       vi.mocked(useSidebar).mockReturnValue({
         collapsed: false,
@@ -536,7 +536,7 @@ describe("Sidebar", () => {
       render(<Sidebar />);
 
       // Assert
-      const logoutText = screen.getByText("Log out");
+      const logoutText = screen.getByText("Wyloguj");
       expect(logoutText).toHaveClass("cursor-pointer");
     });
   });
@@ -648,7 +648,7 @@ describe("Sidebar", () => {
       let aside = screen.getByRole("complementary");
       expect(aside).toHaveClass("left-0");
       expect(aside).toHaveClass("w-64");
-      expect(screen.getByText("Log out")).toBeInTheDocument();
+      expect(screen.getByText("Wyloguj")).toBeInTheDocument();
 
       // Arrange - zmieniamy na collapsed=true
       vi.mocked(useSidebar).mockReturnValue({
@@ -664,7 +664,7 @@ describe("Sidebar", () => {
       aside = screen.getByRole("complementary");
       expect(aside).toHaveClass("left-[-50px]");
       expect(aside).not.toHaveClass("w-64");
-      expect(screen.queryByText("Log out")).not.toBeInTheDocument();
+      expect(screen.queryByText("Wyloguj")).not.toBeInTheDocument();
     });
   });
 
@@ -697,7 +697,7 @@ describe("Sidebar", () => {
 
       // Act
       render(<Sidebar />);
-      const logoutButton = screen.getByText("Log out").closest("button");
+      const logoutButton = screen.getByText("Wyloguj").closest("button");
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       fireEvent.click(logoutButton!);
 
@@ -855,7 +855,7 @@ describe("Sidebar", () => {
       render(<Sidebar />);
 
       // Assert
-      const logoutButton = screen.getByRole("button", { name: /log out/i });
+      const logoutButton = screen.getByRole("button", { name: /wyloguj/i });
       expect(logoutButton).toBeInTheDocument();
     });
   });

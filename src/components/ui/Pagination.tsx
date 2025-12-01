@@ -13,17 +13,17 @@ export const Pagination: FC<IPaginationProps> = ({ onPageChange, meta }) => {
   return (
     <nav className="mt-6 flex items-center justify-center gap-2 text-[var(--color-primary)]" aria-label="Paginacja">
       <button
-        className="cursor-pointer rounded px-2 py-1 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
+        className="cursor-pointer rounded px-2 py-1 text-sm font-bold hover:bg-muted hover:opacity-80 focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50 disabled:hover:opacity-50"
         disabled={meta.page === 1}
         onClick={() => onPageChange(meta.page - 1)}
       >
         ← Poprzednia
       </button>
-      <span className="text-sm">
+      <span className="text-sm font-bold">
         {meta.page} / {totalPages}
       </span>
       <button
-        className="cursor-pointer rounded px-2 py-1 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
+        className="cursor-pointer rounded px-2 py-1 text-sm font-bold hover:bg-muted hover:opacity-80 focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50 disabled:hover:opacity-50"
         disabled={meta.page === totalPages}
         onClick={() => onPageChange(meta.page + 1)}
       >

@@ -4,11 +4,11 @@ import { ChevronLeftIcon } from "@/assets/icons";
 
 // Mapping of known static routes to their display titles
 const routeTitles: Record<string, string> = {
-  "/boards": "Public Boards",
-  "/my-boards": "My Boards",
-  "/played-boards": "Played Boards",
+  "/boards": "Publiczne tablice",
+  "/my-boards": "Moje tablice",
+  "/played-boards": "Rozegrane tablice",
   "/boards/create": "Utwórz tablicę",
-  "/played": "Played Boards",
+  "/played": "Rozegrane tablice",
 };
 
 /**
@@ -21,7 +21,7 @@ export const Breadcrumbs: FC = () => {
   const isBoardDetail = Boolean(boardMatch);
   const isAddLevel = Boolean(addLevelMatch);
   const isEdit = boardMatch?.[2] === "edit";
-  const title = routeTitles[pathname] ?? "Public Boards";
+  const title = routeTitles[pathname] ?? "Publiczne tablice";
 
   const prevTitle = useMemo(() => {
     if (typeof document === "undefined" || typeof window === "undefined") {
@@ -55,31 +55,31 @@ export const Breadcrumbs: FC = () => {
       <button
         type="button"
         onClick={handleBack}
-        className="text-[18px] md:text-[22px] flex items-center md:text-2xl font-bold cursor-pointer select-none bg-transparent border-none p-0"
+        className="text-[20px] md:text-2xl flex items-center font-bold cursor-pointer select-none bg-transparent border-none p-0"
       >
         <ChevronLeftIcon className="h-6 w-6 mr-2" />
         <span>{prevTitle}</span>
         <span className="mx-2">/</span>
-        <span>{isEdit ? "Edit" : "Play"}</span>
+        <span>{isEdit ? "Edytuj" : "Graj"}</span>
       </button>
     );
   }
   if (isAddLevel) {
     const isMine = pathname.startsWith("/my-boards");
     const baseHref = isMine ? "/my-boards" : "/boards";
-    const baseTitle = isMine ? "My Boards" : "Public Boards";
+    const baseTitle = isMine ? "Moje tablice" : "Publiczne tablice";
     return (
-      <h1 className="text-2xl font-bold flex items-center">
+      <h1 className="text-[20px] md:text-2xl font-bold flex items-center">
         <a href={baseHref} className="hover:underline">
           {baseTitle}
         </a>
         <span className="mx-2">/</span>
-        <span>Add level</span>
+        <span>Dodaj poziom</span>
       </h1>
     );
   }
 
-  return <h1 className="text-2xl font-bold">{title}</h1>;
+  return <h1 className="text-[20px] md:text-2xl font-bold">{title}</h1>;
 };
 
 export default Breadcrumbs;
