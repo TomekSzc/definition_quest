@@ -76,8 +76,8 @@ export const BoardListTile: FC<IBoardListTileProps> = ({ board }) => {
       {canManage && (
         <div className="flex items-center gap-2">
           {board?.lastTime && (
-            <div className="text-sm text-gray-500 flex flex-col lowercase">
-              <span>Last score</span>
+            <div className="text-sm text-gray-500 flex flex-col">
+              <span>Czas</span>
               <span>{msToMin(board.lastTime)} min</span>
             </div>
           )}

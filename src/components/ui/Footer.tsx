@@ -23,7 +23,7 @@ export const Footer: FC<FooterProps> = ({ className }) => {
         className
       )}
     >
-      <p className="absolute right-20 text-gray-100">Definition Quest 2025</p>
+      <p className="absolute right-50 text-gray-100">Definition Quest 2025</p>
     </footer>
   );
 };
