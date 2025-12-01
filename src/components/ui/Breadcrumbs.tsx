@@ -18,6 +18,7 @@ export const Breadcrumbs: FC = () => {
   const pathname = typeof window !== "undefined" ? window.location.pathname : "";
   const boardMatch = pathname.match(/^\/boards\/([^/]+)(?:\/(edit))?$/);
   const addLevelMatch = pathname.match(/^(?:\/my-boards|\/boards)\/[^/]+\/add-level$/);
+  const isCreateBoard = pathname === "/boards/create";
   const isBoardDetail = Boolean(boardMatch);
   const isAddLevel = Boolean(addLevelMatch);
   const isEdit = boardMatch?.[2] === "edit";
@@ -49,6 +50,21 @@ export const Breadcrumbs: FC = () => {
       window.history.back();
     }
   };
+
+  if (isCreateBoard) {
+    return (
+      <button
+        type="button"
+        onClick={handleBack}
+        className="text-[20px] md:text-2xl flex items-center font-bold cursor-pointer select-none bg-transparent border-none p-0"
+      >
+        <ChevronLeftIcon className="h-6 w-6 mr-2" />
+        <span>{prevTitle}</span>
+        <span className="mx-2">/</span>
+        <span>Utwórz</span>
+      </button>
+    );
+  }
 
   if (isBoardDetail) {
     return (
