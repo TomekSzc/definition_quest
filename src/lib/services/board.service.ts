@@ -267,7 +267,7 @@ export async function listPublicBoards(
   // For tags, we check if any tag in the array contains the query string (case-insensitive).
   if (q) {
     // Escape special characters for pattern matching
-    const escapedQ = q.replace(/[%_\\]/g, '\\$&');
+    const escapedQ = q.replace(/[%_\\]/g, "\\$&");
     // Search in title (substring) OR in tags array (exact match or substring)
     // Format: title.ilike.pattern OR tags.cs.{value}
     request = request.or(`title.ilike.%${escapedQ}%,tags.cs.{${escapedQ}}`);
@@ -339,7 +339,7 @@ export async function listBoardsPlayedByUser(
 
   if (q) {
     // Escape special characters for pattern matching
-    const escapedQ = q.replace(/[%_\\]/g, '\\$&');
+    const escapedQ = q.replace(/[%_\\]/g, "\\$&");
     // Case-insensitive substring match on board title or tags
     // Search in title (substring) OR in tags array (exact match)
     request = request.or(`title.ilike.%${escapedQ}%,tags.cs.{${escapedQ}}`);
