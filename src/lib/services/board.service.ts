@@ -262,11 +262,15 @@ export async function listPublicBoards(
     request = request.eq("is_public", true);
   }
 
-  // Perform case-insensitive substring search on the title.
+  // Perform case-insensitive substring search on the title or tags.
   // Using ilike allows queries with single characters (e.g., "a") to match any title containing that substring.
+  // For tags, we check if any tag in the array contains the query string (case-insensitive).
   if (q) {
-    // Wrap the query in % wildcards for substring match
-    request = request.ilike("title", `%${q}%`);
+    // Escape special characters for pattern matching
+    const escapedQ = q.replace(/[%_\\]/g, '\\$&');
+    // Search in title (substring) OR in tags array (exact match or substring)
+    // Format: title.ilike.pattern OR tags.cs.{value}
+    request = request.or(`title.ilike.%${escapedQ}%,tags.cs.{${escapedQ}}`);
   }
 
   if (tags && tags.length) {
@@ -334,8 +338,11 @@ export async function listBoardsPlayedByUser(
     .eq("scores.user_id", userId);
 
   if (q) {
-    // Case-insensitive substring match on board title
-    request = request.ilike("title", `%${q}%`);
+    // Escape special characters for pattern matching
+    const escapedQ = q.replace(/[%_\\]/g, '\\$&');
+    // Case-insensitive substring match on board title or tags
+    // Search in title (substring) OR in tags array (exact match)
+    request = request.or(`title.ilike.%${escapedQ}%,tags.cs.{${escapedQ}}`);
   }
 
   if (tags && tags.length) {
