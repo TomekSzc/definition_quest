@@ -1,171 +1,373 @@
-# 🚀 Przewodnik Deployment na Cloudflare Pages
+# 🚀 Deployment Guide - Digital Ocean
 
-## Krok 1: Utwórz projekt na Cloudflare Pages
+## Architektura
 
-### A. Przez Dashboard (zalecane dla pierwszego setupu)
+Aplikacja jest deployowana w następujący sposób:
 
-1. Zaloguj się do [Cloudflare Dashboard](https://dash.cloudflare.com/)
-2. Przejdź do **Workers & Pages** → **Create application** → **Pages**
-3. Wybierz **Connect to Git** i połącz z GitHub
-4. **NIE KONFIGURUJ automatycznego deployu** - będziemy używać GitHub Actions
-5. Zanotuj:
-   - **Project Name** (nazwa projektu w Cloudflare)
-   - **Account ID** (widoczne w URL: `dash.cloudflare.com/{account_id}/pages`)
+1. **Docker** - Aplikacja jest pakowana w kontener Docker
+2. **GitHub Actions** - Automatyczna budowa i deployment po pushu na `master`
+3. **GitHub Container Registry (GHCR)** - Przechowywanie obrazów Docker
+4. **Digital Ocean App Platform** - Hosting aplikacji
 
-### B. Alternatywnie: Przez Wrangler CLI
+## Przepływ Deployment
+
+```
+Push na master
+    ↓
+GitHub Actions (master-docker.yml)
+    ↓
+1. Lint → 2. Tests → 3. Build Docker → 4. Push to GHCR → 5. Deploy to Digital Ocean
+    ↓
+Aplikacja live na Digital Ocean
+```
+
+## Krok 1: Przygotowanie Digital Ocean
+
+### A. Utwórz aplikację w Digital Ocean
+
+1. Zaloguj się do [Digital Ocean Dashboard](https://cloud.digitalocean.com/)
+2. Przejdź do **Apps** → **Create App**
+3. Wybierz **Docker Hub** lub **Container Registry**
+4. Podaj: `ghcr.io/TomekSzc/definition_quest:latest`
+5. Ustaw region (np. Frankfurt dla Europy)
+6. Wybierz plan (Basic / Professional)
+7. Zanotuj **App ID** (potrzebne dla GitHub Actions)
+
+### B. Wygeneruj Digital Ocean API Token
+
+1. Przejdź do [API Tokens](https://cloud.digitalocean.com/account/api/tokens)
+2. Kliknij **Generate New Token**
+3. Nadaj nazwę: `definition-quest-github-actions`
+4. Zaznacz **Write** (full access)
+5. Zapisz token (nie będzie ponownie widoczny!)
+
+### C. Skonfiguruj zmienne środowiskowe w Digital Ocean
+
+W Digital Ocean Dashboard → Twoja aplikacja → **Settings** → **App-Level Environment Variables**:
 
 ```bash
-npx wrangler pages project create definition-quest
-```
-
-## Krok 2: Utwórz Cloudflare API Token
-
-1. Przejdź do [API Tokens](https://dash.cloudflare.com/profile/api-tokens)
-2. Kliknij **Create Token**
-3. Użyj template **Edit Cloudflare Workers** lub stwórz Custom Token z uprawnieniami:
-   - **Account** → **Cloudflare Pages** → **Edit**
-4. Zapisz wygenerowany token (nie będzie ponownie widoczny!)
-
-## Krok 3: Skonfiguruj GitHub Secrets
-
-W repozytorium GitHub przejdź do:
-**Settings** → **Secrets and variables** → **Actions** → **New repository secret**
-
-Dodaj następujące secrets:
-
-### Cloudflare Secrets
-
-```
-CLOUDFLARE_API_TOKEN=<token z Kroku 2>
-CLOUDFLARE_ACCOUNT_ID=<twoje account ID>
-CLOUDFLARE_PROJECT_NAME=<nazwa projektu, np. definition-quest>
-```
-
-### Application Secrets (produkcyjne wartości)
-
-```
-SUPABASE_URL=<URL twojej produkcyjnej bazy Supabase>
-SUPABASE_KEY=<anon key z produkcyjnej bazy Supabase>
-OPENROUTER_API_KEY=<twój klucz API OpenRouter>
-```
-
-## Krok 4: Skonfiguruj zmienne środowiskowe w Cloudflare Pages
-
-1. W Cloudflare Dashboard → **Workers & Pages** → Twój projekt
-2. Przejdź do zakładki **Settings** → **Environment variables**
-3. Dodaj zmienne dla środowiska **Production**:
-
-```
-SUPABASE_URL=<URL produkcyjnej bazy>
-SUPABASE_KEY=<anon key produkcyjnej bazy>
-OPENROUTER_API_KEY=<klucz API OpenRouter>
 ENV_NAME=prod
+SUPABASE_URL=<twój produkcyjny URL Supabase>
+SUPABASE_KEY=<twój produkcyjny anon key Supabase>
+OPENROUTER_API_KEY=<twój klucz API OpenRouter>
+HOST=0.0.0.0
+PORT=8080
 ```
 
-⚠️ **Ważne**: Ustaw `ENV_NAME=prod` dla środowiska produkcyjnego!
+⚠️ **Ważne**: Digital Ocean App Platform domyślnie używa portu `8080`, więc `PORT=8080`
 
-## Krok 5: Utwórz środowisko GitHub (opcjonalne, ale zalecane)
+## Krok 2: Konfiguracja GitHub Secrets
+
+W repozytorium GitHub → **Settings** → **Secrets and variables** → **Actions** → **New repository secret**
+
+### Wymagane Secrets
+
+```bash
+# Digital Ocean
+DIGITALOCEAN_ACCESS_TOKEN=<token z Kroku 1.B>
+DIGITALOCEAN_APP_ID=<app ID z Kroku 1.A>
+
+# Supabase (dla build-time)
+SUPABASE_URL=<twój produkcyjny URL Supabase>
+SUPABASE_KEY=<twój produkcyjny anon key Supabase>
+
+# OpenRouter
+OPENROUTER_API_KEY=<twój klucz API OpenRouter>
+
+# Opcjonalnie
+PUBLIC_ENV_NAME=prod
+```
+
+⚠️ **Uwaga**: `GITHUB_TOKEN` jest automatycznie dostępny w GitHub Actions
+
+## Krok 3: Konfiguracja Environment w GitHub (opcjonalne)
+
+Dla lepszej organizacji i bezpieczeństwa:
 
 1. W repozytorium GitHub → **Settings** → **Environments**
 2. Kliknij **New environment**
-3. Nazwij je `production`
-4. Możesz dodać:
-   - Protection rules (np. wymagaj review przed deploymentem)
-   - Required reviewers
-   - Deployment branches (tylko `master`)
+3. Nazwij: `production`
+4. Dodaj opcjonalnie:
+   - **Required reviewers** (wymagaj zatwierdzenia przed deploymentem)
+   - **Deployment branches** → Only `master`
+   - **Environment secrets** (przeniesiemy tutaj secrets)
 
-## Krok 6: Wypchnij zmiany na branch master
+## Krok 4: Deploy
 
-### Jeśli jesteś na innym branchu:
+### Automatyczny deployment
+
+Po skonfigurowaniu wszystkiego, każdy push na `master` automatycznie uruchomi deployment:
 
 ```bash
+git checkout master
+git add .
+git commit -m "feat: add new feature"
+git push origin master
+```
+
+### Proces deployment
+
+GitHub Actions wykona następujące kroki:
+
+1. ✅ **Lint** - sprawdzenie jakości kodu
+2. ✅ **Tests** - uruchomienie testów jednostkowych
+3. ✅ **Build Docker** - zbudowanie obrazu Docker
+4. ✅ **Push to GHCR** - wysłanie obrazu do GitHub Container Registry
+5. ✅ **Deploy to Digital Ocean** - deployment na Digital Ocean
+
+### Monitorowanie deployment
+
+**GitHub Actions:**
+- URL: `https://github.com/TomekSzc/definition_quest/actions`
+- Sprawdź status workflow "Build and Deploy Docker Container"
+- Sprawdź logi każdego kroku
+
+**Digital Ocean:**
+- Dashboard → Twoja aplikacja → **Activity**
+- Sprawdź logi deployment
+- Sprawdź status aplikacji
+
+## Dockerfile - Struktura
+
+Aplikacja używa **multi-stage build** dla optymalizacji:
+
+```dockerfile
+Stage 1: deps     → Instalacja dependencies
+Stage 2: build    → Build aplikacji Astro
+Stage 3: runner   → Finalna wersja (tylko prod dependencies)
+```
+
+### Bezpieczeństwo
+
+- ✅ Używamy `node:22-alpine` (mały obraz)
+- ✅ Uruchamiamy jako user `node` (non-root)
+- ✅ Tylko production dependencies w finalnym obrazie
+- ✅ Healthcheck włączony
+
+## Krok 5: Weryfikacja
+
+Po pomyślnym deploymencie sprawdź:
+
+### 1. Status aplikacji
+```bash
+doctl apps get <APP_ID>
+```
+
+### 2. Logi aplikacji
+```bash
+doctl apps logs <APP_ID> --follow
+```
+
+### 3. Aplikacja w przeglądarce
+- URL: `https://<twoja-aplikacja>.ondigitalocean.app`
+- Sprawdź czy strona się ładuje
+- Sprawdź czy możesz się zalogować
+- Sprawdź konsolę przeglądarki (F12) pod kątem błędów
+
+### Post-Deployment Checklist
+
+- [ ] Strona główna ładuje się poprawnie
+- [ ] Login działa
+- [ ] Rejestracja działa
+- [ ] API endpoints działają
+- [ ] Brak błędów w konsoli przeglądarki
+- [ ] Zmienne środowiskowe są poprawnie ustawione
+- [ ] Feature flags działają (`ENV_NAME=prod`)
+
+## Przydatne Komendy
+
+### Digital Ocean CLI (doctl)
+
+Instalacja:
+```bash
+# MacOS
+brew install doctl
+
+# Linux
+snap install doctl
+
+# Windows
+# Pobierz z: https://github.com/digitalocean/doctl/releases
+```
+
+Autentykacja:
+```bash
+doctl auth init
+```
+
+Przydatne komendy:
+```bash
+# Lista aplikacji
+doctl apps list
+
+# Status aplikacji
+doctl apps get <APP_ID>
+
+# Logi aplikacji (live)
+doctl apps logs <APP_ID> --follow
+
+# Trigger manual deployment
+doctl apps create-deployment <APP_ID>
+
+# Lista deploymentów
+doctl apps list-deployments <APP_ID>
+```
+
+### Git Commands
+
+```bash
+# Sprawdź status
+git status
+
 # Sprawdź aktualny branch
 git branch --show-current
 
-# Commituj wszystkie zmiany
-git add .
-git commit -m "feat: configure Cloudflare deployment"
+# Sprawdź ostatni commit
+git log -1 --oneline
 
-# Przejdź na master i zmerguj
-git checkout master
-git merge <twój-branch>
+# Deploy (commit + push)
+git add .
+git commit -m "feat: new feature"
 git push origin master
 ```
 
-### Jeśli jesteś już na master:
+### Docker Commands (lokalne testowanie)
 
 ```bash
-# Commituj wszystkie zmiany
-git add .
-git commit -m "feat: configure Cloudflare deployment"
-git push origin master
+# Build obrazu lokalnie
+docker build -t definition-quest:test .
+
+# Uruchom lokalnie
+docker run -p 3000:3000 \
+  -e SUPABASE_URL=<url> \
+  -e SUPABASE_KEY=<key> \
+  -e OPENROUTER_API_KEY=<key> \
+  -e ENV_NAME=dev \
+  definition-quest:test
+
+# Sprawdź czy działa
+curl http://localhost:3000
 ```
-
-## Krok 7: Monitoruj deployment
-
-1. Przejdź do zakładki **Actions** w repozytorium GitHub
-2. Znajdź workflow **Master - Deploy to Production**
-3. Obserwuj poszczególne kroki:
-   - ✅ Lint code
-   - ✅ Unit tests
-   - ✅ Build application
-   - ✅ Deploy to Cloudflare Pages
-
-## Krok 8: Weryfikacja
-
-Po pomyślnym deploymencie:
-
-1. Cloudflare automatycznie wygeneruje URL: `https://<project-name>.pages.dev`
-2. Możesz też dodać własną domenę w **Settings** → **Custom domains**
-3. Sprawdź logi w:
-   - GitHub Actions (workflow logs)
-   - Cloudflare Dashboard → Twój projekt → **Deployments**
 
 ## 🔧 Troubleshooting
 
-### Błąd: "Invalid binding `SESSION`"
+### Deployment Failed
 
-Jeśli widzisz ten błąd, musisz dodać binding w `wrangler.toml`:
-
-```toml
-# wrangler.toml
-name = "definition-quest"
-compatibility_date = "2024-01-01"
-
-[[kv_namespaces]]
-binding = "SESSION"
-id = "your-kv-namespace-id"
+**1. Sprawdź logi GitHub Actions**
+```
+GitHub → Actions → Znajdź failed workflow → Sprawdź który krok nie powiódł się
 ```
 
-Utwórz KV namespace:
+**2. Najczęstsze problemy:**
 
+| Problem | Rozwiązanie |
+|---------|------------|
+| Lint errors | Uruchom `npm run lint` lokalnie i popraw błędy |
+| Test failures | Uruchom `npm test` lokalnie |
+| Docker build failed | Sprawdź czy wszystkie secrets są ustawione |
+| Push to GHCR failed | Sprawdź uprawnienia GITHUB_TOKEN |
+| Deploy to DO failed | Sprawdź `DIGITALOCEAN_ACCESS_TOKEN` i `DIGITALOCEAN_APP_ID` |
+
+### Aplikacja nie działa po deployment
+
+**1. Sprawdź logi Digital Ocean:**
 ```bash
-npx wrangler kv:namespace create SESSION
+doctl apps logs <APP_ID> --follow
 ```
 
-### Błąd: Build failure
+**2. Sprawdź zmienne środowiskowe:**
+- Digital Ocean Dashboard → App → Settings → Environment Variables
+- Upewnij się że wszystkie wymagane zmienne są ustawione
 
-Sprawdź logi w GitHub Actions, aby zidentyfikować problem:
+**3. Sprawdź port:**
+- Digital Ocean App Platform używa portu `8080` domyślnie
+- Upewnij się że `PORT=8080` w zmiennych środowiskowych
 
-- Upewnij się, że wszystkie secrets są poprawnie ustawione
-- Sprawdź czy zmienne środowiskowe są dostępne podczas buildu
+**4. Sprawdź Supabase:**
+- Czy URL i KEY są poprawne?
+- Czy Supabase projekt jest aktywny?
 
-### Deployment działa, ale aplikacja nie działa poprawnie
+### Docker image too large
 
-1. Sprawdź zmienne środowiskowe w Cloudflare Pages Settings
-2. Upewnij się, że `ENV_NAME=prod` jest ustawione
-3. Sprawdź logi w Cloudflare Dashboard → **Real-time logs**
+Jeśli obraz jest zbyt duży:
 
-## 📚 Dodatkowe zasoby
+1. Sprawdź `.dockerignore` - upewnij się że wykluczamy:
+   ```
+   node_modules
+   dist
+   .git
+   .env*
+   tests
+   ```
 
-- [Cloudflare Pages Docs](https://developers.cloudflare.com/pages/)
-- [Astro Cloudflare Adapter](https://docs.astro.build/en/guides/integrations-guide/cloudflare/)
+2. Rozważ użycie `npm prune` w build stage
+
+3. Usuń dev dependencies w final stage (już zrobione)
+
+### Slow deployment
+
+- GitHub Actions cache jest włączony (`cache-from/cache-to: type=gha`)
+- Kolejne buildy będą szybsze
+- Pierwszy build zawsze trwa dłużej
+
+## 📊 Monitoring & Maintenance
+
+### Digital Ocean Monitoring
+
+Dashboard → App → Insights:
+- CPU usage
+- Memory usage
+- HTTP requests
+- Response times
+- Error rates
+
+### Alerty (opcjonalne)
+
+Możesz skonfigurować alerty w Digital Ocean:
+- Dashboard → Monitoring → Alerts
+- Ustaw alerty dla CPU, memory, response time
+
+### Scaling
+
+Digital Ocean App Platform pozwala na łatwe skalowanie:
+- Dashboard → App → Settings → Resources
+- Zmień plan (Basic / Professional / Enterprise)
+- Dodaj więcej instancji (horizontal scaling)
+
+## 🚀 Następne kroki
+
+1. **Custom Domain**
+   - Digital Ocean → App → Settings → Domains
+   - Dodaj własną domenę (np. `definitionquest.com`)
+   - Skonfiguruj DNS
+
+2. **SSL Certificate**
+   - Digital Ocean automatycznie generuje certyfikat SSL
+   - Wymuszaj HTTPS dla wszystkich requestów
+
+3. **Monitoring zewnętrzny**
+   - Rozważ użycie Sentry dla error tracking
+   - Użyj Uptime Robot dla monitoring uptime
+
+4. **Backup strategy**
+   - Supabase automatycznie robi backup
+   - Digital Ocean także robi backup aplikacji
+
+5. **CDN (opcjonalne)**
+   - Digital Ocean oferuje CDN
+   - Rozważ dla lepszej wydajności globalnej
+
+## 📚 Przydatne linki
+
+- [Digital Ocean App Platform Docs](https://docs.digitalocean.com/products/app-platform/)
+- [Digital Ocean Docker Deployment](https://docs.digitalocean.com/products/app-platform/how-to/deploy-from-container-images/)
 - [GitHub Actions Docs](https://docs.github.com/en/actions)
+- [Docker Best Practices](https://docs.docker.com/develop/dev-best-practices/)
+- [Astro Docker Deployment](https://docs.astro.build/en/recipes/docker/)
 
-## 🎯 Następne kroki po deploymencie
+---
 
-1. Skonfiguruj własną domenę
-2. Ustaw monitoring i alerty
-3. Skonfiguruj Cloudflare Analytics
-4. Dodaj Web Analytics do strony
-5. Rozważ użycie Cloudflare Cache dla statycznych assetów
+**Ostatnia aktualizacja:** Grudzień 2025  
+**Stack:** Docker + GitHub Actions + Digital Ocean  
+**Status:** ✅ Produkcyjny
+
