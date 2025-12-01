@@ -51,37 +51,29 @@ Moduł autentykacji wprowadza **4 nowe strony Astro** renderowane server-side:
 
 #### 2.1.1. Strona logowania
 
-**Lokalizacja:** `src/pages/login.astro`
+**Lokalizacja:** `src/pages/index.astro` (główna strona `/`)
 
 **Odpowiedzialność:**
 
-- Renderowanie formularza logowania (React component)
-- Sprawdzenie stanu sesji po stronie serwera – jeśli użytkownik jest zalogowany, przekierowanie na `/dashboard` lub stronę główną
-- Wyświetlenie komunikatów o sukcesie (np. po rejestracji: "Account created! Please log in.")
-- Obsługa query params: `?message=...` dla komunikatów informacyjnych
+- Renderowanie strony logowania przez komponent React `LoginPage`
+- Obsługa query params: `?return=...` dla przekierowania po zalogowaniu
+- Przekierowanie zalogowanych użytkowników odbywa się po stronie React w komponencie `ProtectedRoute`
 
 **Logika server-side (Astro frontmatter):**
 
 ```typescript
-// Pobierz sesję użytkownika z Supabase
-const {
-  data: { session },
-} = await Astro.locals.supabase.auth.getSession();
-
-// Jeśli użytkownik jest zalogowany, przekieruj
-if (session) {
-  return Astro.redirect("/dashboard");
-}
-
-// Opcjonalnie: pobierz komunikat z query params
-const message = Astro.url.searchParams.get("message");
+export const prerender = false;
 ```
 
-**Props przekazywane do komponentu React:**
+**Przekazywany komponent:**
 
-- `message?: string` – komunikat informacyjny
+- `<LoginPage client:load />` – renderuje `AuthForm` z opcjami nawigacji do signup i forgot-password
 
-**Layout:** `Layout.astro` (bez nawigacji użytkownika)
+**Layout:** `Layout.astro` (podstawowy layout bez sesji)
+
+**Routing:**
+
+- `Routes.Login = "/"`
 
 ---
 
@@ -91,27 +83,25 @@ const message = Astro.url.searchParams.get("message");
 
 **Odpowiedzialność:**
 
-- Renderowanie formularza rejestracji (React component)
-- Sprawdzenie stanu sesji – jeśli użytkownik jest zalogowany, przekierowanie na `/boards`
-- Informacja o wymaganiach dla hasła (minimum 6 znaków)
+- Renderowanie strony rejestracji przez komponent React `SignUpPage`
+- Informacja o wymaganiach dla hasła (minimum 6 znaków + powtórz hasło)
+- Przekierowanie zalogowanych użytkowników odbywa się po stronie React w komponencie `ProtectedRoute`
 
 **Logika server-side (Astro frontmatter):**
 
 ```typescript
-const {
-  data: { session },
-} = await Astro.locals.supabase.auth.getSession();
-
-if (session) {
-  return Astro.redirect("/dashboard");
-}
+export const prerender = false;
 ```
 
-**Props przekazywane do komponentu React:**
+**Przekazywany komponent:**
 
-- brak specjalnych props (formularz zarządza własnym stanem)
+- `<SignUpPage client:load />` – renderuje `SignUpForm` z walidacją client-side
 
-**Layout:** `Layout.astro` (bez nawigacji użytkownika)
+**Layout:** `Layout.astro` (podstawowy layout)
+
+**Routing:**
+
+- `Routes.SignUp = "/signup"`
 
 ---
 
@@ -121,26 +111,25 @@ if (session) {
 
 **Odpowiedzialność:**
 
-- Renderowanie formularza żądania resetu hasła (React component)
+- Renderowanie strony przez komponent React `ForgotPasswordPage`
 - Użytkownik podaje email, na który zostanie wysłany link resetujący
-- Wyświetlenie komunikatu sukcesu po wysłaniu emaila
+- Wyświetlenie komunikatu sukcesu przez toast (globalnie)
 
 **Logika server-side (Astro frontmatter):**
 
 ```typescript
-const {
-  data: { session },
-} = await Astro.locals.supabase.auth.getSession();
-
-// Zalogowani użytkownicy mogą też zresetować hasło
-// (opcjonalnie można przekierować na stronę ustawień profilu)
+export const prerender = false;
 ```
 
-**Props przekazywane do komponentu React:**
+**Przekazywany komponent:**
 
-- brak specjalnych props
+- `<ForgotPasswordPage client:load />` – renderuje `ForgotPasswordForm`
 
 **Layout:** `Layout.astro`
+
+**Routing:**
+
+- `Routes.ForgotPassword = "/forgot-password"`
 
 ---
 
@@ -150,415 +139,487 @@ const {
 
 **Odpowiedzialność:**
 
-- Renderowanie formularza do ustawienia nowego hasła (React component)
-- Walidacja tokenu resetującego z URL (przekazanego przez Supabase w linku emailowym)
-- Po pomyślnej zmianie hasła, przekierowanie na `/login?message=Password updated successfully`
+- Renderowanie strony przez komponent React `ResetPasswordPage`
+- Wydobycie tokenów z URL hash fragment (przekazanych przez Supabase w linku emailowym)
+- Po pomyślnej zmianie hasła, automatyczne przekierowanie na `/` (login)
 
 **Logika server-side (Astro frontmatter):**
 
 ```typescript
-// Sprawdź, czy token resetowania hasła jest obecny w URL
-const token = Astro.url.searchParams.get("token");
-const type = Astro.url.searchParams.get("type");
-
-if (!token || type !== "recovery") {
-  // Brak tokenu lub nieprawidłowy typ – przekieruj na forgot-password
-  return Astro.redirect("/forgot-password?message=Invalid or expired reset link");
-}
-
-// Zweryfikuj token z Supabase
-const {
-  data: { session },
-  error,
-} = await Astro.locals.supabase.auth.verifyOtp({
-  token_hash: token,
-  type: "recovery",
-});
-
-if (error || !session) {
-  return Astro.redirect("/forgot-password?message=Invalid or expired reset link");
-}
-
-// Token jest prawidłowy – renderuj formularz
+export const prerender = false;
 ```
 
-**Props przekazywane do komponentu React:**
+**Przekazywany komponent:**
 
-- brak (komponent używa API do zmiany hasła)
+- `<ResetPasswordPage client:load />` – renderuje `ResetPasswordForm` po walidacji tokenów
+
+**Implementacja w ResetPasswordPage:**
+
+```typescript
+// Tokeny są w URL hash: #access_token=...&refresh_token=...
+const hash = window.location.hash.substring(1);
+const params = new URLSearchParams(hash);
+const accessToken = params.get("access_token");
+const refreshToken = params.get("refresh_token");
+
+// Jeśli brak tokenów, przekieruj na /forgot-password po 2 sekundach
+```
+
+**Props przekazywane do ResetPasswordForm:**
+
+- `accessToken: string`
+- `refreshToken: string`
 
 **Layout:** `Layout.astro`
 
+**Routing:**
+
+- `Routes.ResetPassword = "/reset-password"`
+
 ---
 
-#### 2.1.5. Strona Dashboard (nowa lub rozszerzona strona główna)
+#### 2.1.5. Strony chronione (Boards)
 
-**Lokalizacja:** `src/pages/dashboard.astro` lub rozszerzenie `src/pages/index.astro`
+**Lokalizacja:** `src/pages/boards.astro`, `src/pages/my-boards.astro`, `src/pages/played.astro`
 
 **Odpowiedzialność:**
 
-- Główna strona aplikacji dla zalogowanych użytkowników
-- Wyświetlenie listy plansz użytkownika, statystyk, opcji tworzenia nowej planszy
-- **Wymaga autentykacji** – middleware lub server-side sprawdzenie sesji
+- Strony dla zalogowanych użytkowników
+- Wyświetlenie list plansz (publiczne, własne, rozegrane)
+- **Wymaga autentykacji** – sprawdzenie przez komponent React `ProtectedRoute`
 
 **Logika server-side (Astro frontmatter):**
 
 ```typescript
-const {
-  data: { session },
-} = await Astro.locals.supabase.auth.getSession();
-
-if (!session) {
-  return Astro.redirect("/login?message=Please log in to continue");
-}
-
-// Pobierz dane użytkownika
-const user = session.user;
+export const prerender = false;
 ```
 
-**Layout:** `AuthenticatedLayout.astro` (rozszerzony Layout z nawigacją użytkownika)
+**Przekazywane komponenty:**
+
+- `<BoardsPage client:load />` dla `/boards`
+- `<MyBoardsPage client:load />` dla `/my-boards`
+- `<BoardsPlayedPage client:load />` dla `/played`
+
+**Zabezpieczenie:**
+
+- Każdy z tych komponentów jest opakowany w `<ProtectedRoute>` w komponencie `Providers`
+- `ProtectedRoute` sprawdza stan autentykacji z Redux store
+- Przekierowanie na `/?return=<current_path>` jeśli użytkownik nie jest zalogowany
+
+**Layout:** `Layout.astro` (podstawowy layout)
+
+**Routing:**
+
+- `Routes.Boards = "/boards"`
+- `Routes.MyBoards = "/my-boards"`
+- `Routes.MyPlayedBoards = "/played"`
 
 ---
 
 ### 2.2. Komponenty React (client-side interactivity)
 
-#### 2.2.1. LoginForm
+#### 2.2.1. LoginPage i AuthForm
 
-**Lokalizacja:** `src/components/auth/LoginForm.tsx`
+**Lokalizacja:** 
+- `src/components/pages/LoginPage.tsx` (page wrapper)
+- `src/components/forms/AuthForm.tsx` (formularz logowania)
 
-**Odpowiedzialność:**
+**Odpowiedzialność LoginPage:**
 
-- Zarządzanie stanem formularza (email, password)
-- Walidacja po stronie klienta (email format, hasło minimum 6 znaków)
-- Wywołanie endpointu `POST /api/auth/login`
-- Obsługa błędów (wyświetlenie komunikatów pod formularzem)
-- Wyświetlenie linku do "Forgot password?" i "Don't have an account? Sign up"
+- Renderowanie tytułu "Definition quest"
+- Renderowanie `AuthForm`
+- Linki do "Zarejestruj się" i "Zapomniałeś hasła?"
+- Stylowanie layoutu strony logowania
+
+**Odpowiedzialność AuthForm:**
+
+- Zarządzanie stanem formularza przez `react-hook-form` z `zodResolver`
+- Walidacja po stronie klienta przez `LoginSchema` (email format, hasło minimum 6 znaków)
+- Wywołanie mutacji RTK Query `useLoginMutation()`
+- Obsługa query param `?return=...` dla przekierowania po zalogowaniu
 - Loading state podczas procesu logowania
-- Po sukcesie – przekierowanie na `/dashboard` lub stronę z query param `redirect`
+- Po sukcesie – przekierowanie na adres z `return` lub domyślnie `/boards`
 
-**State:**
+**State (react-hook-form):**
 
 ```typescript
 {
   email: string;
   password: string;
-  isLoading: boolean;
-  error: string | null;
 }
+// + formState.errors, isLoading z RTK Query
 ```
 
-**Walidacja kliencka:**
-
-- Email: regex `^[^\s@]+@[^\s@]+\.[^\s@]+$`
-- Password: minimum 6 znaków
-
-**Przykładowy flow:**
+**Flow:**
 
 1. Użytkownik wprowadza dane
-2. Kliknięcie "Log in" → `isLoading = true`
-3. Wywołanie `fetch('/api/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) })`
-4. Odpowiedź:
-   - Sukces → `window.location.href = '/dashboard'`
-   - Błąd → wyświetl komunikat, `isLoading = false`
+2. Walidacja onBlur przez Zod schema
+3. Kliknięcie "Zaloguj" → `isLoading = true`
+4. RTK Query wywołuje `POST /api/auth/login`
+5. Odpowiedź:
+   - Sukces → zapisanie tokenów do Redux store → toast sukcesu → `window.location.assign(getRouteAddress)`
+   - Błąd → toast błędu (globalnie obsługiwany w apiSlice)
 
 **Komponenty UI użyte:**
 
-- `Button` (z `src/components/ui/button.tsx`)
-- `Input` (do stworzenia w `src/components/ui/input.tsx` – Shadcn/ui)
-- `Label` (do stworzenia w `src/components/ui/label.tsx` – Shadcn/ui)
-- `Alert` (do stworzenia w `src/components/ui/alert.tsx` – Shadcn/ui dla komunikatów błędów)
+- `@radix-ui/react-form` (Form.Root, Form.Submit)
+- `FormInput` (custom component z walidacją)
+- `SubmitButton` (custom component z loading state)
 
 **ARIA i dostępność:**
 
-- `aria-label` na inputach
-- `aria-invalid` na inputach z błędami
-- `aria-describedby` łączące input z komunikatem błędu
-- `focus-visible:ring` na elementach interaktywnych
+- FormInput zarządza automatycznie aria attributes
+- Focus management
+- Error messages z odpowiednimi rolami
 
 ---
 
-#### 2.2.2. SignUpForm
+#### 2.2.2. SignUpPage i SignUpForm
 
-**Lokalizacja:** `src/components/auth/SignUpForm.tsx`
+**Lokalizacja:**
+- `src/components/pages/SignUpPage.tsx` (page wrapper)
+- `src/components/forms/SignUpForm.tsx` (formularz rejestracji)
 
-**Odpowiedzialność:**
+**Odpowiedzialność SignUpPage:**
 
-- Zarządzanie stanem formularza (email, password, displayName)
-- Walidacja po stronie klienta (email, hasło min 6 znaków, displayName max 40 znaków)
-- Wywołanie endpointu `POST /api/auth/signUp`
-- Obsługa błędów (np. email już istnieje)
-- Po sukcesie – komunikat "Account created! Please check your email for verification." + opcjonalne przekierowanie na `/login?message=...`
+- Renderowanie tytułu "Definition quest"
+- Renderowanie `SignUpForm`
+- Link do "Zaloguj się"
+- Stylowanie layoutu strony rejestracji
 
-**State:**
+**Odpowiedzialność SignUpForm:**
+
+- Zarządzanie stanem formularza przez `react-hook-form` z `zodResolver`
+- Walidacja po stronie klienta przez `ClientSignUpSchema` (email, hasło min 6 znaków, displayName 1-40 znaków, repeatPassword)
+- Dodatkowa walidacja: hasło i powtórzone hasło muszą być identyczne (refine w ClientSignUpSchema)
+- Wywołanie mutacji RTK Query `useSignUpMutation()`
+- Po sukcesie – toast sukcesu → przekierowanie na `/` (login)
+
+**State (react-hook-form):**
 
 ```typescript
 {
   email: string;
   password: string;
   displayName: string;
-  isLoading: boolean;
-  error: string | null;
-  success: boolean;
+  repeatPassword: string;
 }
+// + formState.errors, isLoading z RTK Query
 ```
 
 **Walidacja kliencka:**
 
-- Email: regex
+- Email: Zod email validation
 - Password: minimum 6 znaków
 - DisplayName: 1-40 znaków
+- RepeatPassword: musi być identyczne z password (refine)
 
 **Flow:**
 
-1. Użytkownik wprowadza dane
-2. Kliknięcie "Sign up" → `isLoading = true`
-3. Wywołanie `POST /api/auth/signUp`
-4. Odpowiedź:
-   - Sukces → wyświetl komunikat sukcesu lub przekieruj na `/login?message=Account created`
-   - Błąd → wyświetl komunikat błędu
+1. Użytkownik wprowadza dane (displayName, email, password, repeatPassword)
+2. Walidacja onBlur przez Zod schema
+3. Kliknięcie "Zarejestruj" → `isLoading = true`
+4. RTK Query wywołuje `POST /api/auth/signUp`
+5. Odpowiedź:
+   - Sukces → toast sukcesu → `window.location.assign(Routes.Login)`
+   - Błąd → toast błędu (globalnie obsługiwany)
 
 **Komponenty UI użyte:**
 
-- `Button`, `Input`, `Label`, `Alert`
-
-**ARIA i dostępność:**
-
-- Takie same wymagania jak `LoginForm`
+- `@radix-ui/react-form`
+- `FormInput` (4 inputy: displayName, email, password, repeatPassword)
+- `SubmitButton`
 
 ---
 
-#### 2.2.3. ForgotPasswordForm
+#### 2.2.3. ForgotPasswordPage i ForgotPasswordForm
 
-**Lokalizacja:** `src/components/auth/ForgotPasswordForm.tsx`
+**Lokalizacja:**
+- `src/components/pages/ForgotPasswordPage.tsx` (page wrapper)
+- `src/components/forms/ForgotPasswordForm.tsx` (formularz)
 
-**Odpowiedzialność:**
+**Odpowiedzialność ForgotPasswordPage:**
 
-- Zarządzanie stanem formularza (email)
-- Wywołanie endpointu `POST /api/auth/forgot-password`
-- Wyświetlenie komunikatu sukcesu: "Password reset link sent! Check your email."
-- Obsługa błędów (np. email nie istnieje w bazie – ale z bezpieczeństwa zawsze pokazujemy sukces)
+- Renderowanie tytułu "Definition quest"
+- Renderowanie `ForgotPasswordForm`
+- Link "Wróć do logowania"
+- Stylowanie layoutu
 
-**State:**
+**Odpowiedzialność ForgotPasswordForm:**
+
+- Zarządzanie stanem formularza przez `react-hook-form` z `zodResolver`
+- Walidacja emaila przez `ForgotPasswordSchema`
+- Wywołanie mutacji RTK Query `useForgotPasswordMutation()`
+- Wyświetlenie komunikatu sukcesu przez toast (globalnie)
+- Security best practice: zawsze pokazujemy sukces, nie ujawniamy czy email istnieje
+
+**State (react-hook-form):**
 
 ```typescript
 {
   email: string;
-  isLoading: boolean;
-  success: boolean;
-  error: string | null;
 }
+// + isLoading z RTK Query, isSuccess
 ```
 
 **Flow:**
 
 1. Użytkownik wprowadza email
-2. Kliknięcie "Send reset link" → `isLoading = true`
-3. Wywołanie `POST /api/auth/forgot-password`
-4. Odpowiedź zawsze sukces (security best practice – nie ujawniamy czy email istnieje)
-5. Wyświetlenie komunikatu sukcesu
+2. Kliknięcie "Wyślij link" → `isLoading = true`
+3. RTK Query wywołuje `POST /api/auth/forgot-password`
+4. Odpowiedź zawsze sukces → toast "Sprawdź skrzynkę - Wysłaliśmy link resetujący hasło"
+5. Input i przycisk zostają disabled po sukcesie
 
 **Komponenty UI użyte:**
 
-- `Button`, `Input`, `Label`, `Alert`
+- `@radix-ui/react-form`
+- `FormInput`
+- `SubmitButton` (disabled po sukcesie)
 
 ---
 
-#### 2.2.4. ResetPasswordForm
+#### 2.2.4. ResetPasswordPage i ResetPasswordForm
 
-**Lokalizacja:** `src/components/auth/ResetPasswordForm.tsx`
+**Lokalizacja:**
+- `src/components/pages/ResetPasswordPage.tsx` (page wrapper z logiką tokenów)
+- `src/components/forms/ResetPasswordForm.tsx` (formularz)
 
-**Odpowiedzialność:**
+**Odpowiedzialność ResetPasswordPage:**
 
-- Zarządzanie stanem formularza (newPassword, confirmPassword)
-- Walidacja: hasło min 6 znaków, oba pola muszą być identyczne
-- Wywołanie endpointu `POST /api/auth/reset-password`
-- Po sukcesie – przekierowanie na `/login?message=Password updated successfully`
+- Wydobycie tokenów z URL hash: `#access_token=...&refresh_token=...`
+- Walidacja obecności tokenów
+- Jeśli brak tokenów → komunikat błędu → przekierowanie na `/forgot-password` po 2 sekundach
+- Jeśli tokeny są OK → renderowanie `ResetPasswordForm` z tokenami jako props
+- Renderowanie tytułu i layoutu strony
 
-**State:**
+**Odpowiedzialność ResetPasswordForm:**
+
+- Zarządzanie stanem formularza przez `react-hook-form` z `zodResolver`
+- Walidacja przez custom `ClientSchema`: newPassword min 6 znaków, confirmPassword musi być identyczne
+- Wywołanie mutacji RTK Query `useResetPasswordMutation()` z tokenami i nowym hasłem
+- Po sukcesie – toast sukcesu → automatyczne przekierowanie na `/` (w apiSlice)
+
+**Props ResetPasswordForm:**
+
+```typescript
+{
+  accessToken: string;
+  refreshToken: string;
+}
+```
+
+**State (react-hook-form):**
 
 ```typescript
 {
   newPassword: string;
   confirmPassword: string;
-  isLoading: boolean;
-  error: string | null;
 }
+// + formState.errors, isLoading z RTK Query
 ```
 
 **Walidacja kliencka:**
 
 - newPassword: minimum 6 znaków
-- confirmPassword: musi być identyczne z newPassword
+- confirmPassword: musi być identyczne z newPassword (refine)
 
 **Flow:**
 
-1. Użytkownik wprowadza nowe hasło (2x)
-2. Kliknięcie "Reset password" → `isLoading = true`
-3. Wywołanie `POST /api/auth/reset-password` (token jest automatycznie dostępny w sesji Supabase)
-4. Odpowiedź:
-   - Sukces → `window.location.href = '/login?message=Password updated'`
-   - Błąd → wyświetl komunikat błędu
+1. ResetPasswordPage wydobywa tokeny z URL hash
+2. Użytkownik wprowadza nowe hasło (2x)
+3. Kliknięcie "Zmień hasło" → `isLoading = true`
+4. RTK Query wywołuje `POST /api/auth/reset-password` z payload: `{ accessToken, refreshToken, newPassword }`
+5. Odpowiedź:
+   - Sukces → toast "Hasło zostało zmienione" → `window.location.href = "/"`
+   - Błąd → toast błędu
 
 **Komponenty UI użyte:**
 
-- `Button`, `Input`, `Label`, `Alert`
+- `@radix-ui/react-form`
+- `FormInput` (2x: newPassword, confirmPassword z showPasswordToggle)
+- `SubmitButton`
 
 ---
 
-#### 2.2.5. UserNav (Nawigacja użytkownika)
+#### 2.2.5. Sidebar (Nawigacja użytkownika)
 
-**Lokalizacja:** `src/components/auth/UserNav.tsx`
+**Lokalizacja:** `src/components/ui/sidebar/Sidebar.tsx`
 
 **Odpowiedzialność:**
 
-- Wyświetlenie informacji o zalogowanym użytkowniku (display name, avatar)
-- Dropdown menu z opcjami: "Profile", "Settings", "Log out"
-- Wywołanie endpointu `POST /api/auth/logout` przy kliknięciu "Log out"
+- Wyświetlenie nawigacji po aplikacji dla zalogowanych użytkowników
+- Lista linków nawigacyjnych z ikonami
+- Przycisk wylogowania na dole sidebar'a
+- Mechanizm collapse/expand (desktop i mobile)
+- Automatyczne zamykanie przy kliknięciu poza sidebar (mobile)
 
-**Props:**
+**Elementy nawigacji:**
 
 ```typescript
-{
-  user: {
-    email: string;
-    displayName: string;
-    avatarUrl?: string;
-  };
-}
+const navItems = [
+  { label: "Publiczne tablice", route: Routes.Boards, icon: BoardsIcon },
+  { label: "Moje tablice", route: Routes.MyBoards, icon: MyBoardsIcon },
+  { label: "Rozegrane Tablice", route: Routes.MyPlayedBoards, icon: PlayedIcon },
+  { label: "Utwórz tablicę", route: "/boards/create", icon: PlusIcon },
+];
 ```
 
 **Funkcjonalności:**
 
-- Dropdown otwierany po kliknięciu na awatar/nazwę
-- Opcja "Log out" → wywołanie `POST /api/auth/logout` → przekierowanie na `/login`
+- `SidebarToggleButton` – przełączanie widoczności
+- `NavItem` – pojedynczy element nawigacji z visual feedback dla aktywnej strony
+- Przycisk "Wyloguj" → wywołanie `useLogoutMutation()` → automatyczne przekierowanie (w apiSlice)
+- Hook `useSidebar()` – zarządzanie stanem collapsed/expanded
+- Hook `useClickOutside()` – zamykanie sidebar przy kliknięciu poza nim
 
-**Komponenty UI użyte:**
+**Komponenty powiązane:**
 
-- `DropdownMenu` (do stworzenia w `src/components/ui/dropdown-menu.tsx` – Shadcn/ui)
-- `Avatar` (do stworzenia w `src/components/ui/avatar.tsx` – Shadcn/ui)
+- `src/components/ui/sidebar/SidebarToggleButton.tsx`
+- `src/components/ui/sidebar/NavItem.tsx`
+- `src/hooks/useSidebar.ts`
+- `src/hooks/useClickOutside.ts`
+
+**Uwaga:** W implementacji nie ma komponentu `UserNav` jak w planie. Zamiast tego jest `Sidebar` z nawigacją i wylogowaniem.
 
 ---
 
-### 2.3. Rozszerzenie Layoutów
+### 2.3. Layout i ochrona stron
 
-#### 2.3.1. Layout.astro (podstawowy)
+#### 2.3.1. Layout.astro (jedyny layout)
 
 **Lokalizacja:** `src/layouts/Layout.astro`
 
-**Zmiany:**
-
-- Dodanie warunkowego renderowania `<UserNav>` jeśli użytkownik jest zalogowany
-- Sprawdzenie sesji po stronie serwera w frontmatter
-
-**Logika server-side:**
-
-```typescript
-const {
-  data: { session },
-} = await Astro.locals.supabase.auth.getSession();
-const user = session?.user;
-
-// Jeśli user istnieje, pobierz display name z user_meta
-let userProfile = null;
-if (user) {
-  const { data } = await Astro.locals.supabase
-    .from("user_meta")
-    .select("display_name, avatar_url")
-    .eq("id", user.id)
-    .single();
-
-  userProfile = {
-    email: user.email,
-    displayName: data?.display_name,
-    avatarUrl: data?.avatar_url,
-  };
-}
-```
-
-**Props dla UserNav:**
-
-- Przekazanie `userProfile` jako client:load prop do React component
-
----
-
-#### 2.3.2. AuthenticatedLayout.astro (nowy)
-
-**Lokalizacja:** `src/layouts/AuthenticatedLayout.astro`
-
 **Odpowiedzialność:**
 
-- Layout dla stron wymagających autentykacji
-- Sprawdzenie sesji po stronie serwera
-- Jeśli użytkownik niezalogowany → przekierowanie na `/login`
-- Zawiera `<UserNav>` w headerze
-
-**Logika server-side:**
-
-```typescript
-const {
-  data: { session },
-} = await Astro.locals.supabase.auth.getSession();
-
-if (!session) {
-  const redirectUrl = encodeURIComponent(Astro.url.pathname);
-  return Astro.redirect(`/login?redirect=${redirectUrl}`);
-}
-
-// Pobierz profil użytkownika
-const user = session.user;
-const { data: userMeta } = await Astro.locals.supabase
-  .from("user_meta")
-  .select("display_name, avatar_url")
-  .eq("id", user.id)
-  .single();
-
-const userProfile = {
-  email: user.email,
-  displayName: userMeta?.display_name,
-  avatarUrl: userMeta?.avatar_url,
-};
-```
+- Podstawowy layout dla wszystkich stron
+- Nie sprawdza sesji użytkownika
+- Renderuje tylko `<slot />` dla zawartości strony
+- Ustawia podstawowe meta tagi i style
 
 **Struktura:**
 
 ```astro
 <!doctype html>
-<html>
-  <head></head>...
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{title}</title>
+  </head>
   <body>
-    <header>
-      <UserNav user={userProfile} client:load />
-    </header>
-    <main>
-      <slot />
-    </main>
-    <footer>...</footer>
+    <slot />
   </body>
 </html>
+```
+
+**Uwaga:** W implementacji NIE MA `AuthenticatedLayout.astro` jak zakładał plan.
+
+---
+
+#### 2.3.2. ProtectedRoute (HOC dla React)
+
+**Lokalizacja:** `src/components/HOC/ProtectedRoute.tsx`
+
+**Odpowiedzialność:**
+
+- Higher-Order Component zabezpieczający strony wymagające autentykacji
+- Sprawdza stan autentykacji z Redux store (`accessToken`, `isAuthenticated`)
+- Przekierowuje niezalogowanych użytkowników na `/?return=<current_path>`
+- Przekierowuje zalogowanych użytkowników ze stron auth (login, signup) na `/boards`
+
+**Logika:**
+
+```typescript
+const { accessToken, isAuthenticated } = useAppSelector((state) => state.auth);
+const pathname = window.location.pathname;
+
+const isProtected = Object.values(ProtectedRoutes).includes(pathname as ProtectedRoutes);
+const isAuthPage = authPages.includes(pathname as Routes);
+const authed = Boolean(accessToken) && isAuthenticated;
+
+useEffect(() => {
+  // Redirect unauthenticated users trying to access protected routes
+  if (isProtected && !authed) {
+    window.location.replace(`/?return=${encodeURIComponent(pathname)}`);
+  }
+
+  // Redirect authenticated users away from auth pages
+  if (isAuthPage && authed) {
+    window.location.replace(Routes.Boards);
+  }
+}, [isProtected, authed, pathname]);
+```
+
+**Użycie:**
+
+- Komponent jest używany w `Providers.tsx` do opakowywania zawartości aplikacji
+- Działa po stronie klienta (React), nie po stronie serwera (Astro)
+
+**Protected Routes:**
+
+```typescript
+export const ProtectedRoutes = {
+  BOARDS: Routes.Boards,
+  MY_BOARDS: Routes.MyBoards,
+  MY_PLAYED_BOARDS: Routes.MyPlayedBoards,
+} as const;
 ```
 
 ---
 
 ### 2.4. Zabezpieczenie stron wymagających autentykacji
 
-Wszystkie strony wymagające zalogowania (np. dashboard, boards, profile) będą:
+**Implementacja:**
 
-1. **Używać `AuthenticatedLayout.astro`** – który automatycznie sprawdza sesję i przekierowuje na login
-2. **Alternatywnie:** implementować własną logikę sprawdzania sesji w frontmatter strony
+Zabezpieczenie stron odbywa się przez komponent React `ProtectedRoute`, nie przez Astro layout:
 
-**Przykład dla `src/pages/dashboard.astro`:**
+1. **Strony Astro** renderują komponenty React z `client:load`
+2. **Komponenty React** są opakowane w `<Providers>` (zawiera Redux Provider)
+3. **Wewnątrz Providers** jest `<ProtectedRoute>` który sprawdza autentykację z Redux store
+4. **Jeśli użytkownik niezalogowany** i próbuje wejść na chronioną stronę → przekierowanie na `/?return=<current_path>`
+5. **Jeśli użytkownik zalogowany** i próbuje wejść na stronę auth (login, signup) → przekierowanie na `/boards`
+
+**Przykład dla `src/pages/boards.astro`:**
 
 ```astro
 ---
-import AuthenticatedLayout from "../layouts/AuthenticatedLayout.astro";
-// Reszta importów...
-
-// AuthenticatedLayout automatycznie sprawdza sesję
-// Jeśli użytkownik niezalogowany → redirect na /login
+import React from "react";
+import { BoardsPage } from "@/components/pages/BoardsPage";
+import Layout from "@/layouts/Layout.astro";
 ---
 
-<AuthenticatedLayout title="Dashboard">
-  <!-- Treść dashboard -->
-</AuthenticatedLayout>
+<Layout>
+  <BoardsPage client:load />
+</Layout>
+```
+
+**BoardsPage Component:**
+
+```tsx
+import { withProviders } from "@/components/HOC/Providers";
+
+const BoardsPageComponent: FC = () => {
+  // ... logika komponentu
+};
+
+export const BoardsPage = withProviders(BoardsPageComponent);
+```
+
+**withProviders HOC:**
+
+Opakowuje komponent w `<Providers>` który zawiera `<ProtectedRoute>`:
+
+```tsx
+export const withProviders = (Component: ComponentType) => {
+  return (props: any) => (
+    <Providers>
+      <ProtectedRoute>
+        <Component {...props} />
+      </ProtectedRoute>
+    </Providers>
+  );
+};
 ```
 
 ---
@@ -680,11 +741,12 @@ Wszystkie endpointy autentykacji znajdują się w katalogu `src/pages/api/auth/`
 
 ```
 src/pages/api/auth/
-├── login.ts          # POST – logowanie użytkownika
-├── signUp.ts         # POST – rejestracja użytkownika
-├── logout.ts         # POST – wylogowanie użytkownika
+├── login.ts           # POST – logowanie użytkownika
+├── signUp.ts          # POST – rejestracja użytkownika
+├── logout.ts          # POST – wylogowanie użytkownika
 ├── forgot-password.ts # POST – żądanie resetu hasła
-└── reset-password.ts  # POST – ustawienie nowego hasła
+├── reset-password.ts  # POST – ustawienie nowego hasła
+└── refresh-token.ts   # POST – odświeżenie access token (NOWY)
 ```
 
 #### 3.1.1. Wspólne cechy wszystkich endpointów
@@ -1154,43 +1216,133 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
 ---
 
-### 3.7. Aktualizacja middleware
+### 3.7. Middleware
 
 **Lokalizacja:** `src/middleware/index.ts`
 
-**Zmiany:**
+**Odpowiedzialność:**
 
-1. Dodanie nowych publicznych endpointów do listy `PUBLIC_ENDPOINTS`:
+1. Dodanie Supabase client do `context.locals`
+2. Sprawdzanie autentykacji dla endpointów API (nie dla stron)
+3. Dodanie zalogowanego użytkownika do `context.locals.user`
+4. Wymuszenie autentykacji dla chronionych endpointów
 
-   ```typescript
-   const PUBLIC_ENDPOINTS = [
-     "/api/auth/login",
-     "/api/auth/signUp",
-     "/api/auth/logout",
-     "/api/auth/forgot-password",
-     "/api/auth/reset-password",
-   ];
-   ```
+**Publiczne endpointy:**
 
-2. Dodanie publicznych stron (opcjonalnie, jeśli middleware ma chronić również strony):
+```typescript
+const PUBLIC_ENDPOINTS = [
+  "/api/auth/login",
+  "/api/auth/signUp",
+  "/api/auth/logout",
+  "/api/auth/forgot-password",
+  "/api/auth/reset-password",
+  "/api/auth/refresh-token",
+];
+```
 
-   ```typescript
-   const PUBLIC_PAGES = ["/login", "/signup", "/forgot-password", "/reset-password"];
-   ```
+**Logika middleware:**
 
-3. Rozszerzenie logiki middleware o sprawdzanie stron:
+```typescript
+export const onRequest = defineMiddleware(async (context, next) => {
+  // Zawsze dodaj Supabase client do locals
+  context.locals.supabase = supabaseClient;
 
-   ```typescript
-   // Skip authentication for public pages and endpoints
-   const isPublicPage = PUBLIC_PAGES.some((page) => context.url.pathname.startsWith(page));
-   const isPublicEndpoint = PUBLIC_ENDPOINTS.some((endpoint) => context.url.pathname.startsWith(endpoint));
+  // Sprawdź czy to endpoint API
+  const isApiEndpoint = context.url.pathname.startsWith("/api/");
 
-   if (isPublicPage || isPublicEndpoint || !context.url.pathname.startsWith("/api/")) {
-     return next();
-   }
-   ```
+  // Dla non-API requestów, kontynuuj
+  if (!isApiEndpoint) {
+    return next();
+  }
 
-**Uwaga:** W przypadku Astro SSR, zabezpieczenie stron jest lepiej zrealizowane przez `AuthenticatedLayout.astro` lub bezpośrednio w frontmatter strony, niż przez middleware. Middleware powinien skupić się na zabezpieczeniu **endpointów API**.
+  // Spróbuj pobrać zalogowanego użytkownika
+  const { data: { user }, error: authError } = 
+    await context.locals.supabase.auth.getUser();
+
+  // Dodaj usera do locals jeśli jest zalogowany
+  if (!authError && user) {
+    context.locals.user = user;
+  }
+
+  // Dla chronionych endpointów, wymagaj autentykacji
+  const isPublic = isPublicEndpoint(context.url.pathname);
+  if (!isPublic && (!user || authError)) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  return next();
+});
+```
+
+**Uwaga:** Middleware chroni tylko endpointy API. Zabezpieczenie stron odbywa się przez komponent React `ProtectedRoute`.
+
+---
+
+### 3.7. Endpoint: POST /api/auth/refresh-token
+
+**Lokalizacja:** `src/pages/api/auth/refresh-token.ts`
+
+**Odpowiedzialność:**
+
+- Odświeżenie access token używając refresh token
+- Wywołanie `supabase.auth.refreshSession({ refresh_token })`
+- Zwrócenie nowych tokenów (access i refresh)
+
+**Request body schema (Zod):**
+
+```typescript
+const RefreshTokenSchema = z.object({
+  refreshToken: z.string().min(1, "Refresh token is required"),
+});
+```
+
+**Flow:**
+
+1. Parsowanie i walidacja JSON body
+2. Wywołanie `supabase.auth.refreshSession({ refresh_token: refreshToken })`
+3. Jeśli sukces:
+   - Zwrócenie `{ data: { session: { accessToken, refreshToken } }, message: 'Token refreshed successfully' }`
+   - Status: `200`
+4. Jeśli błąd:
+   - Zwrócenie `{ error: 'Invalid or expired refresh token' }`
+   - Status: `401`
+
+**Przykładowa implementacja (kontrakt):**
+
+```typescript
+import type { APIRoute } from "astro";
+import { RefreshTokenSchema } from "../../../lib/validation/auth";
+
+export const prerender = false;
+
+export const POST: APIRoute = async ({ request, locals }) => {
+  // ... walidacja body przez RefreshTokenSchema
+  
+  const { data: sessionData, error: refreshError } = 
+    await locals.supabase.auth.refreshSession({
+      refresh_token: refreshToken,
+    });
+
+  if (refreshError || !sessionData.session) {
+    throw new HttpError("INVALID_REFRESH_TOKEN", 401);
+  }
+
+  return createSuccessResponse({
+    data: {
+      session: {
+        accessToken: sessionData.session.access_token,
+        refreshToken: sessionData.session.refresh_token,
+      },
+    },
+    message: "Token refreshed successfully",
+  }, 200);
+};
+```
+
+**Uwaga:** Ten endpoint jest używany automatycznie przez RTK Query w `baseQueryWithReauth` gdy access token wygasa (status 401).
 
 ---
 
@@ -1235,11 +1387,11 @@ if (error.status >= 500) {
 
 ---
 
-### 3.9. Aktualizacja typów (DTO)
+### 3.9. Typy (DTO)
 
 **Lokalizacja:** `src/types.ts`
 
-**Nowe typy do dodania:**
+**Zaimplementowane typy Auth:**
 
 ```typescript
 /**
@@ -1262,28 +1414,108 @@ export interface ForgotPasswordRequest {
 }
 
 export interface ResetPasswordRequest {
+  accessToken: string;
+  refreshToken: string;
   newPassword: string;
+}
+
+export interface RefreshTokenRequest {
+  refreshToken: string;
+}
+
+export interface AuthUserDTO {
+  id: string;
+  email: string;
+}
+
+export interface AuthSessionDTO {
+  accessToken: string;
+  refreshToken: string;
 }
 
 export interface AuthResponse {
   data?: {
-    user: {
-      id: string;
-      email: string;
-    };
-    session?: {
-      access_token: string;
-      refresh_token: string;
-    };
+    user: AuthUserDTO;
+    session?: AuthSessionDTO;
   };
   message?: string;
   error?: string;
 }
 ```
 
+**Uwaga:** `ResetPasswordRequest` zawiera tokeny jako parametry (nie są automatycznie w sesji Supabase), ponieważ są wydobywane z URL hash po stronie klienta.
+
 ---
 
 ## 4. System autentykacji
+
+### 4.0. Redux Toolkit Query (RTK Query)
+
+**Lokalizacja:** `src/store/api/apiSlice.ts`
+
+**Odpowiedzialność:**
+
+Aplikacja wykorzystuje **Redux Toolkit Query** do zarządzania komunikacją z API:
+
+1. **Centralne zarządzanie stanem** – Redux store przechowuje:
+   - Tokeny autentykacji (`accessToken`, `refreshToken`)
+   - Status autentykacji (`isAuthenticated`)
+   - Informacje o użytkowniku
+   
+2. **Automatyczne zarządzanie tokenami:**
+   - Każde zapytanie API automatycznie dodaje header `Authorization: Bearer <accessToken>`
+   - Przy 401 error, automatyczne odświeżenie tokenu przez `baseQueryWithReauth`
+   - Po odświeżeniu tokenu, ponowienie oryginalnego zapytania
+
+3. **Globalna obsługa błędów i toastów:**
+   - Każda mutacja automatycznie wyświetla toast sukcesu/błędu
+   - Centralna obsługa w `onQueryStarted` dla każdego endpoint'a
+
+**Base Query z automatycznym reauth:**
+
+```typescript
+const baseQueryWithReauth: typeof baseQuery = async (args, api, extraOptions) => {
+  let result = await baseQuery(args, api, extraOptions);
+
+  if (result.error && result.error.status === 401) {
+    // Nie próbuj odświeżać dla endpointów auth
+    const refreshToken = (api.getState() as RootState).auth.refreshToken;
+    
+    if (!refreshToken) {
+      // Wyloguj użytkownika
+      await baseQuery({ url: "/api/auth/logout", method: "POST" }, api, extraOptions);
+      handleClientLogout(api.dispatch);
+      return result;
+    }
+
+    // Odśwież token
+    const refreshResult = await baseQuery({
+      url: "/api/auth/refresh-token",
+      method: "POST",
+      body: { refreshToken },
+    }, api, extraOptions);
+
+    if (refreshResult.data) {
+      // Zapisz nowe tokeny
+      api.dispatch(updateTokens({ accessToken, refreshToken: newRefreshToken }));
+      // Ponów zapytanie
+      result = await baseQuery(args, api, extraOptions);
+    }
+  }
+
+  return result;
+};
+```
+
+**Mutacje Auth:**
+
+- `useLoginMutation()` – logowanie + zapis tokenów do store + toast
+- `useSignUpMutation()` – rejestracja + toast
+- `useLogoutMutation()` – wylogowanie + czyszczenie store + przekierowanie
+- `useForgotPasswordMutation()` – żądanie resetu + toast
+- `useResetPasswordMutation()` – reset hasła + toast + przekierowanie na login
+
+---
 
 ### 4.1. Wykorzystanie Supabase Auth
 
@@ -1333,45 +1565,68 @@ SUPABASE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
 #### 4.2.1. Session storage
 
-Supabase Auth przechowuje sesję w **HTTP-only cookies** automatycznie:
+Aplikacja przechowuje tokeny w **Redux store** (client-side):
 
-- Cookie name: `sb-<project-id>-auth-token`
-- Zawiera: access token, refresh token
-- HTTP-only: true (zabezpieczenie przed XSS)
-- Secure: true (tylko HTTPS w produkcji)
-- SameSite: Lax
+- `accessToken` – JWT token z krótkim czasem życia (domyślnie 1 godzina)
+- `refreshToken` – token do odświeżania access token
+- `isAuthenticated` – boolean flag
+- Store jest persistowany w localStorage przez Redux persist
+
+**Lokalizacja:** `src/store/slices/authSlice.ts`
+
+```typescript
+interface AuthState {
+  accessToken: string | null;
+  refreshToken: string | null;
+  user: AuthUserDTO | null;
+  isAuthenticated: boolean;
+}
+```
 
 #### 4.2.2. Session lifecycle
 
-1. **Login:** `signInWithPassword()` → utworzenie sesji → cookie zapisany w przeglądarce
-2. **Refresh:** Automatyczne odświeżanie tokenu przez Supabase client przed wygaśnięciem
-3. **Logout:** `signOut()` → usunięcie sesji → cookie usunięty
+1. **Login:** 
+   - `POST /api/auth/login` → zwraca tokeny
+   - RTK Query zapisuje tokeny do Redux store przez `setCredentials` action
+   - Store jest automatycznie persistowany w localStorage
 
-#### 4.2.3. Pobieranie sesji w Astro
+2. **Refresh:** 
+   - Automatyczne odświeżanie przy 401 error przez `baseQueryWithReauth`
+   - Wywołanie `POST /api/auth/refresh-token` z refresh token
+   - Zapisanie nowych tokenów przez `updateTokens` action
 
-**W middleware:**
+3. **Logout:** 
+   - `POST /api/auth/logout` → usunięcie sesji po stronie serwera (jeśli istnieje)
+   - Wywołanie `handleClientLogout()` → czyszczenie Redux store
+   - Przekierowanie na `/`
+
+#### 4.2.3. Dostęp do sesji
+
+**W komponencie React:**
 
 ```typescript
-const {
-  data: { session },
-} = await context.locals.supabase.auth.getSession();
+import { useAppSelector } from "@/store/hooks";
+
+const { accessToken, user, isAuthenticated } = useAppSelector((state) => state.auth);
 ```
 
-**W stronie Astro (frontmatter):**
+**W RTK Query (automatycznie):**
 
 ```typescript
-const {
-  data: { session },
-} = await Astro.locals.supabase.auth.getSession();
+prepareHeaders: (headers, { getState }) => {
+  const token = (getState() as RootState).auth.accessToken;
+  if (token) {
+    headers.set("Authorization", `Bearer ${token}`);
+  }
+  return headers;
+}
 ```
 
-**W endpoincie API:**
+**W middleware Astro (dla endpointów API):**
 
 ```typescript
-const {
-  data: { user },
-  error,
-} = await locals.supabase.auth.getUser();
+const { data: { user }, error } = await locals.supabase.auth.getUser();
+// Token jest automatycznie brany z header Authorization przez Supabase client
 ```
 
 ---
@@ -1476,39 +1731,53 @@ if (!session) {
 
 ---
 
-### 4.5. Obsługa tokenów i cookies
+### 4.5. Obsługa tokenów
 
 #### 4.5.1. Access token i refresh token
 
-Supabase Auth automatycznie zarządza tokenami:
+Tokeny są zarządzane przez aplikację (nie automatycznie przez Supabase client):
 
 - **Access token:** JWT z krótkim czasem życia (domyślnie 1 godzina)
+  - Przechowywany w Redux store
+  - Automatycznie dodawany do każdego zapytania API w header `Authorization: Bearer <token>`
+  
 - **Refresh token:** token do odświeżania access token (domyślnie 30 dni)
+  - Przechowywany w Redux store
+  - Używany do odświeżenia access token gdy wygasa
 
-Tokeny są przechowywane w HTTP-only cookie, więc **nie są dostępne z poziomu JavaScript** (bezpieczeństwo).
+**Bezpieczeństwo:**
+
+- Tokeny są przechowywane w localStorage (przez Redux persist)
+- Nie są HTTP-only (dostępne z JavaScript)
+- XSS protection musi być zapewnione przez inne środki (CSP, sanityzacja inputów)
 
 #### 4.5.2. Automatyczne odświeżanie sesji
 
-Supabase client automatycznie odświeża access token przed wygaśnięciem, używając refresh token. Nie wymaga to dodatkowej implementacji.
+Implementacja w `baseQueryWithReauth`:
 
-#### 4.5.3. Ręczne zarządzanie cookies (opcjonalnie)
+1. Każde zapytanie API sprawdza response status
+2. Jeśli status = 401 (Unauthorized):
+   - Pobierz refresh token z Redux store
+   - Wywołaj `POST /api/auth/refresh-token`
+   - Zapisz nowe tokeny do store
+   - Ponów oryginalne zapytanie
+3. Jeśli refresh nie powiedzie się:
+   - Wyloguj użytkownika (wyczyść store)
+   - Przekieruj na stronę logowania
 
-W przypadku potrzeby manualnego ustawienia cookies (np. dla custom session storage), można użyć `Astro.cookies`:
+**Zalety tego podejścia:**
 
-```typescript
-// Ustawienie cookie
-Astro.cookies.set("session_id", sessionId, {
-  httpOnly: true,
-  secure: import.meta.env.PROD,
-  sameSite: "lax",
-  maxAge: 60 * 60 * 24 * 30, // 30 dni
-});
+- Transparentne dla użytkownika (nie widzi błędów 401)
+- Centralne zarządzanie w jednym miejscu
+- Automatyczne dla wszystkich endpointów RTK Query
 
-// Pobranie cookie
-const sessionId = Astro.cookies.get("session_id")?.value;
-```
+#### 4.5.3. Persistencja store
 
-**Uwaga:** Dla Supabase Auth nie jest to potrzebne, ponieważ zarządza cookies automatycznie.
+Redux store jest automatycznie zapisywany w localStorage przez Redux Persist:
+
+- Zapis przy każdej zmianie state
+- Automatyczne odtworzenie po odświeżeniu strony
+- Użytkownik pozostaje zalogowany po zamknięciu i ponownym otwarciu przeglądarki
 
 ---
 
@@ -1876,62 +2145,146 @@ Dla dodatkowego bezpieczeństwa, można zaimplementować CSRF tokens:
 
 ---
 
+### 6.6. POST /api/auth/refresh-token
+
+**Request:**
+
+```json
+{
+  "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+```
+
+**Response (200 OK):**
+
+```json
+{
+  "data": {
+    "session": {
+      "accessToken": "new_jwt_token",
+      "refreshToken": "new_refresh_token"
+    }
+  },
+  "message": "Token refreshed successfully"
+}
+```
+
+**Response (401 Unauthorized):**
+
+```json
+{
+  "error": "Invalid or expired refresh token"
+}
+```
+
+**Response (400 Bad Request):**
+
+```json
+{
+  "error": "Validation failed",
+  "details": {
+    "fieldErrors": {
+      "refreshToken": ["Refresh token is required"]
+    }
+  }
+}
+```
+
+**Uwaga:** Ten endpoint jest używany automatycznie przez RTK Query, nie jest wywoływany bezpośrednio przez użytkownika.
+
+---
+
 ## 7. Podsumowanie i rekomendacje
 
 ### 7.1. Podsumowanie architektury
 
 Moduł autentykacji dla **Definition Quest** wykorzystuje:
 
-1. **Frontend (Astro + React):**
-   - 4 strony Astro: login, signup, forgot-password, reset-password
-   - 5 komponentów React: LoginForm, SignUpForm, ForgotPasswordForm, ResetPasswordForm, UserNav
-   - 2 layouty: Layout (public), AuthenticatedLayout (protected)
-   - Komponenty UI z Shadcn/ui: Button, Input, Label, Alert, DropdownMenu, Avatar
+1. **Frontend (Astro + React + Redux):**
+   - **4 strony Astro:** `/` (login), `/signup`, `/forgot-password`, `/reset-password`
+   - **Page Components:** LoginPage, SignUpPage, ForgotPasswordPage, ResetPasswordPage
+   - **Form Components:** AuthForm, SignUpForm, ForgotPasswordForm, ResetPasswordForm
+   - **Sidebar:** Komponent nawigacji z wylogowaniem (zamiast UserNav)
+   - **1 Layout:** Layout.astro (podstawowy dla wszystkich stron)
+   - **ProtectedRoute HOC:** Zabezpieczenie stron wymagających autentykacji (client-side)
+   - **Redux Toolkit Query:** Zarządzanie stanem, komunikacja z API, automatyczne odświeżanie tokenów
+   - **Komponenty UI:** Radix UI (Form), custom FormInput, SubmitButton
 
 2. **Backend (Astro API routes + Supabase):**
-   - 5 endpointów API: login, signUp, logout, forgot-password, reset-password
-   - Walidacja Zod dla wszystkich request bodies
-   - Middleware chroniący endpointy API przed dostępem niezalogowanych użytkowników
-   - Supabase Auth jako backend autentykacyjny
+   - **6 endpointów API:** login, signUp, logout, forgot-password, reset-password, refresh-token
+   - **Walidacja Zod** dla wszystkich request bodies
+   - **Middleware** chroniący endpointy API przed dostępem niezalogowanych użytkowników
+   - **Supabase Auth** jako backend autentykacyjny
+   - **Strukturalne response helpers** (createSuccessResponse, createErrorResponse)
+   - **Custom error classes** (HttpError, ValidationError)
 
 3. **Baza danych (PostgreSQL via Supabase):**
    - Tabela `auth.users` (zarządzana przez Supabase Auth)
    - Tabela `user_meta` (display_name, avatar_url)
    - RLS policies dla user_meta
 
-4. **Zabezpieczenia:**
-   - HTTP-only cookies dla session storage
+4. **Zarządzanie stanem i sesjami:**
+   - **Redux store** przechowuje accessToken, refreshToken, user, isAuthenticated
+   - **Redux Persist** zapisuje store w localStorage
+   - **Automatyczne odświeżanie tokenów** przy 401 error w baseQueryWithReauth
+   - **Globalna obsługa toastów** dla sukcesu/błędu operacji
+
+5. **Zabezpieczenia:**
+   - Tokeny w localStorage (nie HTTP-only cookies)
    - Zod validation na wszystkich endpointach
-   - CSRF protection (origin checking)
-   - Email verification (opcjonalne)
-   - Rate limiting (rekomendowane dla produkcji)
+   - Authorization header z Bearer token dla chronionych endpointów
+   - Middleware sprawdza autentykację dla API
+   - ProtectedRoute sprawdza autentykację dla stron (client-side)
+   - Feature flags dla włączania/wyłączania funkcjonalności
 
 ---
 
 ### 7.2. Kluczowe decyzje architektoniczne
 
-1. **Astro SSR dla renderowania stron:**
-   - Pozwala na sprawdzenie sesji po stronie serwera przed renderowaniem
-   - Lepsze SEO i performance niż SPA
+1. **Astro dla stron + React dla interaktywności:**
+   - Astro renderuje strony z `client:load` dla React components
+   - React zarządza interaktywnością, formularzami, stanem
+   - Lepsze SEO i performance dzięki Astro
 
-2. **React dla formularzy:**
-   - Interaktywność, walidacja kliencka, zarządzanie stanem
-   - Wykorzystanie istniejących komponentów Shadcn/ui
+2. **Redux Toolkit Query zamiast prostych fetch:**
+   - Centralne zarządzanie stanem autentykacji
+   - Automatyczne odświeżanie tokenów przy 401 error
+   - Globalna obsługa toastów i błędów
+   - Cache management dla danych z API
+   - Type-safe mutations i queries
 
-3. **Supabase Auth jako backend:**
+3. **Client-side protection (ProtectedRoute) zamiast server-side (AuthenticatedLayout):**
+   - Zabezpieczenie stron przez React HOC sprawdzający Redux store
+   - Nie ma AuthenticatedLayout.astro - jest tylko podstawowy Layout.astro
+   - Szybkie przekierowania bez dodatkowych zapytań do serwera
+   - Middleware chroni tylko endpointy API
+
+4. **Tokeny w localStorage zamiast HTTP-only cookies:**
+   - Redux Persist automatycznie zapisuje store
+   - Łatwiejsze zarządzanie tokenami po stronie klienta
+   - Wymaga dodatkowej uwagi na bezpieczeństwo XSS
+   - Bearer token w Authorization header dla API calls
+
+5. **Sidebar zamiast UserNav:**
+   - Pełna nawigacja po aplikacji w jednym miejscu
+   - Wylogowanie jako element sidebar (nie dropdown)
+   - Collapse/expand functionality dla desktop i mobile
+
+6. **Supabase Auth jako backend:**
    - Kompleksowe rozwiązanie (auth, email, session management)
    - Minimalizuje potrzebę custom implementacji
    - Row Level Security dla zabezpieczenia danych
 
-4. **Middleware dla API, Layout dla stron:**
-   - Middleware chroni endpointy API
-   - AuthenticatedLayout chroni strony wymagające logowania
-   - Rozdzielenie odpowiedzialności
-
-5. **Zod dla walidacji:**
-   - Type-safe validation
-   - Spójność między klientem a serwerem
+7. **Zod dla walidacji + react-hook-form:**
+   - Type-safe validation przez zodResolver
+   - Spójność między klientem a serwerem (te same schematy)
    - Automatyczne generowanie błędów walidacji
+   - Łatwa integracja z Radix UI Form
+
+8. **Strukturalne response helpers:**
+   - `createSuccessResponse()`, `createErrorResponse()`
+   - Spójne formaty odpowiedzi z wszystkich endpointów
+   - Error mapping dla przyjaznych komunikatów użytkownika
 
 ---
 
@@ -2031,69 +2384,216 @@ Po implementacji, zaktualizować:
 
 ---
 
-### 7.5. Checklist implementacyjny
+### 7.5. Checklist implementacyjny (Stan faktyczny)
 
-#### Backend
+#### Backend ✅
 
-- [ ] Endpoint `POST /api/auth/login`
-- [ ] Endpoint `POST /api/auth/signUp` z utworzeniem user_meta
-- [ ] Endpoint `POST /api/auth/logout`
-- [ ] Endpoint `POST /api/auth/forgot-password`
-- [ ] Endpoint `POST /api/auth/reset-password`
-- [ ] Aktualizacja middleware (PUBLIC_ENDPOINTS)
-- [ ] Dodanie typów Auth do `src/types.ts`
+- [x] Endpoint `POST /api/auth/login`
+- [x] Endpoint `POST /api/auth/signUp` z utworzeniem user_meta
+- [x] Endpoint `POST /api/auth/logout`
+- [x] Endpoint `POST /api/auth/forgot-password`
+- [x] Endpoint `POST /api/auth/reset-password` (z tokenami jako parametry)
+- [x] Endpoint `POST /api/auth/refresh-token` (DODATKOWY)
+- [x] Aktualizacja middleware (PUBLIC_ENDPOINTS + refresh-token)
+- [x] Dodanie typów Auth do `src/types.ts` (+ RefreshTokenRequest)
+- [x] Validation schemas w `src/lib/validation/auth.ts`
+- [x] Response helpers (createSuccessResponse, createErrorResponse)
+- [x] Custom error classes (HttpError, ValidationError)
+- [x] Feature flags dla auth endpoints
 
-#### Frontend - Komponenty UI
+#### Frontend - Redux & Store ✅
 
-- [ ] `Input` component (Shadcn/ui)
-- [ ] `Label` component (Shadcn/ui)
-- [ ] `Alert` component (Shadcn/ui)
-- [ ] `DropdownMenu` component (Shadcn/ui)
-- [ ] `Avatar` component (Shadcn/ui)
+- [x] Redux store setup z Redux Toolkit
+- [x] Auth slice (`src/store/slices/authSlice.ts`)
+- [x] RTK Query API slice (`src/store/api/apiSlice.ts`)
+- [x] Base query z automatycznym reauth (`baseQueryWithReauth`)
+- [x] Toast slice dla globalnych komunikatów
+- [x] Redux Persist dla localStorage
 
-#### Frontend - Komponenty Auth
+#### Frontend - Komponenty UI ✅
 
-- [ ] `LoginForm.tsx`
-- [ ] `SignUpForm.tsx`
-- [ ] `ForgotPasswordForm.tsx`
-- [ ] `ResetPasswordForm.tsx`
-- [ ] `UserNav.tsx`
+- [x] `FormInput` (custom component z walidacją)
+- [x] `SubmitButton` (custom component z loading state)
+- [x] Radix UI Form (`@radix-ui/react-form`)
+- [x] `Sidebar` zamiast UserNav (z nawigacją i wylogowaniem)
+- [x] `SidebarToggleButton`
+- [x] `NavItem`
 
-#### Frontend - Strony
+#### Frontend - Page Components ✅
 
-- [ ] `login.astro`
-- [ ] `signup.astro`
-- [ ] `forgot-password.astro`
-- [ ] `reset-password.astro`
-- [ ] `email-confirmed.astro`
+- [x] `LoginPage.tsx` (wrapper dla AuthForm)
+- [x] `SignUpPage.tsx` (wrapper dla SignUpForm)
+- [x] `ForgotPasswordPage.tsx` (wrapper dla ForgotPasswordForm)
+- [x] `ResetPasswordPage.tsx` (wrapper z logiką tokenów z URL hash)
 
-#### Layouts
+#### Frontend - Form Components ✅
 
-- [ ] Aktualizacja `Layout.astro` (warunkowy UserNav)
-- [ ] Nowy `AuthenticatedLayout.astro`
+- [x] `AuthForm.tsx` (formularz logowania)
+- [x] `SignUpForm.tsx` (z repeatPassword)
+- [x] `ForgotPasswordForm.tsx`
+- [x] `ResetPasswordForm.tsx` (przyjmuje tokeny jako props)
 
-#### Zabezpieczenia
+#### Frontend - Strony Astro ✅
 
-- [ ] Aktualizacja istniejących stron do używania AuthenticatedLayout
-- [ ] Testy zabezpieczeń (próba dostępu bez logowania)
-- [ ] Konfiguracja Supabase Auth (redirect URLs, email templates)
+- [x] `index.astro` (strona logowania, nie `login.astro`)
+- [x] `signup.astro`
+- [x] `forgot-password.astro`
+- [x] `reset-password.astro`
+- [ ] `email-confirmed.astro` (NIE ZAIMPLEMENTOWANE)
+
+#### Layouts i Zabezpieczenia ✅
+
+- [x] `Layout.astro` (podstawowy, bez sprawdzania sesji)
+- [x] `ProtectedRoute.tsx` HOC (zamiast AuthenticatedLayout.astro)
+- [x] `Providers.tsx` HOC z Redux Provider i ProtectedRoute
+- [x] `withProviders()` helper do opakowywania page components
+- [x] Protected routes: `/boards`, `/my-boards`, `/played`
+- [x] Automatic redirect dla zalogowanych na stronach auth
+- [x] Konfiguracja Supabase Auth (redirect URLs dla reset password)
+
+#### Hooks ✅
+
+- [x] `useSidebar` (zarządzanie stanem sidebar)
+- [x] `useClickOutside` (zamykanie sidebar)
+- [x] `useQueryParams` (obsługa ?return=...)
+- [x] Redux hooks (`useAppSelector`, `useAppDispatch`)
+
+#### Validation Schemas ✅
+
+- [x] `LoginSchema` w `src/lib/validation/auth.ts`
+- [x] `SignUpSchema` w `src/lib/validation/auth.ts`
+- [x] `ForgotPasswordSchema` w `src/lib/validation/auth.ts`
+- [x] `ResetPasswordSchema` w `src/lib/validation/auth.ts`
+- [x] `RefreshTokenSchema` w `src/lib/validation/auth.ts`
+- [x] `ClientSignUpSchema` w `src/lib/schemas/auth.ts` (z repeatPassword)
 
 #### Dokumentacja i testy
 
-- [ ] Testy jednostkowe (Zod schemas)
-- [ ] Testy integracyjne (endpointy API)
-- [ ] Testy E2E (rejestracja, logowanie, reset hasła)
-- [ ] Aktualizacja README.md
-- [ ] Aktualizacja CHANGELOG.md
+- [x] Testy jednostkowe komponentów UI (`tests/unit/components/`)
+- [ ] Testy integracyjne endpointów API (częściowo)
+- [ ] Testy E2E (częściowo w `tests/e2e/auth/`)
+- [ ] Aktualizacja README.md (do zrobienia)
+- [ ] Aktualizacja CHANGELOG.md (do zrobienia)
+- [x] Aktualizacja tej specyfikacji (TERAZ)
+
+---
+
+## 8. Różnice między planem a implementacją
+
+### 8.1. Główne różnice
+
+#### 8.1.1. Routing
+
+- **Plan:** Strona logowania na `/login.astro`
+- **Rzeczywistość:** Strona logowania na `/` (`index.astro`)
+- **Routing:** `Routes.Login = "/"`
+
+#### 8.1.2. Komponenty
+
+- **Plan:** Osobne komponenty `LoginForm.tsx`, `SignUpForm.tsx`, etc.
+- **Rzeczywistość:** 
+  - Warstwa page components: `LoginPage.tsx`, `SignUpPage.tsx`, etc.
+  - Warstwa form components: `AuthForm.tsx` (nie LoginForm), `SignUpForm.tsx`, etc.
+  - Każdy page component renderuje odpowiedni form i dostarcza layout
+
+#### 8.1.3. Layout i zabezpieczenia
+
+- **Plan:** `AuthenticatedLayout.astro` sprawdzający sesję po stronie serwera
+- **Rzeczywistość:** 
+  - Tylko jeden `Layout.astro` (nie sprawdza sesji)
+  - `ProtectedRoute.tsx` HOC sprawdzający autentykację po stronie klienta (Redux store)
+  - Zabezpieczenie przez React, nie przez Astro SSR
+
+#### 8.1.4. Nawigacja użytkownika
+
+- **Plan:** `UserNav.tsx` z dropdown menu (profile, settings, logout)
+- **Rzeczywistość:** `Sidebar.tsx` z pełną nawigacją i przyciskiem wylogowania na dole
+
+#### 8.1.5. Zarządzanie stanem
+
+- **Plan:** Proste fetch calls, sesja w cookies
+- **Rzeczywistość:**
+  - Redux Toolkit Query dla wszystkich API calls
+  - Tokeny w Redux store (localStorage przez Redux Persist)
+  - Automatyczne odświeżanie tokenów przy 401 error
+  - Globalna obsługa toastów
+
+#### 8.1.6. Reset password
+
+- **Plan:** Token w query params: `?token=...&type=recovery`
+- **Rzeczywistość:** 
+  - Tokeny w URL hash: `#access_token=...&refresh_token=...`
+  - ResetPasswordPage wydobywa tokeny z hash i przekazuje do ResetPasswordForm jako props
+  - Endpoint przyjmuje tokeny jako parametry w body (nie automatycznie z sesji)
+
+#### 8.1.7. Dodatkowe funkcjonalności
+
+**Rzeczywistość zawiera więcej niż plan:**
+
+1. **Endpoint `/api/auth/refresh-token`** – nie było w planie
+2. **Automatyczne odświeżanie tokenów** – w baseQueryWithReauth
+3. **Feature flags** – dla włączania/wyłączania funkcjonalności auth
+4. **Response helpers** – createSuccessResponse, createErrorResponse
+5. **Custom error classes** – HttpError, ValidationError
+6. **Error mapping** – przyjazne komunikaty dla użytkownika
+7. **Toast notifications** – globalna obsługa przez Redux
+8. **ClientSignUpSchema** – rozszerzony schema z repeatPassword dla walidacji client-side
+9. **Hooks:** useSidebar, useClickOutside, useQueryParams
+
+### 8.2. Dlaczego te różnice?
+
+1. **Client-side protection zamiast server-side:**
+   - Szybsze przekierowania (bez round-trip do serwera)
+   - Lepsze UX (instant feedback)
+   - Centralne zarządzanie stanem w Redux
+   - Astro middleware chroni tylko API, nie strony
+
+2. **Redux zamiast prostych fetch:**
+   - Profesjonalniejsze zarządzanie stanem
+   - Cache management dla lepszej performance
+   - Automatyczne odświeżanie tokenów
+   - Globalna obsługa błędów i toastów
+   - Type-safe mutations i queries
+
+3. **Page + Form components:**
+   - Lepsze separation of concerns
+   - Page component zarządza layoutem i kontekstem
+   - Form component skupia się tylko na formularzu
+   - Łatwiejsze testowanie i reużywalność
+
+4. **Sidebar zamiast UserNav:**
+   - Bardziej kompletna nawigacja w jednym miejscu
+   - Lepsze UX dla aplikacji z wieloma sekcjami
+   - Collapse/expand dla mobile i desktop
+
+5. **Tokeny w localStorage:**
+   - Łatwiejsze zarządzanie po stronie klienta
+   - Redux Persist automatycznie zapisuje
+   - Nie wymaga konfiguracji cookies
+   - Wymaga uwagi na bezpieczeństwo XSS
+
+### 8.3. Co pozostało zgodnie z planem
+
+✅ Struktura endpointów API (+ refresh-token)  
+✅ Walidacja Zod po stronie serwera  
+✅ Middleware chroniący endpointy API  
+✅ Supabase Auth jako backend  
+✅ Tabela user_meta z display_name  
+✅ 4 strony auth (login, signup, forgot-password, reset-password)  
+✅ React forms z walidacją client-side  
+✅ Wylogowanie przez API call  
+✅ Security best practices (nie ujawniamy czy email istnieje w forgot-password)  
+✅ Strukturalne typy DTO w src/types.ts  
 
 ---
 
 ## Koniec specyfikacji
 
 **Data utworzenia:** 2025-10-23  
-**Wersja:** 1.0  
+**Ostatnia aktualizacja:** 2025-12-01  
+**Wersja:** 2.0 (zaktualizowana po implementacji)  
 **Autor:** AI Assistant (Claude Sonnet 4.5)  
 **Projekt:** Definition Quest  
-**Stack:** Astro 5, React 19, TypeScript 5, Supabase, Tailwind 4
+**Stack:** Astro 5, React 19, TypeScript 5, Supabase, Tailwind 4, Redux Toolkit
 
 ---
