@@ -2,13 +2,25 @@
 
 ## 1. Przegląd
 
-Widok „Utwórz tablicę” umożliwia ręczne dodawanie par termin–definicja lub generowanie ich przy pomocy AI. Użytkownik może skonfigurować tytuł, tagi, liczbę kart (16/24) oraz maksymalnie 100 par. Formularz korzysta z `react-hook-form` i walidacji `zod`. Pary mogą być dodawane / usuwane dynamicznie, a panel boczny pozwala wkleić tekst do AI i zaakceptować wygenerowane pary.
+Widok „Utwórz tablicę" umożliwia ręczne dodawanie par termin–definicja lub generowanie ich przy pomocy AI. Użytkownik może skonfigurować:
+- tytuł tablicy
+- widoczność (publiczna/prywatna)
+- tagi (max 10)
+- liczbę kart (16/24)
+- pary termin-definicja (1-100)
+
+Formularz korzysta z `react-hook-form` i walidacji `zod` (`CreateBoardSchema`). Pary mogą być dodawane/usuwane dynamicznie (z wizualnym grupowaniem po poziomach), a panel boczny (fixed/sticky) pozwala wkleić tekst do AI, wygenerować pary i zaakceptować je w modalu.
 
 ## 2. Routing widoku
 
 - Ścieżka: `/boards/create`
 - Plik strony: `src/pages/boards/create.astro`
-- Route jest chroniony – dostęp tylko po zalogowaniu (middleware auth).
+- Komponent React: `src/components/pages/CreateBoardPage.tsx`
+- Route jest chroniony – dostęp tylko po zalogowaniu:
+  - Komponent opakowany w `withProviders` HOC (Redux, PersistGate, ProtectedRoute, Toast, ReactLayout)
+  - `ProtectedRoute` sprawdza autentykację i przekierowuje na login jeśli brak sesji
+- Link w Sidebar: "Utwórz tablicę" z ikoną `PlusIcon`
+- Breadcrumb: "Utwórz tablicę" (w `routeTitles`)
 
 ## 3. Struktura komponentów
 
@@ -19,17 +31,19 @@ CreateBoardPage (.astro)
     ├── Sidebar
     │   └── Breadcrumbs ("Utwórz tablicę")
     ├── <React Island> CreateBoardView (ts/tsx)
+    │   ├── LoaderOverlay
     │   ├── CreateBoardForm
-    │   │   ├── TitleInput
+    │   │   ├── Title Input (inline)
     │   │   ├── TagsInput (chips)
     │   │   ├── CardCountToggle (16 | 24)
-    │   │   └── PairsFieldArray
-    │   │       └── PairFormRow × N
-    │   ├── GeneratePairsByAI (sticky panel)
-    │   │   ├── InputTextArea
-    │   │   ├── GenerateButton
-    │   │   └── AcceptPairsModal
-    │   └── FormFooter (Submit / Reset)
+    │   │   ├── BoardVisibilityToggle (Publiczna | Prywatna)
+    │   │   ├── PairForm
+    │   │   │   └── PairFormRow × N
+    │   │   └── FormFooter (Submit)
+    │   └── GeneratePairsByAI (fixed/sticky panel)
+    │       ├── Textarea
+    │       ├── GenerateButton
+    │       └── AcceptPairsModal
     └── Footer
 ```
 
@@ -37,84 +51,136 @@ CreateBoardPage (.astro)
 
 ### 4.1 CreateBoardForm
 
-- **Opis**: Główny formularz tworzenia tablicy.
-- **Elementy**: `form`, `TitleInput`, `TagsInput`, `CardCountToggle`, `PairsFieldArray`, `Submit`, `Reset`.
-- **Interakcje**: submit, reset, dodawanie/usuwanie par.
+- **Opis**: Główny formularz tworzenia tablicy z użyciem `react-hook-form` i walidacji `zod`.
+- **Elementy**: `form`, inline title input, `TagsInput`, `CardCountToggle`, `BoardVisibilityToggle`, `PairForm`, `Submit`.
+- **Interakcje**: 
+  - submit → wywołuje `submitFn` (RTK Query mutation)
+  - dodawanie/usuwanie par przez `useFieldArray` (append, remove)
+  - expose `addPairs` method przez `forwardRef` + `useImperativeHandle`
 - **Walidacja**:
   - `title`: min 1, max 255.
   - `tags[]`: ≤ 10, każdy 1–20 znaków, unikalne.
   - `cardCount`: 16 | 24.
+  - `isPublic`: boolean (default: true).
   - `pairs.length`: 1–100.
-  - `term/definition`: 1–255, term unikalny w ramach formularza.
-- **Typy**: `CreateBoardFormValues` (ViewModel), `PairFormValue`.
-- **Propsy**: brak (komponent nadrzędny zarządza stanem globalnym formularza przez RHF context).
+  - `term/definition`: 1–255, term unikalny (case-insensitive) w ramach formularza.
+- **Typy**: `CreateBoardFormValues` z inferowanego `CreateBoardSchema`.
+- **Propsy**: `submitFn: SubmitFn`.
+- **Handle**: Eksportuje `CreateBoardFormHandle` z metodą `addPairs(pairs: PairFormValue[])`:
+  - dodaje pary do formularza (respektując limit 100)
+  - automatycznie usuwa puste pary po dodaniu nowych (cleanup)
 
 ### 4.2 TagsInput
 
-- **Opis**: Pole tekstowe + lista chipów usuwalnych.
-- **Elementy**: `input`, lista `Chip` z przyciskiem X.
-- **Interakcje**: `onEnter` dodaje tag, klik X usuwa.
-- **Walidacja**: długość tagu, unikalność, maks 10.
-- **Typy**: `string[]` z RHF `Controller`.
-- **Propsy**: `name` (string).
+- **Opis**: Pole tekstowe + lista chipów usuwalnych używając Shadcn `Badge`.
+- **Elementy**: `input`, lista `Badge` z `CloseIcon`.
+- **Interakcje**: 
+  - Enter dodaje tag do listy
+  - Sprawdza unikalność i limit 10 przed dodaniem
+  - Klik X (CloseIcon) usuwa tag
+- **Walidacja**: długość tagu (1-20), unikalność, max 10 tagów.
+- **Integracja**: używany przez RHF `Controller` z name="tags".
+- **Propsy**: `value?: string[]`, `onChange: (value: string[]) => void`, `error?: string`.
 
 ### 4.3 CardCountToggle
 
-- **Opis**: Przełącznik 16/24 kart (radio lub SegmentedToggle z Shadcn/ui).
-- **Interakcje**: klik zmienia `cardCount` w RHF.
+- **Opis**: Przełącznik 16/24 kart używający `ToggleGroup` z Shadcn/ui.
+- **Elementy**: `ToggleGroup` z dwoma `ToggleGroupItem` (16, 24).
+- **Interakcje**: klik zmienia `cardCount` w RHF przez `Controller`.
 - **Walidacja**: literal 16 lub 24.
-- **Propsy**: `name`.
+- **Propsy**: `value: 16 | 24`, `onChange: (value: 16 | 24) => void`.
 
-### 4.4 PairsFieldArray
+### 4.3a BoardVisibilityToggle
 
-- **Opis**: Zarządza dynamiczną listą par z użyciem `useFieldArray`.
-- **Interakcje**: Dodaj (+), Usuń (trash), edycja pól.
-- **Walidacja**: delegowane do `PairFormRow` + limit 100.
+- **Opis**: Przełącznik widoczności tablicy (Publiczna/Prywatna).
+- **Elementy**: `ToggleGroup` z dwoma `ToggleGroupItem` (public, private).
+- **Interakcje**: klik zmienia `isPublic` w RHF przez `Controller`.
+- **Propsy**: `value: boolean`, `onChange: (value: boolean) => void`.
+
+### 4.4 PairForm
+
+- **Opis**: Renderuje listę `PairFormRow` z podziałem na poziomy (level) w zależności od `cardCount`.
+- **Elementy**: Iteruje przez `fields` z `useFieldArray` i grupuje pary po `cardCount / 2`.
+- **Interakcje**: Przekazuje funkcję `remove` do każdego wiersza.
+- **Propsy**: `fields`, `errors`, `register`, `remove`, `cardCount`.
 
 ### 4.5 PairFormRow
 
-- **Opis**: Dwa pola tekstowe w wierszu.
-- **Walidacja**: term i definition jak wyżej.
-- **Interakcje**: na blur walidacja, przycisk usuń.
+- **Opis**: Pojedynczy wiersz z dwoma polami tekstowymi (term, definition) i przyciskiem usuń.
+- **Elementy**: 2x `input` + `Button` (×).
+- **Walidacja**: term i definition jak wyżej, błędy wyświetlane inline.
+- **Interakcje**: edycja pól, klik na × usuwa parę.
+- **Propsy**: `index`, `register`, `errors`, `onRemove`.
 
 ### 4.6 GeneratePairsByAI
 
-- **Opis**: Sticky panel z textarea i przyciskiem „Generuj AI”.
-- **Interakcje**: submit ↠ POST `/api/boards/generate`.
-- **Walidacja**: `inputText` ≤ 5000.
-- **Stan**: `loading`, `error`, `pairsResult`.
+- **Opis**: Panel z textarea i przyciskiem „Generuj AI". Pozycjonowany jako `fixed` na mobile (bottom) i sticky na desktop (right).
+- **Elementy**: `Textarea`, `Button`, opcjonalnie `AcceptPairsModal`.
+- **Interakcje**: 
+  - Wpisanie tekstu + klik „Generuj" → POST `/api/boards/generate`
+  - Enter (bez shift/ctrl/alt) również wywołuje generowanie
+  - Po sukcesie otwiera `AcceptPairsModal`
+- **Stan**: `inputText`, `isLoading`, `pairs` (wygenerowane pary).
+- **Propsy**: `formRef?: RefObject<CreateBoardFormHandle>`, `remainingSlots?`, `onAdd?`.
+- **Integracja**: Używa `formRef.current.addPairs()` do dodania zaakceptowanych par.
 
 ### 4.7 AcceptPairsModal
 
 - **Opis**: Modal z listą wygenerowanych par (checkbox per pair, zaznaczone domyślnie).
-- **Interakcje**: odznacz, „Akceptuj” ↠ filtr → dodać do `PairsFieldArray`.
-- **Walidacja**: co najmniej 1 para zaznaczona.
+- **Elementy**: `Dialog`, lista par z `checkbox`, przyciski Anuluj/Akceptuj.
+- **Interakcje**: 
+  - Toggle checkbox per para
+  - „Akceptuj" → filtruje zaznaczone pary → wywołuje `onAccept` → dodaje do formularza
+  - „Anuluj" → zamyka modal bez zmian
+- **Walidacja**: przycisk Akceptuj disabled gdy żadna para nie jest zaznaczona.
+- **Propsy**: `pairs: GeneratedPair[]`, `onAccept`, `onCancel`.
 
 ## 5. Typy
 
 ```ts
-interface PairFormValue {
-  term: string;
-  definition: string;
-}
+// Inferowane z CreateBoardSchema (zod)
+type CreateBoardFormValues = z.infer<typeof CreateBoardSchema>;
+// = {
+//   title: string;
+//   cardCount: 16 | 24;
+//   pairs: { term: string; definition: string }[]; // 1–100
+//   isPublic: boolean;
+//   tags?: string[];
+// }
 
-interface CreateBoardFormValues {
+// Z types.ts
+interface CreateBoardCmd {
   title: string;
-  tags: string[];
   cardCount: 16 | 24;
-  pairs: PairFormValue[]; // 1–100
+  pairs: PairCreateCmd[];
+  isPublic: boolean;
+  tags?: string[];
 }
 
-interface AiGenerateRequest extends GenerateBoardCmd {}
-interface AiGenerateResponse extends BoardGenerationResultDTO {}
+interface GenerateBoardCmd extends Omit<CreateBoardCmd, "pairs"> {
+  inputText: string;
+}
+
+interface BoardGenerationResultDTO {
+  pairs: GeneratedPair[];
+}
+
+type GeneratedPair = { term: string; definition: string };
+
+// Handle do komunikacji między GeneratePairsByAI a CreateBoardForm
+interface CreateBoardFormHandle {
+  addPairs: (pairs: { term: string; definition: string }[]) => void;
+}
 ```
 
 ## 6. Zarządzanie stanem
 
-- Formularz: `react-hook-form` + `zodResolver`.
-- Dynamiczna lista par: `useFieldArray`.
-- AI panel: lokalny `useState` na `inputText`, `loading`, `pairsResult`.
-- Modal: kontrolowany `isOpen` oraz formularz RHF do checkboxów.
+- **Formularz**: `react-hook-form` + `zodResolver(CreateBoardSchema)`.
+- **Dynamiczna lista par**: `useFieldArray` w `CreateBoardForm` z metodami `append` i `remove`.
+- **AI panel**: lokalny `useState` na `inputText`, `pairs`, korzysta z `useGeneratePairsMutation` hook RTK Query.
+- **Modal**: kontrolowany przez `pairs !== null` w `GeneratePairsByAI`, lokalny `useState` dla checkboxów w `AcceptPairsModal`.
+- **Global UI state**: `setLoading` z Redux slice do wyświetlania `LoaderOverlay`.
+- **Toasty**: `useToast` hook z Redux do wyświetlania komunikatów sukcesu/błędu.
 
 ## 7. Integracja API
 
@@ -123,48 +189,80 @@ interface AiGenerateResponse extends BoardGenerationResultDTO {}
 | Utwórz tablicę | `/api/boards`          | POST   | `CreateBoardCmd`   | `BoardDetailDTO[]`         |
 | Generuj pary   | `/api/boards/generate` | POST   | `GenerateBoardCmd` | `BoardGenerationResultDTO` |
 
-Implementacja w RTK Query (`apiSlice`) – dodać dwa endpoints `createBoard` i `generatePairs`.
+Implementacja w RTK Query (`src/store/api/apiSlice.ts`):
+
+### createBoard
+- invalidatesTags: `["Boards"]`
+- onQueryStarted:
+  - sukces: toast success + automatyczne przekierowanie do `/boards/${data[0].id}` (pierwsza utworzona tablica)
+  - błąd: toast error z komunikatem z serwera
+
+### generatePairs
+- bez cache invalidation (nie modyfikuje stanu serwera, tylko generuje pary)
+- bez onQueryStarted (obsługa błędów w komponencie)
 
 ## 8. Interakcje użytkownika
 
-1. Wprowadza tytuł, tagi, cardCount.
-2. Dodaje pary ręcznie lub generuje AI:
-   - Wkleja tekst → klik „Generuj AI”.
-   - Po sukcesie otwiera się modal, wybiera pary → „Akceptuj” → pary dodane.
-3. Klik „Zapisz tablicę” → walidacja → POST `/boards` →
-   - sukces: redirect do /my-boards lub /boards/:id
-   - błąd: toast z komunikatem.
+1. Wprowadza tytuł, tagi, cardCount, isPublic.
+2. Dodaje pary ręcznie:
+   - Formularz startuje z jedną pustą parą
+   - Klik „+ Dodaj parę" → nowa para na końcu listy
+   - Pary są grupowane wizualnie po `cardCount / 2` z nagłówkiem „Level: X"
+   - Klik × usuwa parę (limit minimum 1 para)
+3. Alternatywnie generuje pary AI:
+   - Wkleja tekst w panel AI → klik „Generuj" (lub Enter)
+   - Ładowanie + LoaderOverlay
+   - Po sukcesie otwiera się modal z wygenerowanymi parami (wszystkie zaznaczone)
+   - Może odznaczyć niepotrzebne → „Akceptuj" → zaznaczone pary dodane do formularza
+4. Klik „Utwórz tablicę" → walidacja → POST `/api/boards` (przez RTK Query) →
+   - sukces: toast success (z `apiSlice.onQueryStarted`) + przekierowanie do `/boards/:id` pierwszej utworzonej tablicy
+   - błąd: toast error z komunikatem z serwera (z `apiSlice.onQueryStarted`)
 
 ## 9. Warunki i walidacja
 
-- Walidacja klienta = walidacji z schematów backend (zod sync).
-- Dodatkowe:
-  - unikalność termów lokalnie.
-  - limit 100 par.
-  - limit 5000 znaków dla AI input.
+- Walidacja klienta = walidacji z schematów backend (zod sync) przez `CreateBoardSchema`.
+- Dodatkowe reguły enforced przez schema:
+  - unikalność termów lokalnie (case-insensitive) przez `.refine()`.
+  - limit 100 par (max).
+  - minimum 1 para (min).
+  - limit 5000 znaków dla AI input (w `GenerateBoardSchema`).
+  - tagi: max 10, każdy 1-20 znaków.
+- Walidacja na poziomie UI:
+  - przycisk „+ Dodaj parę" disabled gdy `fields.length >= 100`.
+  - przycisk „Generuj" disabled gdy `inputText` pusty lub isLoading.
 
 ## 10. Obsługa błędów
 
-- Walidacja kliencka: komunikaty inline.
-- 400/409 z API: toast error + podświetlenie pól.
-- 401: redirect do login.
-- 429 (quota): toast warning.
-- Sieć / 500: toast error, możliwość ponowienia.
+- **Walidacja kliencka**: komunikaty inline pod polami (czerwony tekst, czerwona ramka pola).
+- **Generowanie AI**:
+  - Błąd: toast error z komunikatem z API (message z response.data)
+  - LoaderOverlay wyświetlany podczas ładowania
+- **Tworzenie tablicy**:
+  - 400/409 z API: toast error z komunikatem z serwera (przez `apiSlice.onQueryStarted`)
+  - Sukces: toast success + redirect (przez `apiSlice.onQueryStarted`)
+- **401**: obsługa przez middleware + baseQueryWithReauth → automatyczny refresh token lub redirect do login.
+- **429 (quota)**: toast error (komunikat z API).
+- **Sieć / 500**: toast error z komunikatem generycznym lub z serwera.
 
-## 11. Kroki implementacji
+## 11. Kroki implementacji (zrealizowane)
 
-1. **Routing**: utwórz `src/pages/boards/create.astro` na bazie `my-boards.astro`.
-2. **Breadcrumbs**: rozszerz `routeTitles` o `/boards/create`.
-3. **Instalacja lib**: `npm i react-hook-form @hookform/resolvers zod`.
-4. **CreateBoardView**: kontener React + import `client:load` w Astro.
-5. **CreateBoardForm**: implementacja RHF + zod schema.
-6. **TagsInput**: komponent chips (użyj Shadcn `Badge` + `X`).
-7. **CardCountToggle**: segment/toggle.
-8. **PairsFieldArray** + `PairFormRow` z `useFieldArray`.
-9. **API Slice**: dodaj `createBoard`, `generatePairs` endpoints.
-10. **GeneratePairsByAI** panel + modal AcceptPairsModal.
-11. **Toasty**: wykorzystaj istniejący `useToast`.
-12. **Stylowanie**: Tailwind + dark mode.
-13. **Testy jednostkowe**: walidacja schema, dodawanie tagów, par.
-14. **E2E happy path**: Cypress/Playwright – create board.
-15. **Dokumentacja**: README + Storybook entry dla nowych komponentów.
+1. ✅ **Routing**: utworzono `src/pages/boards/create.astro` z importem `CreateBoardPage`.
+2. ✅ **Breadcrumbs**: dodano `/boards/create: "Utwórz tablicę"` do `routeTitles` w `Breadcrumbs.tsx`.
+3. ✅ **Sidebar**: dodano link „Utwórz tablicę" z ikoną `PlusIcon` w `Sidebar.tsx`.
+4. ✅ **Instalacja lib**: zainstalowano `react-hook-form`, `@hookform/resolvers`, `zod`.
+5. ✅ **CreateBoardPage**: utworzono kontener React z layoutem flex, używa `withProviders` HOC.
+6. ✅ **CreateBoardForm**: implementacja z RHF + `zodResolver(CreateBoardSchema)`, forwardRef z `addPairs` handle.
+7. ✅ **TagsInput**: komponent chips używający Shadcn `Badge` + `CloseIcon`.
+8. ✅ **CardCountToggle**: komponent używający `ToggleGroup` z Shadcn/ui.
+9. ✅ **BoardVisibilityToggle**: komponent używający `ToggleGroup` dla pola `isPublic`.
+10. ✅ **PairForm** + `PairFormRow`: implementacja z `useFieldArray`, grupowanie po poziomach.
+11. ✅ **API Slice**: dodano `createBoard` i `generatePairs` endpoints w `apiSlice.ts`.
+12. ✅ **GeneratePairsByAI** panel: sticky/fixed panel z textarea, integracja z formRef.
+13. ✅ **AcceptPairsModal**: modal z checkboxami, Dialog z Shadcn/ui.
+14. ✅ **LoaderOverlay**: globalny overlay podczas operacji async.
+15. ✅ **Toasty**: wykorzystano `useToast` hook + Redux dla komunikatów.
+16. ✅ **Walidacja**: `CreateBoardSchema` w `src/lib/validation/boards.ts`.
+17. ✅ **Stylowanie**: Tailwind + CSS variables (`--color-primary`), responsywny layout.
+18. ⏳ **Testy jednostkowe**: komponenty mają data-testid, brak widocznych testów w pliku.
+19. ⏳ **E2E testy**: brak widocznych testów E2E dla create board flow.
+20. ⏳ **Dokumentacja**: brak Storybook entries.
