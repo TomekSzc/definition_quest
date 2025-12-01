@@ -42,6 +42,7 @@ const CreateBoardForm = forwardRef<CreateBoardFormHandle, ICreateBoardForm>(({ s
     control,
     handleSubmit,
     watch,
+    getValues,
     formState: { errors, isSubmitting },
   } = useForm<CreateBoardFormValues>({
     resolver: zodResolver(CreateBoardSchema),
@@ -60,6 +61,23 @@ const CreateBoardForm = forwardRef<CreateBoardFormHandle, ICreateBoardForm>(({ s
         append(p);
       }
     });
+
+    // Remove empty pairs after adding new ones
+    setTimeout(() => {
+      const currentPairs = getValues("pairs");
+      const indicesToRemove: number[] = [];
+      
+      currentPairs.forEach((pair, index) => {
+        if (!pair.term.trim() && !pair.definition.trim()) {
+          indicesToRemove.push(index);
+        }
+      });
+
+      // Remove in reverse order to maintain correct indices
+      indicesToRemove.reverse().forEach((index) => {
+        remove(index);
+      });
+    }, 0);
   };
 
   useImperativeHandle(ref, () => ({ addPairs: appendPairs }));
