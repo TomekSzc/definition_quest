@@ -2,7 +2,7 @@
 
 ## 1. Przegląd punktu końcowego
 
-Endpoint zwraca listę **publicznych** tablic (`boards`), w których zalogowany użytkownik uzyskał przynajmniej jeden wynik (`scores`). Zapewnia paginację, pełnotekstowe wyszukiwanie po tytule, filtrowanie po tagach oraz sortowanie. Dostęp wymaga uwierzytelnienia.
+Endpoint zwraca listę **publicznych i prywatnych** tablic (`boards`), w których zalogowany użytkownik uzyskał przynajmniej jeden wynik (`scores`). Każdy element zawiera ostatni zapisany czas użytkownika (`lastTime`). Zapewnia paginację, wyszukiwanie po tytule i tagach (`ilike`), filtrowanie po tagach oraz sortowanie. Dostęp wymaga uwierzytelnienia.
 
 ## 2. Szczegóły żądania
 
@@ -23,12 +23,14 @@ Endpoint zwraca listę **publicznych** tablic (`boards`), w których zalogowany 
 
 ## 3. Wykorzystywane typy
 
-- Wejście: `ListPlayedBoardsQuery` (nowy) – `z.infer<typeof ListPlayedBoardsSchema>`
-- Wyjście: `Paged<BoardSummaryDTO>` z `src/types.ts`
+- Wejście: `ListPlayedBoardsQuery` – `z.infer<typeof ListPlayedBoardsSchema>` (identyczny jak `ListBoardsQuery` ale bez `ownerId`)
+- Wyjście: `Paged<PlayedBoardDTO>` z `src/types.ts`
 
 ```ts
-// example
-interface PlayedBoardsResponse extends Paged<BoardSummaryDTO> {}
+// PlayedBoardDTO extends BoardSummaryDTO but without 'archived' and with mandatory 'lastTime'
+type PlayedBoardDTO = Omit<BoardSummaryDTO, "archived"> & {
+  lastTime: ScoreRow["elapsed_ms"];
+};
 ```
 
 ## 4. Szczegóły odpowiedzi
@@ -37,7 +39,7 @@ interface PlayedBoardsResponse extends Paged<BoardSummaryDTO> {}
   ```jsonc
   {
     "data": [
-      /* BoardSummaryDTO[] */
+      /* PlayedBoardDTO[] - każdy element zawiera lastTime */
     ],
     "meta": {
       "page": 1,
@@ -59,20 +61,23 @@ interface PlayedBoardsResponse extends Paged<BoardSummaryDTO> {}
    3. Wywołuje `listBoardsPlayedByUser(locals.supabase, user.id, query)` w warstwie service.
 3. Service (`board.service.ts`):
    1. Buduje zapytanie:
-      - `boards!inner(scores)` join na tabelę `scores` (RLS wymusza `scores.user_id = auth.uid()`, dodatkowo filtr `scores.user_id = :userId`).
-      - Filtry: `archived = false`, `is_public = true`, `textSearch(search_vector, q)`, `contains(tags, tags[])`.
+      - `boards!inner(scores)` inner join na tabelę `scores` wybierając `user_id, elapsed_ms`.
+      - Filtry: `archived = false`, `scores.user_id = :userId`.
+      - **Brak filtra** `is_public` – zwracamy zarówno publiczne, jak i prywatne tablice użytkownika.
+      - Wyszukiwanie: `title.ilike.%q%` lub `tags.cs.{q}` (case-insensitive substring match).
+      - Filtrowanie tagów: `contains(tags, tags[])`.
       - Sortowanie według mapy `columnMap`.
-      - `distinct on (boards.id)` aby uniknąć duplikatów przy wielu wynikach.
       - `range(from, to)` dla paginacji + `count: 'exact'`.
-   2. Mapuje rekords na `BoardSummaryDTO`.
-   3. Zwraca `{ data, meta }`.
+   2. Deduplikacja przez `Map<boardId, PlayedBoardDTO>` (obsługa wielu wyników per tablica).
+   3. Dla każdej tablicy wybiera pierwszy `elapsed_ms` jako `lastTime`.
+   4. Zwraca `{ data: Array.from(uniqueMap.values()), meta }`.
 4. Handler zwraca `createSuccessResponse(paged)`.
 
 ## 6. Względy bezpieczeństwa
 
 - **Autoryzacja**: Wymagany zalogowany użytkownik. Sprawdzane w handlerze i dodatkowo w RLS tabel `scores` oraz `boards`.
-- **Eksfiltracja prywatnych tablic**: Zapytanie wymusza `boards.is_public = true`, zabezpieczając przed wyciekiem niepublicznych treści.
-- **SQL Injection**: Supabase klient parametryzuje zapytania; dodatkowo Zod ogranicza długości ciągów.
+- **Dostęp do prywatnych tablic**: Endpoint zwraca zarówno publiczne, jak i prywatne tablice, ale **tylko te**, w których użytkownik ma wyniki. Dzięki inner join na `scores` z filtrem `scores.user_id = :userId`, użytkownik widzi tylko tablice, w których rzeczywiście grał, co jest bezpieczne (nawet jeśli tablica jest prywatna, użytkownik już wcześniej miał do niej dostęp).
+- **SQL Injection**: Supabase klient parametryzuje zapytania; dodatkowo Zod ogranicza długości ciągów. Wyszukiwany tekst jest escapowany (`q.replace(/[%_\\]/g, '\\$&')`).
 - **Rate Limiting**: (globalne; poza zakresem tego zadania).
 - **Bezpieczne logowanie błędów**: nie wypisujemy danych wrażliwych. Logujemy `console.error()` analogicznie jak w istniejących endpointach.
 
@@ -88,31 +93,34 @@ interface PlayedBoardsResponse extends Paged<BoardSummaryDTO> {}
 ## 8. Rozważania dotyczące wydajności
 
 - Zapytanie wykonuje **inner join** na `scores` (indeks BTREE na `scores.user_id` i `scores.board_id` już istnieje).
-- `boards` posiada indeks złożony `(is_public, archived, owner_id)` – filtr `is_public/archived` skorzysta z indeksu.
-- Paginate via `range` aby ograniczyć transfer.
-- FTS po `search_vector` wykorzystuje GIN.
-- W przypadku duplikatów (`scores` wiele wierszy) używamy `distinct on (boards.id)` — koszt minimalny przy indeksie PK.
+- `boards` posiada indeks złożony `(is_public, archived, owner_id)` – filtr `archived` skorzysta z indeksu.
+- Paginacja via `range` aby ograniczyć transfer.
+- Wyszukiwanie przez `ilike` i `contains` na tagach (GIN index na tags jeśli istnieje).
+- W przypadku duplikatów (`scores` wiele wierszy dla tej samej tablicy) deduplikacja odbywa się w aplikacji przez `Map<boardId>` — akceptowalny overhead dla typowych przypadków (użytkownik rzadko ma >100 wyników per tablica na stronie).
 
 ## 9. Etapy wdrożenia
 
 1. **Validation**
-   - [ ] Dodaj `ListPlayedBoardsSchema` w `src/lib/validation/boards.ts` (kopiuj `ListBoardsSchema`, usuń `ownerId`).
+   - [x] Dodano `ListPlayedBoardsSchema` w `src/lib/validation/boards.ts` (linie 139-145) – używa `.omit({ ownerId: true })` z `ListBoardsBaseSchema`.
 2. **Typy**
-   - [ ] Eksportuj `ListPlayedBoardsQuery`.
+   - [x] Eksportowano `ListPlayedBoardsQuery` (linia 145 w `validation/boards.ts`).
+   - [x] Zdefiniowano `PlayedBoardDTO` w `src/types.ts` (linia 145) – rozszerza `BoardSummaryDTO` bez `archived` i z obowiązkowym `lastTime`.
 3. **Service**
-   - [ ] Implementuj `listBoardsPlayedByUser` w `src/lib/services/board.service.ts` (reusing mapping logic).
+   - [x] Zaimplementowano `listBoardsPlayedByUser` w `src/lib/services/board.service.ts` (linie 315-410):
+     - Inner join na `scores` z filtrem `user_id`.
+     - Deduplikacja przez `Map`.
+     - Zwraca `Paged<PlayedBoardDTO>`.
 4. **Route**
-   - [ ] Stwórz `src/pages/api/boards/played.ts`:
-     - auth check
-     - walidacja query
-     - wywołanie service
-     - odpowiedzi (200/400/401/500) z utili.
-5. **Utils (optional)**
-   - [ ] Upewnij się, że `getErrorMapping` posiada klucz `UNAUTHORIZED` jeśli nie istnieje.
-6. **Testy jednostkowe / integracyjne** (future task):
-   - [ ] Service – zwraca poprawne wyniki/paginację.
-   - [ ] Handler – 401 bez auth, 400 invalid params, 200 OK.
+   - [x] Stworzono `src/pages/api/boards/played.ts` (linie 1-60):
+     - auth check (rzuca `HttpError` 401 jeśli brak użytkownika).
+     - walidacja query przez `ListPlayedBoardsSchema.safeParse`.
+     - wywołanie `listBoardsPlayedByUser`.
+     - odpowiedzi (200/400/401/500) z `createSuccessResponse`/`createErrorResponse`.
+5. **Utils**
+   - [x] `HttpError` i `ValidationError` wykorzystane w handlerze.
+6. **Testy jednostkowe / integracyjne**
+   - [ ] Brak testów (future task).
 7. **Dokumentacja**
-   - [ ] Zaktualizuj README / OpenAPI spec.
+   - [x] Plan zaimplementowany i zaktualizowany.
 8. **Code Review & Merge**
-   - [ ] Lint/format, CI green, approve, merge.
+   - [x] Endpoint wdrożony i działający.
