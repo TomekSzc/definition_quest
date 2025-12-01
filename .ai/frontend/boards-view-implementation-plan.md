@@ -2,7 +2,9 @@
 
 ## 1. Przegląd
 
-Widok „Public Boards” umożliwia anonimowym i zalogowanym użytkownikom przeglądanie publicznie udostępnionych plansz (boards) oraz wyszukiwanie ich po tytule, tagach i autorze. Zapewnia listę kart z metadanymi, paginację oraz pole wyszukiwarki wykorzystujące komponent `SearchInput`.
+Widoki „Public Boards" (`/boards`) i „My Boards" (`/my-boards`) umożliwiają przeglądanie plansz oraz wyszukiwanie ich po tytule. Widok Public Boards pokazuje wszystkie publiczne plansze, podczas gdy My Boards filtruje tylko plansze należące do zalogowanego użytkownika. 
+
+Oba widoki współdzielą tę samą implementację UI, różniąc się tylko parametrem `ownerId` w zapytaniu API. Używają RTK Query do pobierania danych, synchronizują parametry wyszukiwania z URL, oraz oferują paginację. Właściciele plansz mają dostęp do funkcji edycji i usuwania swoich plansz bezpośrednio z listy.
 
 ## 2. Routing widoków
 
@@ -20,155 +22,229 @@ My Boards (widok prywatny – wymaga zalogowania):
 ## 3. Struktura komponentów
 
 ```
-PublicBoardsPage (route component)
-├─ PageHeader
-│  └─ SearchInput (reusable)
-├─ BoardsGrid
-│  ├─ BoardCard (× n)
-│  └─ EmptyState (warunkowo)
+BoardsPage / MyBoardsPage (route component)
+├─ SearchInput (reusable)
+├─ BoardsList
+│  ├─ BoardListTile (× n)
+│  └─ EmptyState (zintegrowany)
 └─ Pagination
 ```
 
 ## 4. Szczegóły komponentów
 
-### PublicBoardsPage
+### BoardsPage / MyBoardsPage
 
-- **Opis**: Kontener widoku; pobiera dane z API i zarządza stanem wyszukiwarki, paginacji oraz błędami.
-- **Elementy**: wrapper `<main>`, nagłówek, siatka kart, paginacja.
-- **Interakcje**: zmiana zapytania, zmiana strony.
-- **Walidacja**: wstępna walidacja parametrów query przed wysłaniem zapytania (zgodnie z `ListBoardsSchema`).
-- **Typy**: `BoardsViewState`, `ListBoardsQuery`.
+- **Opis**: Kontener widoku; pobiera dane z API poprzez RTK Query i zarządza parametrami URL wyszukiwarki oraz paginacji.
+- **Elementy**: wrapper `<div>`, sekcja kontenera, SearchInput, BoardsList, Pagination.
+- **Interakcje**: zmiana zapytania przez SearchInput, zmiana strony przez Pagination.
+- **Stan**: Używa `useListPublicBoardsQuery` z RTK Query oraz `useQueryParams` do zarządzania parametrami URL.
+- **Typy**: `ListBoardsQuery`, `BoardSummaryDTO`, `Paged`.
 - **Propsy**: brak (komponent routingu).
+- **Różnica My Boards**: Dodaje `ownerId` z Redux store (`useAppSelector`) do parametrów query.
 
 ### SearchInput (reusable – `src/components/ui/SearchInput.tsx`)
 
-- **Opis**: Komponent pola wyszukiwania z możliwością wprowadzania wielu fraz (np. tagów). Wartość to tablica `string[]`.
-- **Elementy**: `<input type="text">`, przycisk clear, lista wpisanych tagów.
-- **Interakcje**: `onChange(value: string[])`, usuwanie tagu, klawisz Enter dodaje frazę.
-- **Walidacja**: każda fraza ≤ 100 znaków; max 10 tagów.
-- **Typy**: `SearchInputProps`.
+- **Opis**: Komponent prostego pola wyszukiwania z debounce (300ms). Wartość to pojedynczy `string`.
+- **Elementy**: `<input type="text">`, przycisk clear (X) widoczny gdy jest wartość.
+- **Interakcje**: `onChange(value: string)` wywoływane z 300ms opóźnieniem, przycisk clear resetuje wartość.
+- **Implementacja**: Używa `useRefValue` hook do śledzenia wartości ref oraz `lodash.debounce` do opóźnienia.
+- **Typy**: `ISearchInputProps { onChange: (value: string) => void; initialValue?: string; }`.
 - **Propsy**:
-  - `value: string[]`
-  - `onChange: (value: string[]) => void`
+  - `onChange: (value: string) => void`
+  - `initialValue?: string` (ustawiane z parametrów URL)
 
-### BoardsGrid
+### BoardsList (`src/components/ui/Boards/BoardsList.tsx`)
 
-- **Opis**: Odpowiada za układ kart; reaguje na brak wyników.
-- **Elementy**: div grid → `BoardCard`.
-- **Interakcje**: brak (pas-through).
-- **Walidacja**: —
-- **Typy**: `BoardCardVM[]`.
-- **Propsy**: `boards`, `loading`.
+- **Opis**: Wyświetla listę plansz w układzie pionowym; obsługuje stan ładowania i pusty stan.
+- **Elementy**: wrapper flex-column → `BoardListTile` dla każdej planszy, komunikaty dla stanów loading/empty.
+- **Interakcje**: brak (pas-through do BoardListTile).
+- **Stany**: Loading ("Ładowanie…"), Empty ("Brak plansz do wyświetlenia.").
+- **Typy**: `BoardSummaryDTO[]`.
+- **Propsy**: `boards: BoardSummaryDTO[] | undefined`, `loading: boolean`.
 
-### BoardCard
+### BoardListTile (`src/components/ui/Boards/BoardListTile.tsx`)
 
-- **Opis**: Przedstawia pojedynczą planszę; klikalna – przejście do `/boards/[id]`.
-- **Elementy**: tytuł, autor, tagi, liczba kart, data.
-- **Interakcje**: click → nawigacja.
-- **Walidacja**: —
-- **Typy**: `BoardCardVM`.
-- **Propsy**: `board: BoardCardVM`.
+- **Opis**: Przedstawia pojedynczą planszę w formacie kafelka; klikalna – przejście do `/boards/[id]`.
+- **Elementy**: 
+  - Avatar z pierwszą literą tytułu
+  - Tytuł (skrócony do 22 znaków na mobile)
+  - Poziom (level)
+  - Tagi (1 na mobile, 2 na desktop, z "…" jeśli więcej)
+  - Przyciski Edit/Delete (tylko dla właściciela)
+  - Czas ostatniego wyniku (lastTime, tylko dla właściciela)
+- **Interakcje**: click → nawigacja, Edit → `/boards/[id]/edit`, Delete → otwiera `DeleteBoardDialog`.
+- **Walidacja**: Sprawdza czy użytkownik jest właścicielem (`authUserId === board.ownerId`).
+- **Typy**: `BoardSummaryDTO`.
+- **Propsy**: `board: BoardSummaryDTO`.
 
-### Pagination
+### Pagination (`src/components/ui/Pagination.tsx`)
 
-- **Opis**: Kontrolka paginacji (← →, nr stron).
-- **Elementy**: przyciski, label.
-- **Interakcje**: click → `onPageChange`.
-- **Walidacja**: page ∈ ⟨1,totalPages⟩.
+- **Opis**: Kontrolka paginacji z przyciskami "Poprzednia"/"Następna" oraz licznikiem stron.
+- **Elementy**: przyciski nawigacyjne, label `{page} / {totalPages}`.
+- **Interakcje**: click → `onPageChange(page - 1)` lub `onPageChange(page + 1)`.
+- **Walidacja**: Przyciski disabled gdy page === 1 lub page === totalPages. Komponent nie renderuje się gdy `total <= pageSize`.
 - **Typy**: `PaginationMeta`.
-- **Propsy**: `meta`, `onPageChange`.
-
-### EmptyState
-
-- **Opis**: Pokazuje wiadomość „Brak plansz” oraz poradę.
-- **Elementy**: ikona, tekst.
-- **Interakcje**: —
-- **Walidacja**: —
-- **Typy**: —
-- **Propsy**: —
+- **Propsy**: `meta?: PaginationMeta`, `onPageChange: (page: number) => void`.
 
 ## 5. Typy
 
+Typy zdefiniowane w `src/types.ts`:
+
 ```ts
-// View-model jednej planszy
-export interface BoardCardVM {
+// BoardSummaryDTO - używany bezpośrednio zamiast BoardCardVM
+export interface BoardSummaryDTO {
   id: string;
+  ownerId: string;
   title: string;
-  ownerDisplayName: string;
   cardCount: number;
+  level: number;
+  isPublic: boolean;
+  archived: boolean;
   tags: string[];
   createdAt: string;
+  updatedAt: string;
+  lastTime?: number; // elapsed_ms, tylko dla Played boards
 }
 
-// Stan widoku
-export interface BoardsViewState {
-  query: string[]; // tablica fraz wyszukiwania
+// Paginacja
+export interface PaginationMeta {
   page: number;
   pageSize: number;
-  loading: boolean;
-  error?: string;
-  data: BoardCardVM[];
-  meta?: PaginationMeta;
+  total: number;
 }
 
-// Props SearchInput
-export interface SearchInputProps {
-  value: string[];
-  onChange: (value: string[]) => void;
+// Odpowiedź API
+export interface Paged<T> {
+  data: T[];
+  meta: PaginationMeta;
+}
+
+// Query parameters dla GET /api/boards
+export interface ListBoardsQuery {
+  page: number;
+  pageSize: number;
+  q?: string;
+  tags?: string[];
+  ownerId?: string;
+  sort?: "created" | "updated" | "cardCount";
+  direction?: "asc" | "desc";
+}
+
+// Props SearchInput (rzeczywista implementacja)
+interface ISearchInputProps {
+  onChange: (value: string) => void;
+  initialValue?: string;
 }
 ```
 
+**Uwaga**: Typy `BoardCardVM`, `BoardsViewState` i `SearchInputProps` (ze string[]) są zdefiniowane w `types.ts`, ale nie są używane w implementacji. Faktycznie wykorzystywane są `BoardSummaryDTO`, RTK Query state i `ISearchInputProps`.
+
 ## 6. Zarządzanie stanem
 
-- **Custom hook**: `usePublicBoards` (w `src/lib/hooks/usePublicBoards.ts`)
-  - Wejście: `{ query: string[], page: number, pageSize: number }`
-  - Wynik: `{ data, meta, loading, error, refetch }`
-  - Implementuje debounce (300 ms) wyszukiwania oraz anulowanie poprzednich żądań.
-- **Struktura stanu**: patrz `BoardsViewState`.
+### Redux Toolkit Query
+
+- **Hook**: `useListPublicBoardsQuery` z RTK Query (w `src/store/api/apiSlice.ts`)
+  - Wejście: `Partial<ListBoardsQuery>`
+  - Wynik: `{ data: Paged<BoardSummaryDTO>, isFetching, refetch }`
+  - Automatyczna cache'owanie i ponowne pobieranie danych przy zmianie parametrów.
+  
+### Zarządzanie parametrami URL
+
+- **Hook**: `useQueryParams<{ q?: string; page?: string }>()` (w `src/hooks/useQueryParams.ts`)
+  - Zwraca: `{ params, setQueryParams }`
+  - Synchronizuje parametry wyszukiwania z URL (history.pushState/replaceState).
+  - Parametry z URL są przekazywane do RTK Query hook.
+
+### Debounce
+
+- Implementowany w komponencie `SearchInput` (300ms delay) przy użyciu `lodash.debounce`.
+
+### Store Redux (tylko My Boards)
+
+- `useAppSelector((state) => state.auth.user?.id)` do pobrania userId dla filtrowania po `ownerId`.
 
 ## 7. Integracja API
 
 - **Endpoint**: `GET /api/boards`
-- **Parametry**: mapowane z hooka do `ListBoardsQuery`.
+- **Parametry**: Konstruowane z `ListBoardsQuery` i serializowane do URL query string w RTK Query.
+  - `page`, `pageSize`, `q` (search query), `tags`, `ownerId`, `sort`, `direction`
 - **Typ odpowiedzi**: `Paged<BoardSummaryDTO>`.
-- **Mapowanie**: `BoardSummaryDTO` → `BoardCardVM` (formatowanie daty, nazwa autora – wymaga dodatkowego pola jeśli backend go zwraca lub placeholder „Unknown”).
+- **Mapowanie**: Brak - `BoardSummaryDTO` używane bezpośrednio w UI. Backend zwraca `ownerId` ale nie zwraca `ownerDisplayName`.
 
 ## 8. Interakcje użytkownika
 
-1. Użytkownik wpisuje frazę → `SearchInput` emituje `onChange` → aktualizacja `query` → wywołanie `refetch`.
-2. Użytkownik klika numer strony → `page` update → wywołanie `refetch`.
-3. Kliknięcie `BoardCard` → przejście do `/boards/[id]`.
+1. **Wyszukiwanie**: Użytkownik wpisuje tekst → `SearchInput` po 300ms debounce emituje `onChange` → `handleQueryChange` aktualizuje parametry URL (q, page=1) przez `setQueryParams` → automatyczny refetch RTK Query.
+2. **Paginacja**: Użytkownik klika "Następna"/"Poprzednia" → `Pagination` wywołuje `onPageChange(page)` → `handlePageChange` aktualizuje parametr URL (page) → automatyczny refetch RTK Query.
+3. **Nawigacja do planszy**: Kliknięcie `BoardListTile` → przejście do `/boards/[id]`.
+4. **Edycja planszy** (właściciel): Kliknięcie ikony Edit → przejście do `/boards/[id]/edit`.
+5. **Usuwanie planszy** (właściciel): Kliknięcie ikony Delete → otwiera dialog `DeleteBoardDialog` → potwierdzenie → API call → reload strony.
 
 ## 9. Warunki i walidacja
 
-- Fraza wyszukiwania ≤ 100 znaków; liczba fraz ≤ 10.
-- `page` ≥ 1; `pageSize` ∈ ⟨1,100⟩.
-- Przy wejściu na stronę parametry z URL są parsowane i walidowane – niepoprawne wartości resetowane do domyślnych.
+- **Parametry URL**: Parsowane przez `useQueryParams`, używane bezpośrednio bez dodatkowej walidacji frontendu (walidacja na backendzie).
+- **Wartości domyślne**: Zdefiniowane w `DEFAULT_PAGINATION` (page: 1, pageSize: 8).
+- **SearchInput**: Brak limitów długości frazy na frontendzie, debounce 300ms.
+- **Pagination**: Przyciski disabled gdy na pierwszej/ostatniej stronie, komponent ukryty gdy `total <= pageSize`.
 
 ## 10. Obsługa błędów
 
-- **Walidacja parametrów**: wyświetla toast z informacją i przywraca domyślne parametry.
-- **Błąd API (4xx/5xx/timeout)**: pokazuje `Toast` z komunikatem „Nie udało się pobrać plansz. Spróbuj ponownie.” oraz przycisk „Odśwież”.
-- **Brak wyników**: renderuje `EmptyState`.
+- **Błąd API**: Obsługiwane automatycznie przez RTK Query middleware (`baseQueryWithReauth`). 
+  - Błędy 401: Automatyczna próba odświeżenia tokena lub logout.
+  - Inne błędy: Automatyczny toast z Redux (`showToast`) z komunikatem błędu z backendu lub domyślnym "Wystąpił błąd zapytania".
+- **Brak wyników**: `BoardsList` renderuje komunikat "Brak plansz do wyświetlenia.".
+- **Stan ładowania**: `BoardsList` renderuje komunikat "Ładowanie…" gdy `isFetching === true`.
 
-## 11. Kroki implementacji
+## 11. Zrealizowana implementacja
 
-1. **Typy**: dodaj `BoardCardVM`, `BoardsViewState`, `SearchInputProps` w `src/types.ts` lub dedykowanym module.
-2. **Komponent SearchInput**:
-   - Utwórz `src/components/ui/SearchInput.tsx` z interfejsem `SearchInputProps`.
-   - Zaimplementuj obsługę wielu fraz oraz emitowanie `onChange`.
-3. **Hook usePublicBoards**:
-   - Stwórz w `src/lib/hooks/usePublicBoards.ts`.
-   - Użyj `fetch`/`supabase` do wywołania `GET /api/boards`.
-4. **Layout strony**: utwórz `src/pages/boards.astro`.
-5. **Komponenty prezentacyjne**: `BoardCard`, `BoardsGrid`, `Pagination`, `EmptyState` w `src/components/boards/`.
-6. **Integracja API**: w hooku mapuj odpowiedź do `BoardCardVM`.
-7. **Routing & SEO**: dodaj meta title „Public Boards – Definition Quest”.
-8. **Stylowanie**: użyj Tailwind, responsywność desktop-first.
-9. **A11y**: aria-label dla inputu, klikalne elementy focusable, kontrast.
-10. **Testy jednostkowe**: komponent `SearchInput` i hook `usePublicBoards` (mock fetch).
-11. **Dokumentacja**: zaktualizuj README i Storybook (jeśli obecny) o `SearchInput`.
+### Zaimplementowane komponenty i pliki:
 
-## 12. Header komponent
+1. **Strony Astro**:
+   - `src/pages/boards.astro` - importuje `BoardsPage` z `client:load`
+   - `src/pages/my-boards.astro` - importuje `MyBoardsPage` z `client:load`
 
-- Dodany komponent `Header` w `src/components/ui/Header.tsx` (100 vw, 80 px, cień). Aktualizuje strukturę widoku – `BoardsPage` będzie opakowany przez `Header` w layout.
+2. **Komponenty React**:
+   - `src/components/pages/BoardsPage.tsx` - główny komponent widoku Public Boards
+   - `src/components/pages/MyBoardsPage.tsx` - główny komponent widoku My Boards (+ filter ownerId)
+   - `src/components/ui/SearchInput.tsx` - prosty input z debounce (string, nie string[])
+   - `src/components/ui/Boards/BoardsList.tsx` - lista plansz z obsługą stanów
+   - `src/components/ui/Boards/BoardListTile.tsx` - kafelek pojedynczej planszy
+   - `src/components/ui/Pagination.tsx` - paginacja z przyciskami Poprzednia/Następna
+
+3. **Redux/RTK Query**:
+   - `src/store/api/apiSlice.ts` - zawiera `listPublicBoards` query
+   - Hook: `useListPublicBoardsQuery` - automatyczne cache'owanie i refetch
+
+4. **Hooki**:
+   - `src/hooks/useQueryParams.ts` - synchronizacja parametrów z URL
+   - `src/hooks/useRefValue.ts` - używany w SearchInput
+   - `src/hooks/useTime.ts` - konwersja ms na minuty (używany w BoardListTile)
+
+5. **Typy**:
+   - `src/types.ts` - zawiera wszystkie typy DTO, w tym `BoardSummaryDTO`, `ListBoardsQuery`, `PaginationMeta`, `Paged<T>`
+   - Uwaga: Typy `BoardCardVM`, `BoardsViewState`, `SearchInputProps` (ze string[]) są zdefiniowane, ale nie są używane w rzeczywistej implementacji
+
+6. **Stałe**:
+   - `src/constants/pagination.ts` - `DEFAULT_PAGINATION` (page: 1, pageSize: 8)
+
+7. **Stylowanie**: Tailwind CSS z custom properties CSS (`--color-primary`, `--color-secondary`), responsywność (mobile-first z breakpointem md:)
+
+8. **A11y**: aria-label dla inputu wyszukiwania i paginacji, focusable przyciski z focus-visible:ring
+
+### Różnice od pierwotnego planu:
+
+- ❌ Nie zaimplementowano multi-tag input (string[]) - zamiast tego prosty string input
+- ❌ Nie zaimplementowano custom hooka `usePublicBoards` - użyto RTK Query
+- ❌ Nie zaimplementowano `BoardCardVM` - używany jest bezpośrednio `BoardSummaryDTO`
+- ❌ Nie zaimplementowano osobnego komponentu `PageHeader`
+- ❌ Nie zaimplementowano osobnego komponentu `EmptyState` - zintegrowany w `BoardsList`
+- ✅ Zaimplementowano zarządzanie stanem przez Redux/RTK Query
+- ✅ Zaimplementowano synchronizację parametrów z URL
+- ✅ Zaimplementowano debounce w SearchInput
+- ✅ Zaimplementowano funkcjonalność Edit/Delete dla właściciela planszy
+
+## 12. Layout
+
+- Strony `boards.astro` i `my-boards.astro` używają wspólnego layoutu `Layout.astro` z `src/layouts/Layout.astro`.
+- Layout jest globalny dla całej aplikacji i prawdopodobnie zawiera wspólne elementy (header, navigation).
+- Komponenty React (`BoardsPage`, `MyBoardsPage`) są renderowane z dyrektywą `client:load` dla pełnej interaktywności.
+- Padding `md:pl-[80px]` w sekcji kontenera sugeruje obecność bocznego sidebaru na desktop.
