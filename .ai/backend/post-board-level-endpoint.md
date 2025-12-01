@@ -16,84 +16,124 @@ Tworzy kolejny poziom (level) istniejącej talii fiszek (board) dla aktualnego w
   {
     "boardId": "<uuid>", // wymagane
     "pairs": [
-      // wymagane – length = cardCount/2
+      // wymagane – min 1, max 12 par (walidacja Zod)
+      // maksimum cardCount/2 sprawdzane w service layer
       { "term": "France", "definition": "Paris" }
     ]
   }
   ```
 - **Parametry:**
-  - Wymagane: `boardId`, `pairs`
+  - Wymagane: `boardId` (UUID), `pairs` (array 1-12 elementów)
+  - Każda para: `term` i `definition` (1-255 znaków, trimmed)
   - Brak opcjonalnych
 
 ## 3. Wykorzystywane typy
 
-- **Command model**:
+- **Command model** (z `src/types.ts`):
   ```ts
-  export interface CreateNextLevelCmd {
+  export type CreateNextLevelCmd = Strict<{
     boardId: string;
-    pairs: PairCreateCmd[]; // length validated server-side
-  }
+    pairs: PairCreateCmd[]; // length validated: 1-12 (Zod), <= cardCount/2 (service)
+  }>;
+  
+  export type PairCreateCmd = Strict<Omit<PairDTO, "id">>;
   ```
-- Re-use istniejących DTO: `PairDTO`, `BoardDetailDTO` (z `src/types.ts`).
+- **Validation schema** (z `src/lib/validation/board-level.ts`):
+  ```ts
+  export const CreateNextLevelSchema = z.object({
+    boardId: z.string().uuid(),
+    pairs: z.array(
+      z.object({
+        term: z.string().min(1).max(255).trim(),
+        definition: z.string().min(1).max(255).trim(),
+      })
+    ).min(1).max(12)
+  }).refine(/* unikalność term */);
+  ```
+- **Response**: `{ message: string }` (nie BoardDetailDTO)
 
 ## 4. Szczegóły odpowiedzi
 
 - **Status:** `201 Created`
-- **Body:** `BoardDetailDTO` dla nowo utworzonego poziomu (wraz z wstawionymi `pairs`).
+- **Body:** 
+  ```json
+  {
+    "message": "Level {level} of {title} created"
+  }
+  ```
 - **Nagłówki:**
-  - `Location: /boards/<newBoardId>`
+  - `Content-Type: application/json`
 
 ## 5. Przepływ danych
 
-1. **Auth middleware** wstrzykuje `supabase` oraz `currentUser.id` do `locals`.
+1. **Auth middleware** wstrzykuje `supabase` oraz `user` do `locals`.
 2. **Route handler**
-   1. Parse & validate JSON (Zod) ➜ `CreateNextLevelCmd`.
-   2. Query `boards` by `id = boardId`:
-      - `select owner_id, title, card_count, is_public, tags, archived`.
-      - 404 gdy brak rekordu.
-   3. Sprawdź właściciela: `owner_id === auth.uid()` → 401 if false.
-   4. Sprawdź `archived` → 400 “BOARD_ARCHIVED”.
-   5. Oblicz `nextLevel = MAX(level where owner_id+title) + 1` przy pomocy pojedynczego `select max(level)`.
-   6. Walidacje biznesowe:
-      - `pairs.length === card_count / 2`.
-      - unikalność `term` wśród przesłanych par.
-   7. **Transakcja-pseudo** (sekwencyjne zapytania – JS klient nie ma tx):
-      1. Insert do `boards` (nowy uuid, odziedziczone pola, `level = nextLevel`).
-      2. Bulk insert `pairs` (funkcja `insertPairsForBoard`).
-   8. Select inserted pairs ➜ `fetchInsertedPairs`.
-   9. Złożenie obiektu `BoardDetailDTO`, status 201.
+   1. Sprawdza obecność `locals.user` → 401 gdy brak.
+   2. Parse & validate JSON (Zod) ➜ `CreateNextLevelCmd`.
+   3. Wywołuje `createBoardNextLevel` z serwisu.
+3. **Service layer** (`createBoardNextLevel`):
+   1. Query `boards` by `id = boardId`:
+      - `select id, owner_id, title, card_count, is_public, tags, archived`.
+      - Throw "BOARD_NOT_FOUND" gdy brak rekordu.
+   2. Sprawdź właściciela: `owner_id === ownerId` → throw "NOT_OWNER" if false.
+   3. Sprawdź `archived` → throw "BOARD_ARCHIVED".
+   4. Walidacje biznesowe:
+      - `pairs.length <= card_count / 2` (maksimum, nie dokładna równość).
+      - Unikalność `term` wśród przesłanych par (walidowana przez Zod schema).
+   5. Oblicz `nextLevel = MAX(level where owner_id+title) + 1` przy pomocy pojedynczego zapytania:
+      - `select level order by level desc limit 1`.
+   6. Insert do `boards` (nowy uuid, odziedziczone pola, `level = nextLevel`).
+   7. Bulk insert `pairs` (funkcja `insertPairsForBoard`).
+   8. Zwraca message string: `"Level {level} of {title} created"`.
+4. **Route handler** zwraca 201 z `{ message }` w body.
 
 ## 6. Względy bezpieczeństwa
 
 - **RLS**: table `boards` – właściciel pełny dostęp; insert wymaga zgodności `owner_id` z `auth.uid()` – spełniamy.
-- **Input sanitization**: Zod string trim, max length zgodnie z DB (np. 65535), blokada SQL-injection zapewniona przez parametrized supabase js.
+- **Input sanitization**: 
+  - Zod string trim, max length 255 znaków dla term i definition.
+  - Walidacja unikalności term (case-insensitive) w ramach przesłanych par.
+  - Blokada SQL-injection zapewniona przez parametrized queries w supabase-js.
+- **Ownership verification**: Warstwa serwisu weryfikuje owner_id przed każdą operacją.
 - **Rate limiting**: (do rozważenia) Cloudflare / middleware.
 
 ## 7. Obsługa błędów
 
-| Sytuacja                         | Kod | Body.example                                     |
-| -------------------------------- | --- | ------------------------------------------------ |
-| Nieautoryzowany                  | 401 | `{ "error": "UNAUTHENTICATED" }`                 |
-| Board nie istnieje               | 404 | `{ "error": "BOARD_NOT_FOUND" }`                 |
-| Brak dostępu                     | 401 | `{ "error": "NOT_OWNER" }`                       |
-| Board zarchiwizowany             | 400 | `{ "error": "BOARD_ARCHIVED" }`                  |
-| Błędne dane (np. zła liczba par) | 400 | `{ "error": "INVALID_INPUT", "details": "..." }` |
-| Duplikat term                    | 400 | `{ "error": "DUPLICATE_TERM" }`                  |
-| DB violation (unique)            | 500 | `{ "error": "DB_ERROR" }`                        |
+| Sytuacja                         | Kod | Body.example                                                                          |
+| -------------------------------- | --- | ------------------------------------------------------------------------------------- |
+| Nieautoryzowany                  | 401 | `{ "error": "Unauthorized" }`                                                         |
+| Board nie istnieje               | 404 | `{ "error": "board_not_found", "message": "Board does not exist..." }`                |
+| Brak dostępu                     | 401 | `{ "error": "not_owner", "message": "You are not the owner..." }`                     |
+| Board zarchiwizowany             | 409 | `{ "error": "board_archived", "message": "Board is archived..." }`                    |
+| Błędne dane (np. zła liczba par) | 400 | `{ "error": "invalid_input", "message": "Request body validation failed." }`          |
+| Walidacja Zod (duplikat term)    | 400 | `{ "error": "Validation failed", "details": [{ "field": "pairs", "message": "..." }] }` |
+| Błędny JSON                      | 400 | `{ "error": "Invalid JSON in request body" }`                                         |
+| Nieprzewidziany błąd             | 500 | `{ "error": "Internal server error" }`                                                |
 
 ## 8. Rozważania dotyczące wydajności
 
-- Jedno dodatkowe zapytanie `max(level)` jest indeksowane (`owner_id,title` w UNIQUE) – dodamy composite index `(owner_id,title,level)` jeśli zauważymy seq scan.
-- Bulk insert par w 1 request (`insertPairsForBoard`) – unika pętli.
-- Brak potrzeby kalkulacji `search_vector` – generowane przez DB.
+- Jedno dodatkowe zapytanie `select level order by level desc limit 1` z filtrami `owner_id` i `title` – korzysta z istniejących indeksów.
+- Bulk insert par w 1 request (`insertPairsForBoard`) – unika pętli N+1.
+- Brak potrzeby kalkulacji `search_vector` – generowane automatycznie przez DB trigger.
 
-## 9. Etapy wdrożenia
+## 9. Status wdrożenia
 
-1. **Typy**: dodać `CreateNextLevelCmd` do `src/types.ts`.
-2. **Walidacja**: utworzyć `src/lib/validation/board-level.ts` z Zod schema.
-3. **Service**: w `board.service.ts` dodać `createBoardNextLevel(supabase, ownerId, cmd)` korzystając z istniejących helperów.
-4. **API route**: utworzyć plik `src/pages/api/boards/level.ts`:
+✅ **Zaimplementowane** – wszystkie etapy wykonane:
+
+1. ✅ **Typy**: `CreateNextLevelCmd` dodany do `src/types.ts` (linia 115-118).
+2. ✅ **Walidacja**: `CreateNextLevelSchema` w `src/lib/validation/board-level.ts`:
+   - UUID dla boardId
+   - 1-12 par (dla card_count 16/24)
+   - Max 255 znaków dla term i definition
+   - Unikalność term (case-insensitive)
+3. ✅ **Service**: `createBoardNextLevel` w `src/lib/services/board.service.ts` (linia 147-227):
+   - Weryfikacja ownership i statusu
+   - Obliczanie następnego poziomu
+   - Insert nowego board i par
+   - Zwraca message string
+4. ✅ **API route**: `src/pages/api/boards/level.ts`:
    - `export const POST` handler
    - `prerender = false`
-5. **Middleware**: upewnić się iż `locals.supabase` dostępny (już jest).
-6. **Docs**: zaktualizować OpenAPI / readme.
+   - Zwraca 201 z `{ message }` w body
+5. ✅ **Middleware**: `locals.supabase` i `locals.user` dostępne.
+6. ⏳ **Docs**: Do aktualizacji OpenAPI spec (jeśli istnieje).
