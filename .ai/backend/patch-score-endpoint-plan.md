@@ -42,15 +42,15 @@ W odróżnieniu od `POST` nie zwraca statusu 201 – zawsze 200 OK, niezależnie
 
 ## 4. Szczegóły odpowiedzi
 
-| Kod | Scenariusz                              | Body                                                 |
-| --- | --------------------------------------- | ---------------------------------------------------- |
-| 200 | Rekord utworzony **lub** zaktualizowany | `{ id: string, elapsedMs: number }`                  |
-| 400 | Brak boardId w params                   | `{ error: "INVALID_BOARD_ID" }`                      |
-| 400 | Niepoprawny JSON w body                 | `{ error: "INVALID_JSON" }`                          |
-| 400 | Błędne dane wejściowe (walidacja Zod)   | `{ error: "invalid_input", details: [...] }`         |
-| 401 | Brak / nieważny JWT                     | `{ error: "unauthorized", message: "..." }`          |
-| 404 | Tablica nie istnieje lub brak dostępu   | `{ error: "board_not_found", message: "..." }`       |
-| 500 | Inny błąd serwera                       | `{ error: "server_error", message: "..." }`          |
+| Kod | Scenariusz                              | Body                                           |
+| --- | --------------------------------------- | ---------------------------------------------- |
+| 200 | Rekord utworzony **lub** zaktualizowany | `{ id: string, elapsedMs: number }`            |
+| 400 | Brak boardId w params                   | `{ error: "INVALID_BOARD_ID" }`                |
+| 400 | Niepoprawny JSON w body                 | `{ error: "INVALID_JSON" }`                    |
+| 400 | Błędne dane wejściowe (walidacja Zod)   | `{ error: "invalid_input", details: [...] }`   |
+| 401 | Brak / nieważny JWT                     | `{ error: "unauthorized", message: "..." }`    |
+| 404 | Tablica nie istnieje lub brak dostępu   | `{ error: "board_not_found", message: "..." }` |
+| 500 | Inny błąd serwera                       | `{ error: "server_error", message: "..." }`    |
 
 ## 5. Przepływ danych
 
@@ -60,16 +60,18 @@ W odróżnieniu od `POST` nie zwraca statusu 201 – zawsze 200 OK, niezależnie
    - Parametr `httpMethod: "POST" | "PATCH"` określa sposób zwracania kodu statusu
 
 2. **Walidacja parametrów i użytkownika**:
+
    ```ts
    if (!boardId) throw new HttpError("invalid_board_id", 400, { error: "INVALID_BOARD_ID" });
    if (!user) throw new HttpError("unauthorized", 401, { error: "UNAUTHORIZED" });
    ```
 
 3. **Parsowanie i walidacja body**:
+
    ```ts
    const body = await request.json().catch(() => undefined);
    if (!body) throw new HttpError("invalid_json", 400, { error: "INVALID_JSON" });
-   
+
    const parseResult = SubmitScoreSchema.safeParse(body);
    if (!parseResult.success) {
      const details = formatValidationErrors(parseResult.error);
@@ -78,6 +80,7 @@ W odróżnieniu od `POST` nie zwraca statusu 201 – zawsze 200 OK, niezależnie
    ```
 
 4. **Wywołanie serwisu**:
+
    ```ts
    const result = await upsertScore(locals.supabase, user.id, boardId, elapsedMs);
    // result: { id: string, elapsedMs: number, isNew: boolean }
@@ -91,6 +94,7 @@ W odróżnieniu od `POST` nie zwraca statusu 201 – zawsze 200 OK, niezależnie
    - Zwraca `{ id, elapsedMs, isNew }`
 
 6. **Ustalenie kodu statusu**:
+
    ```ts
    let status: number;
    if (httpMethod === "POST") {
@@ -105,7 +109,7 @@ W odróżnieniu od `POST` nie zwraca statusu 201 – zawsze 200 OK, niezależnie
 
 ## 6. Względy bezpieczeństwa
 
-- **Uwierzytelnienie:** 
+- **Uwierzytelnienie:**
   - JWT Supabase sprawdzany przez middleware Astro
   - Użytkownik dostępny przez `locals.user`
   - Brak użytkownika → 401 UNAUTHORIZED
@@ -125,17 +129,18 @@ W odróżnieniu od `POST` nie zwraca statusu 201 – zawsze 200 OK, niezależnie
 
 ## 7. Obsługa błędów
 
-| Błąd                         | Detekcja                              | Klasa / Kod biznesowy | Kod HTTP |
-| ---------------------------- | ------------------------------------- | --------------------- | -------- |
-| Brak boardId                 | `!boardId`                            | `HttpError`           | 400      |
-| Nieautoryzowany              | `!user`                               | `HttpError`           | 401      |
-| Niepoprawny JSON             | `request.json()` fail                 | `HttpError`           | 400      |
-| Błędne body (walidacja Zod)  | `SubmitScoreSchema.safeParse` fail    | `ValidationError`     | 400      |
-| Tablica nie istnieje         | Serwis: query `boards` empty          | `Error("BOARD_NOT_FOUND")` | 404      |
-| Brak dostępu do prywatnej    | Serwis: nie owner i !is_public        | `Error("BOARD_NOT_FOUND")` | 404      |
-| Błąd DB                      | `error` z Supabase                    | `Error("SERVER_ERROR")`    | 500      |
+| Błąd                        | Detekcja                           | Klasa / Kod biznesowy      | Kod HTTP |
+| --------------------------- | ---------------------------------- | -------------------------- | -------- |
+| Brak boardId                | `!boardId`                         | `HttpError`                | 400      |
+| Nieautoryzowany             | `!user`                            | `HttpError`                | 401      |
+| Niepoprawny JSON            | `request.json()` fail              | `HttpError`                | 400      |
+| Błędne body (walidacja Zod) | `SubmitScoreSchema.safeParse` fail | `ValidationError`          | 400      |
+| Tablica nie istnieje        | Serwis: query `boards` empty       | `Error("BOARD_NOT_FOUND")` | 404      |
+| Brak dostępu do prywatnej   | Serwis: nie owner i !is_public     | `Error("BOARD_NOT_FOUND")` | 404      |
+| Błąd DB                     | `error` z Supabase                 | `Error("SERVER_ERROR")`    | 500      |
 
 **Przepływ obsługi błędów w catch**:
+
 1. `error instanceof HttpError` → zwraca `error.response` i `error.status`
 2. `error instanceof Error` → próbuje `getErrorMapping(error.message)` dla błędów biznesowych
 3. Default → zwraca `{ error: "SERVER_ERROR" }` z kodem 500

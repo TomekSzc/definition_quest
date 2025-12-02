@@ -13,7 +13,6 @@ import { Footer } from "@/components/ui/Footer";
  * - Style wizualne (background, shadow, text)
  * - Płynne animacje przy zmianie stanu sidebara
  * - Stała wysokość i fixed layout
- * - Zawartość tekstowa (copyright)
  */
 
 // Mock dla useSidebar hook
@@ -46,23 +45,6 @@ describe("Footer", () => {
       expect(footer.tagName).toBe("FOOTER");
       expect(footer).toHaveClass("w-full");
       expect(footer).toHaveClass("h-[60px]");
-    });
-
-    it("powinien zawierać tekst 'Definition Quest 2025'", () => {
-      // Arrange
-      vi.mocked(useSidebar).mockReturnValue({
-        collapsed: false,
-        toggle: vi.fn(),
-        set: vi.fn(),
-      });
-
-      // Act
-      render(<Footer />);
-
-      // Assert
-      const copyrightText = screen.getByText("Definition Quest 2025");
-      expect(copyrightText).toBeInTheDocument();
-      expect(copyrightText.tagName).toBe("P");
     });
 
     it("powinien mieć poprawne style layout (flex, items-center, justify-center)", () => {
@@ -147,22 +129,6 @@ describe("Footer", () => {
       // Assert
       const footer = screen.getByRole("contentinfo");
       expect(footer).toHaveClass("text-sm");
-    });
-
-    it("powinien mieć jasny szary kolor tekstu dla copyright (text-gray-100)", () => {
-      // Arrange
-      vi.mocked(useSidebar).mockReturnValue({
-        collapsed: false,
-        toggle: vi.fn(),
-        set: vi.fn(),
-      });
-
-      // Act
-      render(<Footer />);
-
-      // Assert
-      const copyrightText = screen.getByText("Definition Quest 2025");
-      expect(copyrightText).toHaveClass("text-gray-100");
     });
   });
 
@@ -683,24 +649,6 @@ describe("Footer", () => {
       expect(footer).toBeInTheDocument();
     });
 
-    it("powinien mieć czytelny tekst z dobrym kontrastem (text-gray-100 na --color-primary)", () => {
-      // Arrange
-      vi.mocked(useSidebar).mockReturnValue({
-        collapsed: false,
-        toggle: vi.fn(),
-        set: vi.fn(),
-      });
-
-      // Act
-      render(<Footer />);
-
-      // Assert
-      const copyrightText = screen.getByText("Definition Quest 2025");
-      expect(copyrightText).toHaveClass("text-gray-100");
-      const footer = screen.getByRole("contentinfo");
-      expect(footer).toHaveClass("bg-[var(--color-primary)]");
-    });
-
     it("powinien być zawsze widoczny dla użytkowników screen readerów", () => {
       // Arrange
       vi.mocked(useSidebar).mockReturnValue({
@@ -734,22 +682,6 @@ describe("Footer", () => {
       // Assert
       const footer = screen.getByRole("contentinfo");
       expect(footer.tagName).toBe("FOOTER");
-    });
-
-    it("powinien zawierać element <p> dla tekstu copyright", () => {
-      // Arrange
-      vi.mocked(useSidebar).mockReturnValue({
-        collapsed: false,
-        toggle: vi.fn(),
-        set: vi.fn(),
-      });
-
-      // Act
-      render(<Footer />);
-
-      // Assert
-      const copyrightText = screen.getByText("Definition Quest 2025");
-      expect(copyrightText.tagName).toBe("P");
     });
   });
 

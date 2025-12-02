@@ -26,7 +26,7 @@ _Zgodny model:_ `GenerateBoardCmd` z `src/types.ts`.
 ## 3. Wykorzystywane typy
 
 - **Command / Input:** `GenerateBoardCmd`
-- **Encje BD:** 
+- **Encje BD:**
   - `ai_requests` (tabela auditowa, pola: `id`, `user_id`, `status`, `model`, `prompt_tokens`, `cost_usd`, `requested_at`)
     - **Uwaga:** pole `prompt_tokens` przechowuje `total_tokens` (suma input + output)
   - `daily_ai_usage` (materialized view dla sprawdzania limitu, pola: `user_id`, `request_date`, `cnt`)
@@ -60,7 +60,7 @@ _Zgodny model:_ `GenerateBoardCmd` z `src/types.ts`.
 
 1. **Auth ⇢** Astro middleware automatycznie weryfikuje JWT i dodaje `user` do `locals`.
 2. **Walidacja Zod ⇢** `GenerateBoardSchema` waliduje `inputText`, `cardCount`, etc.
-3. **Service layer (`generateBoardPairs`) ⇢** 
+3. **Service layer (`generateBoardPairs`) ⇢**
    - Walidacja długości `inputText` (max 5000 znaków) i pustego tekstu
    - Walidacja `cardCount` (16 lub 24)
    - **Quota check** – sprawdzenie limitu w widoku `daily_ai_usage` (`count < 50`)
@@ -77,13 +77,16 @@ _Zgodny model:_ `GenerateBoardCmd` z `src/types.ts`.
 9. **Klient** otrzymuje pary, może je edytować, następnie używa `POST /boards` do utworzenia planszy.
 
 **Obsługa błędów podczas generowania:**
+
 - W przypadku błędu OpenRouter lub walidacji: status w `ai_requests` ustawiany na `failed`
 - Błędy OpenRouter mapowane na `AI_SERVICE_ERROR: <message>`
 
 ## 6. Strategia promptów AI
 
 ### System Prompt
+
 Instrukcja dla AI definiująca rolę i wymagania:
+
 - Rola: ekspert w tworzeniu materiałów edukacyjnych
 - Zadanie: ekstrakcja najważniejszych pojęć jako pary termin–definicja
 - **Wymagania dotyczące par:**
@@ -96,7 +99,9 @@ Instrukcja dla AI definiująca rolę i wymagania:
   - Definicje samowystarczalne (zrozumiałe bez kontekstu)
 
 ### User Prompt
+
 Format:
+
 ```
 Title: {title}
 
@@ -107,12 +112,14 @@ Generate term-definition pairs (max 50) from the above content.
 ```
 
 ### Parametry modelu
+
 - **Model:** `openai/gpt-4o-mini`
 - **Temperature:** 0.7 (balans między kreatywnością a konsystencją)
 - **Top P:** 1.0 (pełna próba tokenów)
 - **Response Format:** JSON Schema (strict mode)
 
 ### JSON Schema
+
 ```ts
 {
   type: "json_schema",
@@ -169,20 +176,20 @@ Generate term-definition pairs (max 50) from the above content.
 
 ## 8. Obsługa błędów
 
-| Scenariusz                 | Kod | Działanie                                                      |
-| -------------------------- | --- | -------------------------------------------------------------- |
-| Niezalogowany              | 401 | Middleware zwraca 401 przed dotarciem do endpointu             |
-| Niepoprawny JSON           | 400 | `createErrorResponse("Invalid JSON in request body", 400)`     |
-| Walidacja Zod              | 400 | Szczegółowe błędy walidacji w `details` array                  |
-| `INPUT_TEXT_EMPTY`         | 400 | Mapped error response przez `getErrorMapping()`                |
-| `INPUT_TEXT_TOO_LONG`      | 400 | Mapped error response przez `getErrorMapping()`                |
-| `INVALID_CARD_COUNT`       | 400 | Mapped error response przez `getErrorMapping()`                |
-| `QUOTA_EXCEEDED`           | 429 | Mapped error response, brak utworzenia `ai_requests`           |
+| Scenariusz                   | Kod | Działanie                                                         |
+| ---------------------------- | --- | ----------------------------------------------------------------- |
+| Niezalogowany                | 401 | Middleware zwraca 401 przed dotarciem do endpointu                |
+| Niepoprawny JSON             | 400 | `createErrorResponse("Invalid JSON in request body", 400)`        |
+| Walidacja Zod                | 400 | Szczegółowe błędy walidacji w `details` array                     |
+| `INPUT_TEXT_EMPTY`           | 400 | Mapped error response przez `getErrorMapping()`                   |
+| `INPUT_TEXT_TOO_LONG`        | 400 | Mapped error response przez `getErrorMapping()`                   |
+| `INVALID_CARD_COUNT`         | 400 | Mapped error response przez `getErrorMapping()`                   |
+| `QUOTA_EXCEEDED`             | 429 | Mapped error response, brak utworzenia `ai_requests`              |
 | `AI_INVALID_RESPONSE_FORMAT` | 500 | `ai_requests.status = 'failed'`, AI zwróciło nieprawidłowy format |
-| `AI_INVALID_PAIR_FORMAT`   | 500 | `ai_requests.status = 'failed'`, para nie przeszła walidacji   |
-| `AI_SERVICE_ERROR`         | 500 | `ai_requests.status = 'failed'`, błąd OpenRouter API           |
-| Błąd generowania           | 500 | `ai_requests.status = 'failed'`, log + generic error           |
-| Błąd BD                    | 500 | Log serwera, generic error response                            |
+| `AI_INVALID_PAIR_FORMAT`     | 500 | `ai_requests.status = 'failed'`, para nie przeszła walidacji      |
+| `AI_SERVICE_ERROR`           | 500 | `ai_requests.status = 'failed'`, błąd OpenRouter API              |
+| Błąd generowania             | 500 | `ai_requests.status = 'failed'`, log + generic error              |
+| Błąd BD                      | 500 | Log serwera, generic error response                               |
 
 ## 9. Rozważania dotyczące wydajności
 

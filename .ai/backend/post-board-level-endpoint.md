@@ -30,32 +30,39 @@ Tworzy kolejny poziom (level) istniejącej talii fiszek (board) dla aktualnego w
 ## 3. Wykorzystywane typy
 
 - **Command model** (z `src/types.ts`):
+
   ```ts
   export type CreateNextLevelCmd = Strict<{
     boardId: string;
     pairs: PairCreateCmd[]; // length validated: 1-12 (Zod), <= cardCount/2 (service)
   }>;
-  
+
   export type PairCreateCmd = Strict<Omit<PairDTO, "id">>;
   ```
+
 - **Validation schema** (z `src/lib/validation/board-level.ts`):
   ```ts
-  export const CreateNextLevelSchema = z.object({
-    boardId: z.string().uuid(),
-    pairs: z.array(
-      z.object({
-        term: z.string().min(1).max(255).trim(),
-        definition: z.string().min(1).max(255).trim(),
-      })
-    ).min(1).max(12)
-  }).refine(/* unikalność term */);
+  export const CreateNextLevelSchema = z
+    .object({
+      boardId: z.string().uuid(),
+      pairs: z
+        .array(
+          z.object({
+            term: z.string().min(1).max(255).trim(),
+            definition: z.string().min(1).max(255).trim(),
+          })
+        )
+        .min(1)
+        .max(12),
+    })
+    .refine(/* unikalność term */);
   ```
 - **Response**: `{ message: string }` (nie BoardDetailDTO)
 
 ## 4. Szczegóły odpowiedzi
 
 - **Status:** `201 Created`
-- **Body:** 
+- **Body:**
   ```json
   {
     "message": "Level {level} of {title} created"
@@ -90,7 +97,7 @@ Tworzy kolejny poziom (level) istniejącej talii fiszek (board) dla aktualnego w
 ## 6. Względy bezpieczeństwa
 
 - **RLS**: table `boards` – właściciel pełny dostęp; insert wymaga zgodności `owner_id` z `auth.uid()` – spełniamy.
-- **Input sanitization**: 
+- **Input sanitization**:
   - Zod string trim, max length 255 znaków dla term i definition.
   - Walidacja unikalności term (case-insensitive) w ramach przesłanych par.
   - Blokada SQL-injection zapewniona przez parametrized queries w supabase-js.
@@ -99,16 +106,16 @@ Tworzy kolejny poziom (level) istniejącej talii fiszek (board) dla aktualnego w
 
 ## 7. Obsługa błędów
 
-| Sytuacja                         | Kod | Body.example                                                                          |
-| -------------------------------- | --- | ------------------------------------------------------------------------------------- |
-| Nieautoryzowany                  | 401 | `{ "error": "Unauthorized" }`                                                         |
-| Board nie istnieje               | 404 | `{ "error": "board_not_found", "message": "Board does not exist..." }`                |
-| Brak dostępu                     | 401 | `{ "error": "not_owner", "message": "You are not the owner..." }`                     |
-| Board zarchiwizowany             | 409 | `{ "error": "board_archived", "message": "Board is archived..." }`                    |
-| Błędne dane (np. zła liczba par) | 400 | `{ "error": "invalid_input", "message": "Request body validation failed." }`          |
+| Sytuacja                         | Kod | Body.example                                                                            |
+| -------------------------------- | --- | --------------------------------------------------------------------------------------- |
+| Nieautoryzowany                  | 401 | `{ "error": "Unauthorized" }`                                                           |
+| Board nie istnieje               | 404 | `{ "error": "board_not_found", "message": "Board does not exist..." }`                  |
+| Brak dostępu                     | 401 | `{ "error": "not_owner", "message": "You are not the owner..." }`                       |
+| Board zarchiwizowany             | 409 | `{ "error": "board_archived", "message": "Board is archived..." }`                      |
+| Błędne dane (np. zła liczba par) | 400 | `{ "error": "invalid_input", "message": "Request body validation failed." }`            |
 | Walidacja Zod (duplikat term)    | 400 | `{ "error": "Validation failed", "details": [{ "field": "pairs", "message": "..." }] }` |
-| Błędny JSON                      | 400 | `{ "error": "Invalid JSON in request body" }`                                         |
-| Nieprzewidziany błąd             | 500 | `{ "error": "Internal server error" }`                                                |
+| Błędny JSON                      | 400 | `{ "error": "Invalid JSON in request body" }`                                           |
+| Nieprzewidziany błąd             | 500 | `{ "error": "Internal server error" }`                                                  |
 
 ## 8. Rozważania dotyczące wydajności
 

@@ -2,9 +2,10 @@
 
 ## 1. Przegląd
 
-Widok „Played Boards" prezentuje listę **wszystkich plansz** (publicznych i prywatnych), w których zalogowany użytkownik ma zapisany przynajmniej jeden wynik (score). Celem widoku jest umożliwienie graczowi szybkiego odnalezienia plansz, które już rozwiązywał, ponownego ich uruchomienia oraz porównania swojego ostatniego czasu (lastTime). 
+Widok „Played Boards" prezentuje listę **wszystkich plansz** (publicznych i prywatnych), w których zalogowany użytkownik ma zapisany przynajmniej jeden wynik (score). Celem widoku jest umożliwienie graczowi szybkiego odnalezienia plansz, które już rozwiązywał, ponownego ich uruchomienia oraz porównania swojego ostatniego czasu (lastTime).
 
 Funkcjonalnie widok stanowi wariant istniejącego widoku `BoardsPage`, korzysta jednak z innego endpointu (`GET /api/boards/played`), który:
+
 - Filtruje plansze przez inner join z tabelą `scores` dla danego użytkownika
 - Zwraca zarówno publiczne jak i prywatne plansze (bez filtrowania `is_public`)
 - Rozszerza `BoardSummaryDTO` o pole `lastTime` (ostatni zapisany czas użytkownika)
@@ -13,8 +14,8 @@ Pole `lastTime` jest wyświetlane w interfejsie tylko dla plansz, których użyt
 
 ## 2. Routing widoku
 
-| Ścieżka URL | Komponent strony   | Dostęp                  |
-| ----------- | ------------------ | ----------------------- |
+| Ścieżka URL | Komponent strony   | Dostęp                   |
+| ----------- | ------------------ | ------------------------ |
 | `/played`   | `BoardsPlayedPage` | wymagane logowanie (API) |
 
 > **Uwaga implementacyjna**: Middleware w projekcie (`src/middleware/index.ts`) sprawdza uwierzytelnienie tylko dla endpointów API (nie dla stron). Endpoint API `/api/boards/played` zwraca 401 dla niezalogowanych użytkowników. Strona frontendowa nie ma przekierowania na poziomie middleware – zamiast tego, brak autoryzacji jest obsługiwany przez RTK Query i wyświetlany jako błąd.
@@ -43,7 +44,7 @@ BoardsPlayedPage
 - **Walidacja**:
   - `q`: max 100 znaków (zgodnie ze schematem backendu `ListPlayedBoardsSchema`)
   - `page`: ≥ 1 (wartości z hooka `useQueryParams`, fallback = 1 z `DEFAULT_PAGINATION`).
-- **Typy**: 
+- **Typy**:
   - Request: `Partial<ListBoardsQuery>` (rzutowany z parametrów URL)
   - Response: `Paged<PlayedBoardDTO>` z hooka `useListPlayedBoardsQuery`
   - Dla `BoardsList`: rzutowanie na `BoardSummaryDTO[] | undefined`
@@ -87,8 +88,8 @@ Jeśli w przyszłości wymagane będzie sortowanie / filtrowanie po tagach, zost
 
 ## 7. Integracja API
 
-| Hook                       | HTTP | URL                  | Request Query                    | Response                |
-| -------------------------- | ---- | -------------------- | -------------------------------- | ----------------------- |
+| Hook                       | HTTP | URL                  | Request Query                              | Response                |
+| -------------------------- | ---- | -------------------- | ------------------------------------------ | ----------------------- |
 | `useListPlayedBoardsQuery` | GET  | `/api/boards/played` | `Partial<ListBoardsQuery>` (bez `ownerId`) | `Paged<PlayedBoardDTO>` |
 
 Implementacja w pliku `src/store/api/apiSlice.ts` (linie 237-247):
@@ -111,13 +112,13 @@ listPlayedBoards: builder.query<Paged<PlayedBoardDTO>, Partial<ListBoardsQuery>>
 
 ## 8. Interakcje użytkownika
 
-| Akcja                          | Opis                                        | Efekt                                     |
-| ------------------------------ | ------------------------------------------- | ----------------------------------------- |
+| Akcja                          | Opis                                                      | Efekt                                     |
+| ------------------------------ | --------------------------------------------------------- | ----------------------------------------- |
 | Wpisanie tekstu w wyszukiwarkę | aktualizacja query-string, jeśli pusty ciąg ➜ `refetch()` | lista przeładowuje się, `page` reset do 1 |
-| Zmiana strony                  | kliknięcie w `Pagination`                   | nowa strona (brak scroll do topu)         |
-| Kliknięcie karty               | przejście do `/boards/[id]`                 | widok gry lub szczegółów planszy          |
-| Edycja planszy (ikona)         | tylko dla właściciela (`canManage`)         | przejście do `/boards/[id]/edit`          |
-| Usuwanie planszy (ikona)       | tylko dla właściciela (`canManage`)         | otwarcie dialogu `DeleteBoardDialog`      |
+| Zmiana strony                  | kliknięcie w `Pagination`                                 | nowa strona (brak scroll do topu)         |
+| Kliknięcie karty               | przejście do `/boards/[id]`                               | widok gry lub szczegółów planszy          |
+| Edycja planszy (ikona)         | tylko dla właściciela (`canManage`)                       | przejście do `/boards/[id]/edit`          |
+| Usuwanie planszy (ikona)       | tylko dla właściciela (`canManage`)                       | otwarcie dialogu `DeleteBoardDialog`      |
 
 **Uwaga**: W komponencie `SearchInput` nie ma implementacji debounce – zmiany są przekazywane bezpośrednio do `handleQueryChange`.
 
@@ -130,26 +131,27 @@ listPlayedBoards: builder.query<Paged<PlayedBoardDTO>, Partial<ListBoardsQuery>>
    - `tags`: array max 10 stringów, każdy max 20 znaków (opcjonalny)
    - `sort`: enum ["created", "updated", "cardCount"], default "created"
    - `direction`: enum ["asc", "desc"], default "desc"
-   
+
    Frontend:
    - używa hooka `useQueryParams` do zarządzania parametrami URL
    - przekazuje wartości do API przez RTK Query bez walidacji po stronie frontu
-   
+
 2. **Ostatni czas** – pole `lastTime` jest wyświetlane w `BoardListTile` tylko gdy:
    - `board.lastTime` istnieje (nie jest `undefined`)
    - `canManage === true` (użytkownik jest właścicielem planszy, linia 18)
-   
+
    Format wyświetlania: `msToMin(board.lastTime) min` (linie 78-83).
 
 ## 10. Obsługa błędów
 
-| Scenariusz              | UI                                                                              |
-| ----------------------- | ------------------------------------------------------------------------------- |
+| Scenariusz              | UI                                                                                                                                                                         |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 401 Unauthorized        | RTK Query `baseQueryWithReauth` próbuje odświeżyć token; w przypadku niepowodzenia wykonuje `handleClientLogout` (czyści store Redux, usuwa tokeny, przekierowuje na `/`). |
-| 400 Validation          | pokazuje stan pustej listy.      |
-| 500 Server Error / Sieć | toast z komunikatem błędu wyświetlany przez middleware `baseQueryWithReauth` (linie 84-92 w `apiSlice.ts`). Lista wyświetla komunikat „Brak plansz do wyświetlenia." |
+| 400 Validation          | pokazuje stan pustej listy.                                                                                                                                                |
+| 500 Server Error / Sieć | toast z komunikatem błędu wyświetlany przez middleware `baseQueryWithReauth` (linie 84-92 w `apiSlice.ts`). Lista wyświetla komunikat „Brak plansz do wyświetlenia."       |
 
-**Uwaga implementacyjna**: 
+**Uwaga implementacyjna**:
+
 - Globalny interceptor `baseQueryWithReauth` w `apiSlice.ts` automatycznie próbuje odświeżyć token przy 401 i pokazuje toasty dla błędów (poza 401).
 - Komponent `BoardsPlayedPage` nie ma dedykowanego `ErrorState` – w przypadku błędu wyświetla się standardowa wiadomość „Brak plansz do wyświetlenia." z komponentu `BoardsList`.
 - Retry w RTK Query można zostawić na wartościach domyślnych.
@@ -160,7 +162,6 @@ listPlayedBoards: builder.query<Paged<PlayedBoardDTO>, Partial<ListBoardsQuery>>
 
 1. ✅ **Route**: Utworzono plik `src/pages/played.astro` importujący `BoardsPlayedPage`.
    - Użyto `export const prerender = false` dla dynamicznego renderowania.
-   
 2. ✅ **Endpoint API**: Utworzono `src/pages/api/boards/played.ts`:
    - Walidacja przez `ListPlayedBoardsSchema` (bez pola `ownerId`).
    - Sprawdzanie uwierzytelnienia (`locals.user`).
@@ -208,29 +209,34 @@ listPlayedBoards: builder.query<Paged<PlayedBoardDTO>, Partial<ListBoardsQuery>>
 ### Zakres widoczności `lastTime`
 
 Pole `lastTime` jest zawsze zwracane przez API dla wszystkich plansz, ale w UI jest wyświetlane tylko gdy:
+
 - Użytkownik jest właścicielem planszy (`board.ownerId === authUserId`)
 - Wartość `lastTime` istnieje (nie jest `undefined`)
 
 Implementacja w `BoardListTile.tsx`:
+
 ```tsx
 const canManage = authUserId && authUserId === board.ownerId;
 
-{canManage && (
-  <div className="flex items-center gap-2">
-    {board?.lastTime && (
-      <div className="text-sm text-gray-500 flex flex-col">
-        <span>Czas</span>
-        <span>{msToMin(board.lastTime)} min</span>
-      </div>
-    )}
-    {/* Edit and Delete icons */}
-  </div>
-)}
+{
+  canManage && (
+    <div className="flex items-center gap-2">
+      {board?.lastTime && (
+        <div className="text-sm text-gray-500 flex flex-col">
+          <span>Czas</span>
+          <span>{msToMin(board.lastTime)} min</span>
+        </div>
+      )}
+      {/* Edit and Delete icons */}
+    </div>
+  );
+}
 ```
 
 ### Deduplikacja wyników
 
 Serwis `listBoardsPlayedByUser` wykonuje deduplikację wyników na poziomie backendu:
+
 - Użytkownik może mieć wiele wyników dla jednej planszy
 - Backend zwraca planszę tylko raz z jednym `lastTime`
 - Implementacja używa `Map<string, PlayedBoardDTO>` do deduplikacji po `board.id`
@@ -238,6 +244,7 @@ Serwis `listBoardsPlayedByUser` wykonuje deduplikację wyników na poziomie back
 ### Brak filtrowania po `is_public`
 
 W przeciwieństwie do standardowego widoku plansz, endpoint `/api/boards/played`:
+
 - Nie filtruje po `is_public`
 - Zwraca zarówno publiczne jak i prywatne plansze użytkownika
 - Jedyne filtrowanie: `archived = false` i istnienie wyniku dla użytkownika

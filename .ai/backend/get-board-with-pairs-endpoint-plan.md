@@ -12,6 +12,7 @@ Endpoint zwraca pełne dane tablicy (board) – metadane, listę par (term-defin
 - Właściciel do swoich prywatnych tablic (`is_public = false`).
 
 **Powiązane endpointy w tym samym pliku:**
+
 - `PATCH /api/boards/:id` - aktualizacja metadanych tablicy (title, isPublic, tags)
 - `DELETE /api/boards/:id` - soft-delete (archiwizacja) tablicy
 
@@ -39,6 +40,7 @@ export type BoardViewDTO = BoardDetailDTO & {
 ```
 
 **Powiązane typy:**
+
 - `BoardDetailDTO` (linie 82-84) – rozszerza `BoardSummaryDTO` o `pairs: PairDTO[]`
 - `PairDTO` (linie 61-65) – zawiera `id`, `term`, `definition`
 - `BoardSummaryDTO` (linie 67-80) – wszystkie metadane tablicy
@@ -73,12 +75,15 @@ export type BoardViewDTO = BoardDetailDTO & {
 ### Service layer (`src/lib/services/board.service.ts`, linie 418-487)
 
 1. **Zapytanie do bazy** (linie 424-439)
+
    ```typescript
    let request = supabase
      .from("boards")
-     .select(`id, owner_id, title, card_count, level, is_public, archived, tags, created_at, updated_at,
+     .select(
+       `id, owner_id, title, card_count, level, is_public, archived, tags, created_at, updated_at,
               pairs(id, term, definition),
-              scores(elapsed_ms)`)
+              scores(elapsed_ms)`
+     )
      .eq("id", boardId)
      .eq("archived", false);
 
@@ -86,6 +91,7 @@ export type BoardViewDTO = BoardDetailDTO & {
      request = request.eq("scores.user_id", userId);
    }
    ```
+
    - Wykorzystanie **embedowanych relacji** Supabase (left join dla pairs i scores)
    - Filtrowanie scores po `user_id` tylko gdy użytkownik jest zalogowany
 
@@ -125,12 +131,12 @@ export type BoardViewDTO = BoardDetailDTO & {
 
 ### Tabela kodów błędów
 
-| Scenariusz                         | Kod | Komunikat                                       | Źródło                |
-| ---------------------------------- | --- | ----------------------------------------------- | --------------------- |
-| Param `id` nie jest uuid           | 400 | Validation failed                               | Zod validation        |
-| Board nie istnieje lub archived    | 404 | Board does not exist or access denied.          | `BOARD_NOT_FOUND`     |
-| Board prywatny, user niewłaściciel | 401 | This board is private and you are not the owner | `BOARD_PRIVATE`       |
-| Błąd DB lub nieobsłużony           | 500 | Internal server error                           | catch-all             |
+| Scenariusz                         | Kod | Komunikat                                       | Źródło            |
+| ---------------------------------- | --- | ----------------------------------------------- | ----------------- |
+| Param `id` nie jest uuid           | 400 | Validation failed                               | Zod validation    |
+| Board nie istnieje lub archived    | 404 | Board does not exist or access denied.          | `BOARD_NOT_FOUND` |
+| Board prywatny, user niewłaściciel | 401 | This board is private and you are not the owner | `BOARD_PRIVATE`   |
+| Błąd DB lub nieobsłużony           | 500 | Internal server error                           | catch-all         |
 
 ### Implementacja (route handler, linie 45-64)
 
@@ -185,13 +191,13 @@ catch (error: unknown) {
 
 ### ✅ Zaimplementowane komponenty
 
-| Komponent                    | Plik                                     | Status |
-| ---------------------------- | ---------------------------------------- | ------ |
-| Types                        | `src/types.ts` (linie 152-158)           | ✅      |
-| Validation schema            | `src/lib/validation/boards.ts` (150-152) | ✅      |
-| Service function             | `src/lib/services/board.service.ts`      | ✅      |
-| Route handler                | `src/pages/api/boards/[id].ts`           | ✅      |
-| Error mapping                | `src/lib/utils/api-response.ts`          | ✅      |
+| Komponent         | Plik                                     | Status |
+| ----------------- | ---------------------------------------- | ------ |
+| Types             | `src/types.ts` (linie 152-158)           | ✅     |
+| Validation schema | `src/lib/validation/boards.ts` (150-152) | ✅     |
+| Service function  | `src/lib/services/board.service.ts`      | ✅     |
+| Route handler     | `src/pages/api/boards/[id].ts`           | ✅     |
+| Error mapping     | `src/lib/utils/api-response.ts`          | ✅     |
 
 ### 📝 Dodatkowe funkcjonalności w tym samym pliku
 

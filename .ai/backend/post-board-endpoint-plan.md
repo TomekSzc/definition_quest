@@ -39,10 +39,12 @@ Tworzy nową tablicę (board) wraz z osadzonymi parami termin–definicja przeka
 ## 3. Wykorzystywane typy
 
 **Walidacja (Zod):**
+
 - `CreateBoardSchema` – schemat walidacji Zod (`src/lib/validation/boards.ts`, linie 45-96)
 - `CreateBoardInput` – typ wygenerowany z `CreateBoardSchema` (linia 97)
 
 **Modele danych (TypeScript):**
+
 - `CreateBoardCmd` – model komend wejściowych (`src/types.ts`, linie 92-98)
 - `PairCreateCmd` – typ pary bez ID (`src/types.ts`, linia 89)
 - `PairDTO` – pełny DTO pary z ID (`src/types.ts`, linie 61-65)
@@ -51,14 +53,14 @@ Tworzy nową tablicę (board) wraz z osadzonymi parami termin–definicja przeka
 
 ## 4. Szczegóły odpowiedzi
 
-| Kod | Odpowiedź             | Opis                                                        |
-| --- | --------------------- | ----------------------------------------------------------- |
+| Kod | Odpowiedź             | Opis                                                                      |
+| --- | --------------------- | ------------------------------------------------------------------------- |
 | 201 | `{ message: string }` | Utworzono **≥1** tablic (level-based). Np. "Board created with 2 level/s" |
-| 400 | `{ error, details? }` | Błąd walidacji danych wejściowych.                          |
-| 401 | `{ error }`           | Brak uwierzytelnienia.                                      |
-| 409 | `{ error }`           | Konflikt unikalności (duplikat tytułu). Postgres kod: 23505 |
-| 429 | `{ error }`           | Przekroczony limit operacji (przyszłość).                   |
-| 500 | `{ error }`           | Nieoczekiwany błąd serwera.                                 |
+| 400 | `{ error, details? }` | Błąd walidacji danych wejściowych.                                        |
+| 401 | `{ error }`           | Brak uwierzytelnienia.                                                    |
+| 409 | `{ error }`           | Konflikt unikalności (duplikat tytułu). Postgres kod: 23505               |
+| 429 | `{ error }`           | Przekroczony limit operacji (przyszłość).                                 |
+| 500 | `{ error }`           | Nieoczekiwany błąd serwera.                                               |
 
 **Uwaga:** Rzeczywista implementacja zwraca prosty komunikat sukcesu zamiast pełnych obiektów `BoardDetailDTO[]`. Jest to optymalizacja, ponieważ frontend po utworzeniu tablicy przekierowuje użytkownika, więc pełne dane nie są potrzebne.
 
@@ -89,17 +91,18 @@ Tworzy nową tablicę (board) wraz z osadzonymi parami termin–definicja przeka
 
 ## 7. Obsługa błędów
 
-| Sytuacja                               | Błąd/Typ            | Kod | Implementacja                                |
-| -------------------------------------- | ------------------- | --- | -------------------------------------------- |
-| Parse JSON fail                        | `HttpError`         | 400 | Catch w `request.json()` (linia 79)         |
-| Zod validation fail / >100 pairs       | `ValidationError`   | 400 | `CreateBoardSchema.safeParse()` (linia 84)  |
-| `locals.user` brak                     | `HttpError`         | 401 | Sprawdzenie w linii 73-76                    |
-| Duplikat (unique owner_id+title+level) | Postgres code 23505 | 409 | Sprawdzenie `error.code === "23505"` (107)   |
-| Błąd serwisu (np. INSERT_BOARD_FAILED) | Error message       | 500 | Mapowanie przez `getErrorMapping()` (102)    |
-| RLS odrzuca (teoretycznie)             | Supabase error      | 500 | Propagowany jako ogólny błąd                 |
-| Inne niespodziewane                    | Error               | 500 | Fallback w linii 115                         |
+| Sytuacja                               | Błąd/Typ            | Kod | Implementacja                              |
+| -------------------------------------- | ------------------- | --- | ------------------------------------------ |
+| Parse JSON fail                        | `HttpError`         | 400 | Catch w `request.json()` (linia 79)        |
+| Zod validation fail / >100 pairs       | `ValidationError`   | 400 | `CreateBoardSchema.safeParse()` (linia 84) |
+| `locals.user` brak                     | `HttpError`         | 401 | Sprawdzenie w linii 73-76                  |
+| Duplikat (unique owner_id+title+level) | Postgres code 23505 | 409 | Sprawdzenie `error.code === "23505"` (107) |
+| Błąd serwisu (np. INSERT_BOARD_FAILED) | Error message       | 500 | Mapowanie przez `getErrorMapping()` (102)  |
+| RLS odrzuca (teoretycznie)             | Supabase error      | 500 | Propagowany jako ogólny błąd               |
+| Inne niespodziewane                    | Error               | 500 | Fallback w linii 115                       |
 
 **Szczegóły:**
+
 - `ValidationError` jest łapany jako instancja klasy (linia 97) i zwraca 400 z details
 - `HttpError` jest łapany jako instancja klasy (linia 97) i używa własnego statusu
 - Błędy Postgres są wykrywane po kodzie (`23505` = unique violation)
@@ -144,6 +147,7 @@ Endpoint został w pełni zaimplementowany. Poniżej rzeczywiste lokalizacje kod
 ### Sukces – pojedynczy poziom (8 par)
 
 **Request:**
+
 ```http
 POST /api/boards
 Content-Type: application/json
@@ -168,6 +172,7 @@ Authorization: Bearer <jwt>
 ```
 
 **Response (201):**
+
 ```json
 {
   "message": "Board created with 1 level/s"
@@ -177,6 +182,7 @@ Authorization: Bearer <jwt>
 ### Sukces – wiele poziomów (20 par → 3 poziomy)
 
 **Request:**
+
 ```http
 POST /api/boards
 Content-Type: application/json
@@ -193,6 +199,7 @@ Content-Type: application/json
 ```
 
 **Response (201):**
+
 ```json
 {
   "message": "Board created with 3 level/s"
@@ -202,6 +209,7 @@ Content-Type: application/json
 ### Błąd – duplikat tytułu
 
 **Response (409):**
+
 ```json
 {
   "error": "duplicate_board",
@@ -214,6 +222,7 @@ Content-Type: application/json
 **Request:** (term za długi)
 
 **Response (400):**
+
 ```json
 {
   "error": "Validation failed",

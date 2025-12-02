@@ -43,30 +43,34 @@ _Wymagane_: co najmniej jedno pole.
 ## 3. Wykorzystywane typy
 
 ### Validation (Zod schemas)
+
 - **PatchBoardSchema** (`src/lib/validation/boards.ts`) – walidacja ciała żądania
 - **BoardIdParamSchema** – walidacja parametru `:id` w URL
 
 ### Types (TypeScript)
+
 - **PatchBoardCmd** (`src/types.ts`) – typ komend (zawiera również nieużywane pola `archived?` i `pairs?`)
 - **PatchBoardInput** – typ inferred z `PatchBoardSchema`, używany w rzeczywistej implementacji
 
 ### Response
+
 - Endpoint zwraca: `{ message: string }` zamiast `BoardDetailDTO`
 
 ---
 
 ## 4. Szczegóły odpowiedzi
 
-| Kod                           | Body                  | Warunek                                                       |
-| ----------------------------- | --------------------- | ------------------------------------------------------------- |
-| **200 OK**                    | `{ message: string }` | Aktualizacja zakończona powodzeniem                           |
+| Kod                           | Body                  | Warunek                                                             |
+| ----------------------------- | --------------------- | ------------------------------------------------------------------- |
+| **200 OK**                    | `{ message: string }` | Aktualizacja zakończona powodzeniem                                 |
 | **400 Bad Request**           | `{ error, details? }` | Błąd walidacji, brak zmian lub próba edycji zarchiwizowanej tablicy |
-| **401 Unauthorized**          | `{ error }`           | Brak JWT lub nie jesteś właścicielem                          |
-| **404 Not Found**             | `{ error }`           | Tablica nie istnieje lub brak dostępu                         |
-| **409 Conflict**              | `{ error }`           | Duplikat tytułu (UNIQUE na (owner_id, title, level))          |
-| **500 Internal Server Error** | `{ error }`           | Inne błędy serwera                                            |
+| **401 Unauthorized**          | `{ error }`           | Brak JWT lub nie jesteś właścicielem                                |
+| **404 Not Found**             | `{ error }`           | Tablica nie istnieje lub brak dostępu                               |
+| **409 Conflict**              | `{ error }`           | Duplikat tytułu (UNIQUE na (owner_id, title, level))                |
+| **500 Internal Server Error** | `{ error }`           | Inne błędy serwera                                                  |
 
 **Przykład odpowiedzi 200 OK**:
+
 ```json
 {
   "message": "updated title, is_public, tags for all levels"
@@ -126,8 +130,8 @@ sequenceDiagram
    - Czy nie jest zarchiwizowana
 2. Następnie wykonuje UPDATE na **wszystkich** boardach spełniających warunki:
    ```sql
-   UPDATE boards 
-   SET ... 
+   UPDATE boards
+   SET ...
    WHERE owner_id = $userId AND title = $currentTitle
    ```
 3. To oznacza, że jeśli masz tablicę "JavaScript Basics" z 3 poziomami, aktualizacja któregokolwiek z nich zmieni metadane (tytuł, widoczność, tagi) dla wszystkich trzech poziomów.
@@ -151,13 +155,13 @@ W modelu danych tablice wielopoziomowe są reprezentowane jako osobne rekordy w 
 
 ## 8. Obsługa błędów
 
-| Kod | Mapa `getErrorMapping`                | Uwagi                                 |
-| --- | ------------------------------------- | ------------------------------------- |
+| Kod | Mapa `getErrorMapping`                              | Uwagi                                             |
+| --- | --------------------------------------------------- | ------------------------------------------------- |
 | 400 | `VALIDATION_FAILED`, `BOARD_ARCHIVED`, `NO_CHANGES` | Walidacja, próba zmian na archiwum lub brak zmian |
-| 401 | `NOT_OWNER`, `UNAUTHORIZED`           |
-| 404 | `BOARD_NOT_FOUND`                     |
-| 409 | `DUPLICATE_BOARD`, `BOARD_ARCHIVED`   | Duplikat tytułu lub tablica już zarchiwizowana |
-| 500 | `SERVER_ERROR`                        | fallback                              |
+| 401 | `NOT_OWNER`, `UNAUTHORIZED`                         |
+| 404 | `BOARD_NOT_FOUND`                                   |
+| 409 | `DUPLICATE_BOARD`, `BOARD_ARCHIVED`                 | Duplikat tytułu lub tablica już zarchiwizowana    |
+| 500 | `SERVER_ERROR`                                      | fallback                                          |
 
 ---
 

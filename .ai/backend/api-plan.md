@@ -6,6 +6,7 @@
 ## Status Implementacji
 
 ### ✅ Pełna Implementacja
+
 - **Autentykacja**: Wszystkie endpointy (login, rejestracja, logout, reset hasła, odświeżanie tokena)
 - **Plansze**: Operacje CRUD, tworzenie poziomów, generowanie AI, lista granych plansz
 - **Pary**: Operacje tworzenia, aktualizacji, usuwania
@@ -13,22 +14,24 @@
 - **OpenRouter**: Endpoint testowy
 
 ### ⏳ Częściowa Implementacja
+
 - **Listowanie plansz**: Używa parametru `?ownerId` zamiast endpointu `/boards/mine`
 
 ### ❌ Nie Zaimplementowano
+
 - **Profile użytkowników**: GET/PATCH `/users/me`, GET `/users/:id`
 - **Wyniki**: Tabela wyników (GET `/boards/:boardId/scores`), historia użytkownika (GET `/users/me/scores`)
 - **AI**: Endpoint limitu zapytań (GET `/ai/usage`)
 
 ## 1. Zasoby
 
-| Zasób         | Tabela / Widok BD                | Opis                                                                                    |
-| ------------- | -------------------------------- | --------------------------------------------------------------------------------------- |
+| Zasób         | Tabela / Widok BD                | Opis                                                                                         |
+| ------------- | -------------------------------- | -------------------------------------------------------------------------------------------- |
 | `UserProfile` | `user_meta` (+ `auth.users`)     | Publiczne informacje o użytkowniku (nazwa, awatar). Autentykacja obsługiwana przez Supabase. |
 | `Board`       | `boards`                         | Kolekcja par termin–definicja. Może być prywatna lub publiczna, aktywna lub zarchiwizowana.  |
-| `Pair`        | `pairs`                          | Pojedyncza para termin–definicja należąca do planszy.                                   |
-| `Score`       | `scores`                         | Najlepszy czas ukończenia użytkownika dla planszy.                                      |
-| `AIRequest`   | `ai_requests` / `daily_ai_usage` | Audyt użycia AI i egzekwowanie dziennego limitu.                                        |
+| `Pair`        | `pairs`                          | Pojedyncza para termin–definicja należąca do planszy.                                        |
+| `Score`       | `scores`                         | Najlepszy czas ukończenia użytkownika dla planszy.                                           |
+| `AIRequest`   | `ai_requests` / `daily_ai_usage` | Audyt użycia AI i egzekwowanie dziennego limitu.                                             |
 
 > Uwaga: Zmaterializowany widok `best_scores` jest tylko do odczytu i udostępniany przez zasób `Score`.
 
@@ -38,14 +41,14 @@
 
 Autentykacja jest obsługiwana przez niestandardowe endpointy, które opakowują funkcjonalność Supabase Auth. Frontend otrzymuje JWT i zarządza tokenami sesji.
 
-| Metoda | Ścieżka                     | Opis                                                           | Treść żądania                                     | Sukces                                               | Błędy                                  |
-| ------ | --------------------------- | -------------------------------------------------------------- | ------------------------------------------------- | ---------------------------------------------------- | -------------------------------------- |
-| POST   | `/api/auth/login`           | Uwierzytelnia użytkownika email/hasło.                         | `{ email, password }`                             | 200 OK - `{ data: { user, session }, message }`      | 400, 401, 403, 500                     |
-| POST   | `/api/auth/signUp`          | Rejestruje nowego użytkownika z email, hasłem i nazwą.        | `{ email, password, displayName }`                | 201 Created - `{ data: { user }, message }`          | 400, 409, 500                          |
-| POST   | `/api/auth/logout`          | Wylogowuje aktualnego użytkownika i czyści sesję.              | –                                                 | 200 OK - `{ message }`                               | 500                                    |
-| POST   | `/api/auth/forgot-password` | Wysyła link resetowania hasła na email.                        | `{ email }`                                       | 200 OK - `{ message }` (zawsze sukces dla bezpieczeństwa) | 400, 500                          |
-| POST   | `/api/auth/reset-password`  | Resetuje hasło używając tokenów z linku w emailu.              | `{ accessToken, refreshToken, newPassword }`      | 200 OK - `{ message }`                               | 400, 422, 500                          |
-| POST   | `/api/auth/refresh-token`   | Odświeża token dostępu używając tokena odświeżania.            | `{ refreshToken }`                                | 200 OK - `{ data: { session }, message }`            | 400, 401, 500                          |
+| Metoda | Ścieżka                     | Opis                                                   | Treść żądania                                | Sukces                                                    | Błędy              |
+| ------ | --------------------------- | ------------------------------------------------------ | -------------------------------------------- | --------------------------------------------------------- | ------------------ |
+| POST   | `/api/auth/login`           | Uwierzytelnia użytkownika email/hasło.                 | `{ email, password }`                        | 200 OK - `{ data: { user, session }, message }`           | 400, 401, 403, 500 |
+| POST   | `/api/auth/signUp`          | Rejestruje nowego użytkownika z email, hasłem i nazwą. | `{ email, password, displayName }`           | 201 Created - `{ data: { user }, message }`               | 400, 409, 500      |
+| POST   | `/api/auth/logout`          | Wylogowuje aktualnego użytkownika i czyści sesję.      | –                                            | 200 OK - `{ message }`                                    | 500                |
+| POST   | `/api/auth/forgot-password` | Wysyła link resetowania hasła na email.                | `{ email }`                                  | 200 OK - `{ message }` (zawsze sukces dla bezpieczeństwa) | 400, 500           |
+| POST   | `/api/auth/reset-password`  | Resetuje hasło używając tokenów z linku w emailu.      | `{ accessToken, refreshToken, newPassword }` | 200 OK - `{ message }`                                    | 400, 422, 500      |
+| POST   | `/api/auth/refresh-token`   | Odświeża token dostępu używając tokena odświeżania.    | `{ refreshToken }`                           | 200 OK - `{ data: { session }, message }`                 | 400, 401, 500      |
 
 > **Uwaga implementacyjna**: Wszystkie endpointy auth sprawdzają flagę funkcji `auth` i zwracają 503 jeśli wyłączona.
 
@@ -55,11 +58,11 @@ Autentykacja jest obsługiwana przez niestandardowe endpointy, które opakowują
 
 Dane profilu użytkownika są przechowywane w tabeli `user_meta` i tworzone podczas rejestracji. Endpointy profili planowane do przyszłej implementacji:
 
-| Metoda | Ścieżka      | Opis                                    | Treść żądania                  | Sukces (200)                                       | Błędy                                                |
-| ------ | ------------ | --------------------------------------- | ------------------------------ | -------------------------------------------------- | ---------------------------------------------------- |
-| GET    | `/users/me`  | Zwraca profil uwierzytelnionego użytkownika. | –                         | `{ id, email, displayName, avatarUrl, createdAt }` | 401 brak uwierzytelnienia                            |
-| PATCH  | `/users/me`  | Aktualizuje własny profil.              | `{ displayName?, avatarUrl? }` | jak GET                                            | 400 nieprawidłowy, 409 displayName za długi, 429 limit |
-| GET    | `/users/:id` | Wyszukanie publicznego profilu.         | –                              | `{ id, displayName, avatarUrl }`                   | 404                                                  |
+| Metoda | Ścieżka      | Opis                                         | Treść żądania                  | Sukces (200)                                       | Błędy                                                  |
+| ------ | ------------ | -------------------------------------------- | ------------------------------ | -------------------------------------------------- | ------------------------------------------------------ |
+| GET    | `/users/me`  | Zwraca profil uwierzytelnionego użytkownika. | –                              | `{ id, email, displayName, avatarUrl, createdAt }` | 401 brak uwierzytelnienia                              |
+| PATCH  | `/users/me`  | Aktualizuje własny profil.                   | `{ displayName?, avatarUrl? }` | jak GET                                            | 400 nieprawidłowy, 409 displayName za długi, 429 limit |
+| GET    | `/users/:id` | Wyszukanie publicznego profilu.              | –                              | `{ id, displayName, avatarUrl }`                   | 404                                                    |
 
 ### 2.3 Plansze
 
@@ -72,19 +75,19 @@ Wspólne parametry zapytania dla listowania:
 - `sort` – `created`, `updated`, `cardCount`, domyślnie `created`
 - `direction` – `asc` / `desc`
 
-| Metoda | Ścieżka            | Opis                                                                                                                                    |
-| ------ | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
-| GET    | `/boards`          | Listuje plansze (opcjonalnie filtrowane). Dostęp anonimowy pokazuje tylko publiczne. Z parametrem `ownerId` pokazuje wszystkie plansze właściciela. |
-| GET    | `/boards/played`   | Listuje plansze, na których uwierzytelniony użytkownik ma co najmniej jeden wynik. Zawiera `lastTime` użytkownika dla każdej planszy. Wymaga auth. |
-| POST   | `/boards`          | Tworzy planszę ręcznie (pary zawarte w treści). Może utworzyć wiele poziomów z jednego żądania.                                       |
-| POST   | `/boards/level`    | Tworzy kolejny poziom dla istniejącej planszy (pary zawarte w treści).                                                                 |
-| POST   | `/boards/generate` | Generuje pary przez AI (nie tworzy planszy, zwraca pary do edycji). Zobacz sekcję AI.                                                 |
-| GET    | `/boards/:id`      | Pobiera metadane planszy + pary + ostatni wynik użytkownika (jeśli istnieje). Publiczne plansze dostępne dla wszystkich, prywatne tylko dla właściciela. |
+| Metoda | Ścieżka            | Opis                                                                                                                                                                |
+| ------ | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| GET    | `/boards`          | Listuje plansze (opcjonalnie filtrowane). Dostęp anonimowy pokazuje tylko publiczne. Z parametrem `ownerId` pokazuje wszystkie plansze właściciela.                 |
+| GET    | `/boards/played`   | Listuje plansze, na których uwierzytelniony użytkownik ma co najmniej jeden wynik. Zawiera `lastTime` użytkownika dla każdej planszy. Wymaga auth.                  |
+| POST   | `/boards`          | Tworzy planszę ręcznie (pary zawarte w treści). Może utworzyć wiele poziomów z jednego żądania.                                                                     |
+| POST   | `/boards/level`    | Tworzy kolejny poziom dla istniejącej planszy (pary zawarte w treści).                                                                                              |
+| POST   | `/boards/generate` | Generuje pary przez AI (nie tworzy planszy, zwraca pary do edycji). Zobacz sekcję AI.                                                                               |
+| GET    | `/boards/:id`      | Pobiera metadane planszy + pary + ostatni wynik użytkownika (jeśli istnieje). Publiczne plansze dostępne dla wszystkich, prywatne tylko dla właściciela.            |
 | PATCH  | `/boards/:id`      | Częściowa aktualizacja metadanych planszy (tytuł, tagi, isPublic). Aktualizuje wszystkie poziomy o tym samym tytule. Tylko właściciel, zarchiwizowane niedozwolone. |
-| DELETE | `/boards/:id`      | Miękkie archiwizowanie planszy (`archived=true`). Archiwizuje tylko konkretny poziom.                                                 |
+| DELETE | `/boards/:id`      | Miękkie archiwizowanie planszy (`archived=true`). Archiwizuje tylko konkretny poziom.                                                                               |
 
 > **Uwaga implementacyjna**: Zamiast osobnego endpointu `/boards/mine`, użyj `GET /boards?ownerId={userId}` aby wylistować własne plansze użytkownika (publiczne + prywatne).
-> 
+>
 > **PUT nie zaimplementowano**: Całkowite zastąpienie planszy nie jest wspierane. Użyj PATCH do aktualizacji metadanych lub utwórz nowy poziom dla zmian treści.
 
 Kształty żądań/odpowiedzi (skrócone):
@@ -133,11 +136,11 @@ Reguły walidacji egzekwowane po stronie serwera:
 
 ### 2.4 Pary (podzasób)
 
-| Metoda | Ścieżka                          | Opis                                                                     |
-| ------ | -------------------------------- | ------------------------------------------------------------------------ |
+| Metoda | Ścieżka                          | Opis                                                                            |
+| ------ | -------------------------------- | ------------------------------------------------------------------------------- |
 | POST   | `/boards/:boardId/pairs`         | Dodaje nową parę. Tylko właściciel. Egzekwuje limit kart (max cardCount/2 par). |
-| PATCH  | `/boards/:boardId/pairs/:pairId` | Edytuje termin lub definicję. Tylko właściciel.                          |
-| DELETE | `/boards/:boardId/pairs/:pairId` | Usuwa parę. Tylko właściciel.                                            |
+| PATCH  | `/boards/:boardId/pairs/:pairId` | Edytuje termin lub definicję. Tylko właściciel.                                 |
+| DELETE | `/boards/:boardId/pairs/:pairId` | Usuwa parę. Tylko właściciel.                                                   |
 
 #### POST `/boards/:boardId/pairs`
 
@@ -150,20 +153,20 @@ Treść żądania:
 ```jsonc
 {
   "term": "fotosynteza",
-  "definition": "Proces, w którym rośliny przekształcają światło w energię"
+  "definition": "Proces, w którym rośliny przekształcają światło w energię",
 }
 ```
 
 Odpowiedzi:
 
-| Kod  | Opis                                       |
-| ---- | ------------------------------------------ |
-| 201  | Created - zwraca PairDTO                   |
-| 400  | Bad Request - walidacja nieudana           |
-| 401  | Unauthorized - nie właściciel              |
-| 404  | Not Found - plansza nie istnieje           |
-| 409  | Conflict - duplikat terminu lub limit kart |
-| 500  | Internal Server Error                      |
+| Kod | Opis                                       |
+| --- | ------------------------------------------ |
+| 201 | Created - zwraca PairDTO                   |
+| 400 | Bad Request - walidacja nieudana           |
+| 401 | Unauthorized - nie właściciel              |
+| 404 | Not Found - plansza nie istnieje           |
+| 409 | Conflict - duplikat terminu lub limit kart |
+| 500 | Internal Server Error                      |
 
 #### PATCH `/boards/:boardId/pairs/:pairId`
 
@@ -176,20 +179,20 @@ Treść żądania (co najmniej jedno pole):
 ```jsonc
 {
   "term": "fotosynteza",
-  "definition": "Proces, w którym rośliny przekształcają światło w energię"
+  "definition": "Proces, w którym rośliny przekształcają światło w energię",
 }
 ```
 
 Odpowiedzi:
 
-| Kod  | Opis                                       |
-| ---- | ------------------------------------------ |
-| 200  | OK - zwraca zaktualizowany PairDTO         |
-| 400  | Bad Request - walidacja nieudana           |
-| 401  | Unauthorized - nie właściciel              |
-| 404  | Not Found - plansza lub para nie istnieje  |
-| 409  | Conflict - plansza zarchiwizowana          |
-| 500  | Internal Server Error                      |
+| Kod | Opis                                      |
+| --- | ----------------------------------------- |
+| 200 | OK - zwraca zaktualizowany PairDTO        |
+| 400 | Bad Request - walidacja nieudana          |
+| 401 | Unauthorized - nie właściciel             |
+| 404 | Not Found - plansza lub para nie istnieje |
+| 409 | Conflict - plansza zarchiwizowana         |
+| 500 | Internal Server Error                     |
 
 #### DELETE `/boards/:boardId/pairs/:pairId`
 
@@ -199,20 +202,20 @@ Usuwa parę z planszy.
 
 Odpowiedzi:
 
-| Kod  | Opis                                       |
-| ---- | ------------------------------------------ |
-| 200  | OK - `{ id, boardId, message: "deleted" }` |
-| 401  | Unauthorized - nie właściciel              |
-| 404  | Not Found - plansza lub para nie istnieje  |
-| 409  | Conflict - plansza zarchiwizowana          |
-| 500  | Internal Server Error                      |
+| Kod | Opis                                       |
+| --- | ------------------------------------------ |
+| 200 | OK - `{ id, boardId, message: "deleted" }` |
+| 401 | Unauthorized - nie właściciel              |
+| 404 | Not Found - plansza lub para nie istnieje  |
+| 409 | Conflict - plansza zarchiwizowana          |
+| 500 | Internal Server Error                      |
 
 ### 2.5 Wyniki
 
-| Metoda | Ścieżka                   | Opis                                                                                          |
-| ------ | ------------------------- | --------------------------------------------------------------------------------------------- |
+| Metoda | Ścieżka                   | Opis                                                                                                |
+| ------ | ------------------------- | --------------------------------------------------------------------------------------------------- |
 | POST   | `/boards/:boardId/scores` | Przesyła czas ukończenia (ms). Upsert do `scores`. Zwraca 201 jeśli nowy, 200 jeśli zaktualizowany. |
-| PATCH  | `/boards/:boardId/scores` | Przesyła czas ukończenia (ms). Upsert do `scores`. Zawsze zwraca 200 (semantyka idempotentna). |
+| PATCH  | `/boards/:boardId/scores` | Przesyła czas ukończenia (ms). Upsert do `scores`. Zawsze zwraca 200 (semantyka idempotentna).      |
 
 > **Nie zaimplementowano**: Tabela wyników (`GET /boards/:boardId/scores`) i historia wyników użytkownika (`GET /users/me/scores`).
 
@@ -227,7 +230,7 @@ Odpowiedź:
 ```jsonc
 {
   "id": "<uuid>",
-  "elapsedMs": 93400
+  "elapsedMs": 93400,
 }
 ```
 
@@ -241,8 +244,8 @@ Odpowiedź:
 
 ### 2.6 AI
 
-| Metoda | Ścieżka            | Opis                                                                                                                |
-| ------ | ------------------ | ------------------------------------------------------------------------------------------------------------------- |
+| Metoda | Ścieżka            | Opis                                                                                                                  |
+| ------ | ------------------ | --------------------------------------------------------------------------------------------------------------------- |
 | POST   | `/boards/generate` | Generuje pary z surowego tekstu ≤ 5 000 znaków. Zwraca pary do edycji. Wlicza się do dziennego limitu (50 req/dzień). |
 
 > **Nie zaimplementowano**: Endpoint limitu użycia AI (`GET /ai/usage`).
@@ -252,7 +255,7 @@ Przykładowa treść POST:
 ```jsonc
 {
   "inputText": "Alkany to węglowodory…",
-  "cardCount": 24
+  "cardCount": 24,
 }
 ```
 
@@ -263,7 +266,7 @@ Sukces (200 OK): Zwraca tablicę wygenerowanych par do edycji przed utworzeniem 
   "pairs": [
     { "term": "Alkan", "definition": "Nasycony węglowodór z pojedynczymi wiązaniami" },
     // ... więcej par (cardCount/2)
-  ]
+  ],
 }
 ```
 
@@ -280,9 +283,9 @@ Sukces (200 OK): Zwraca tablicę wygenerowanych par do edycji przed utworzeniem 
 
 #### Test OpenRouter
 
-| Metoda | Ścieżka                | Opis                                                         |
-| ------ | ---------------------- | ------------------------------------------------------------ |
-| GET    | `/api/openrouter/test` | Testuje połączenie z OpenRouter API i dostępność modeli.    |
+| Metoda | Ścieżka                | Opis                                                     |
+| ------ | ---------------------- | -------------------------------------------------------- |
+| GET    | `/api/openrouter/test` | Testuje połączenie z OpenRouter API i dostępność modeli. |
 
 Odpowiedź:
 
@@ -293,8 +296,8 @@ Odpowiedź:
   "data": {
     "modelCount": 150,
     "testResponse": "OpenRouter API is working correctly",
-    "tokensUsed": 25
-  }
+    "tokensUsed": 25,
+  },
 }
 ```
 
@@ -334,17 +337,17 @@ Zdarzenia wysyłane po stronie klienta bezpośrednio do GA; nie są wymagane end
 
 ### Reguły Walidacji
 
-| Zasób    | Reguła                                | Egzekwowane Przez                         | Odpowiedź Błędu |
-| -------- | ------------------------------------- | ----------------------------------------- | --------------- |
-| Board    | `cardCount` ∈ {16, 24}                | Schemat Zod + DB CHECK                    | 400             |
-| Board    | Unikalne (ownerId, title, level)      | DB UNIQUE CONSTRAINT                      | 409             |
-| Board    | `tags` ≤ 10 & każdy ≤ 20 znaków       | Schemat Zod                               | 400             |
-| Board    | Nie można modyfikować zarchiwizowanych| Warstwa serwisowa                         | 409             |
-| Pair     | Unikalne (boardId, term)              | DB UNIQUE CONSTRAINT                      | 409             |
-| Pair     | Limit kart (max cardCount/2)          | Warstwa serwisowa (`addPairToBoard`)      | 409             |
-| Score    | `elapsedMs` > 0                       | Schemat Zod                               | 400             |
-| AI       | ≤ 50 zapytań / użytkownik / dzień     | Warstwa serwisowa + widok `daily_ai_usage`| 429             |
-| AI       | `inputText` ≤ 5000 znaków             | Schemat Zod                               | 400             |
+| Zasób | Reguła                                 | Egzekwowane Przez                          | Odpowiedź Błędu |
+| ----- | -------------------------------------- | ------------------------------------------ | --------------- |
+| Board | `cardCount` ∈ {16, 24}                 | Schemat Zod + DB CHECK                     | 400             |
+| Board | Unikalne (ownerId, title, level)       | DB UNIQUE CONSTRAINT                       | 409             |
+| Board | `tags` ≤ 10 & każdy ≤ 20 znaków        | Schemat Zod                                | 400             |
+| Board | Nie można modyfikować zarchiwizowanych | Warstwa serwisowa                          | 409             |
+| Pair  | Unikalne (boardId, term)               | DB UNIQUE CONSTRAINT                       | 409             |
+| Pair  | Limit kart (max cardCount/2)           | Warstwa serwisowa (`addPairToBoard`)       | 409             |
+| Score | `elapsedMs` > 0                        | Schemat Zod                                | 400             |
+| AI    | ≤ 50 zapytań / użytkownik / dzień      | Warstwa serwisowa + widok `daily_ai_usage` | 429             |
+| AI    | `inputText` ≤ 5000 znaków              | Schemat Zod                                | 400             |
 
 ### Kody Odpowiedzi Błędów
 
@@ -435,17 +438,17 @@ API używa scentralizowanych narzędzi obsługi błędów z `src/lib/utils/`:
 
 ### Standardowe Kody Błędów
 
-| Kod  | Znaczenie                                         | Przykłady                                     |
-| ---- | ------------------------------------------------- | --------------------------------------------- |
-| 400  | Bad Request – walidacja nieudana                  | Nieprawidłowy JSON, błędy schematu Zod        |
-| 401  | Unauthorized – brak lub nieprawidłowe auth        | Brak JWT, nieprawidłowe dane, wygasły token   |
-| 403  | Forbidden – uwierzytelniony ale niedozwolony      | Email niepotwierdzony                         |
-| 404  | Not Found – zasób nie istnieje                    | Plansza nie znaleziona, para nie znaleziona   |
-| 409  | Conflict – naruszenie reguły biznesowej           | Duplikat planszy, zarchiwizowana, limit kart  |
-| 422  | Unprocessable Entity – nieprawidłowe tokeny       | Wygasły token resetu hasła                    |
-| 429  | Too Many Requests – quota przekroczona            | Osiągnięty dzienny limit AI                   |
-| 500  | Internal Server Error – nieoczekiwany błąd        | Błędy bazy danych, nieobsłużone wyjątki       |
-| 503  | Service Unavailable – funkcja wyłączona           | Flaga auth wyłączona                          |
+| Kod | Znaczenie                                    | Przykłady                                    |
+| --- | -------------------------------------------- | -------------------------------------------- |
+| 400 | Bad Request – walidacja nieudana             | Nieprawidłowy JSON, błędy schematu Zod       |
+| 401 | Unauthorized – brak lub nieprawidłowe auth   | Brak JWT, nieprawidłowe dane, wygasły token  |
+| 403 | Forbidden – uwierzytelniony ale niedozwolony | Email niepotwierdzony                        |
+| 404 | Not Found – zasób nie istnieje               | Plansza nie znaleziona, para nie znaleziona  |
+| 409 | Conflict – naruszenie reguły biznesowej      | Duplikat planszy, zarchiwizowana, limit kart |
+| 422 | Unprocessable Entity – nieprawidłowe tokeny  | Wygasły token resetu hasła                   |
+| 429 | Too Many Requests – quota przekroczona       | Osiągnięty dzienny limit AI                  |
+| 500 | Internal Server Error – nieoczekiwany błąd   | Błędy bazy danych, nieobsłużone wyjątki      |
+| 503 | Service Unavailable – funkcja wyłączona      | Flaga auth wyłączona                         |
 
 ### Format Odpowiedzi Błędu
 
@@ -475,22 +478,22 @@ Wszystkie błędy mają spójną strukturę:
 
 Warstwa serwisowa rzuca kody błędów (stringi), które są mapowane na odpowiedzi HTTP:
 
-| Kod Błędu                 | Status HTTP | Komunikat Odpowiedzi                        |
-| ------------------------- | ----------- | ------------------------------------------- |
-| `BOARD_NOT_FOUND`         | 404         | Plansza nie znaleziona                      |
-| `BOARD_PRIVATE`           | 401         | Ta plansza jest prywatna                    |
-| `BOARD_ARCHIVED`          | 409         | Nie można modyfikować zarchiwizowanej planszy |
-| `NOT_OWNER`               | 401         | Nie jesteś właścicielem tej planszy         |
-| `DUPLICATE_BOARD`         | 409         | Plansza o tym tytule już istnieje           |
-| `DUPLICATE_PAIR`          | 409         | Termin już istnieje na tej planszy          |
-| `CARD_LIMIT_REACHED`      | 409         | Osiągnięty limit kart                       |
-| `PAIR_NOT_FOUND`          | 404         | Para nie znaleziona                         |
-| `EMAIL_ALREADY_EXISTS`    | 409         | Email już zarejestrowany                    |
-| `INVALID_CREDENTIALS`     | 401         | Nieprawidłowy email lub hasło               |
-| `EMAIL_NOT_CONFIRMED`     | 403         | Proszę potwierdzić swój email               |
-| `INVALID_REFRESH_TOKEN`   | 401         | Nieprawidłowy lub wygasły token odświeżania |
-| `UNAUTHORIZED`            | 401         | Wymagane uwierzytelnienie                   |
-| `FEATURE_DISABLED`        | 503         | Ta funkcja jest obecnie wyłączona           |
+| Kod Błędu               | Status HTTP | Komunikat Odpowiedzi                          |
+| ----------------------- | ----------- | --------------------------------------------- |
+| `BOARD_NOT_FOUND`       | 404         | Plansza nie znaleziona                        |
+| `BOARD_PRIVATE`         | 401         | Ta plansza jest prywatna                      |
+| `BOARD_ARCHIVED`        | 409         | Nie można modyfikować zarchiwizowanej planszy |
+| `NOT_OWNER`             | 401         | Nie jesteś właścicielem tej planszy           |
+| `DUPLICATE_BOARD`       | 409         | Plansza o tym tytule już istnieje             |
+| `DUPLICATE_PAIR`        | 409         | Termin już istnieje na tej planszy            |
+| `CARD_LIMIT_REACHED`    | 409         | Osiągnięty limit kart                         |
+| `PAIR_NOT_FOUND`        | 404         | Para nie znaleziona                           |
+| `EMAIL_ALREADY_EXISTS`  | 409         | Email już zarejestrowany                      |
+| `INVALID_CREDENTIALS`   | 401         | Nieprawidłowy email lub hasło                 |
+| `EMAIL_NOT_CONFIRMED`   | 403         | Proszę potwierdzić swój email                 |
+| `INVALID_REFRESH_TOKEN` | 401         | Nieprawidłowy lub wygasły token odświeżania   |
+| `UNAUTHORIZED`          | 401         | Wymagane uwierzytelnienie                     |
+| `FEATURE_DISABLED`      | 503         | Ta funkcja jest obecnie wyłączona             |
 
 Mapowanie zaimplementowane w `src/lib/utils/api-response.ts` przez `getErrorMapping()`.
 
