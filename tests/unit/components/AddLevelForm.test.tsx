@@ -2,7 +2,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import AddLevelForm from "../AddLevelForm";
+import AddLevelForm from "@/components/forms/AddLevelForm";
 
 /**
  * -----------------------------------------
@@ -17,7 +17,11 @@ vi.mock("@/store/api/apiSlice", () => ({
 }));
 
 // 2. Mock toast helper
-type ToastArgs = { type: string; title: string; message: string };
+interface ToastArgs {
+  type: string;
+  title: string;
+  message: string;
+}
 export const showToastMock = vi.fn();
 vi.mock("@/store/hooks", async () => {
   const actual = await vi.importActual<typeof import("@/store/hooks")>("@/store/hooks");

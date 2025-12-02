@@ -50,7 +50,7 @@ vi.mock("@/hooks/useQueryParams", () => {
 // ----------------------
 // Imports *after* mocks
 // ----------------------
-import AuthForm from "../AuthForm";
+import AuthForm from "@/components/forms/AuthForm";
 import { Routes } from "@/lib/routes";
 
 /**
