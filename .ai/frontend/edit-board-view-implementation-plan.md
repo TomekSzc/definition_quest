@@ -83,7 +83,7 @@ EditBoardPage (w src/components/pages/EditBoardPage.tsx)
 ### 4.5 PairEditRow
 
 - **Opis:** pojedynczy wiersz term/definition; analogiczna logika do `BoardTitleInput` lecz z dwoma polami + funkcjonalność usuwania.
-- **Główne elementy:** 
+- **Główne elementy:**
   - Tryb readonly: `<div>` z `<p>` dla term (font-bold) i definition (text-sm), ikonki `EditIcon` i `DeleteIcon`.
   - Tryb edycji: `<input>` dla term + `<textarea>` dla definition, przyciski ✓ (`CheckIcon`) i ✗ (`XIcon`).
 - **Interakcje:**
@@ -144,7 +144,7 @@ interface EditBoardVM {
 
 - **Globalny stan:** Redux store z RTK Query dla mutacji i cache'owania.
 - **Lokalny stan w `EditBoardForm`:** `useState<EditBoardVM>` - mapuje `BoardViewDTO` do lokalnego VM; aktualizowany optymistycznie po sukcesie mutacji.
-- **Lokalny stan w podkomponentach:** 
+- **Lokalny stan w podkomponentach:**
   - `BoardTitleInput`: `isEditing`, `draft` (string).
   - `PairEditRow`: `isEditing`, `term`, `definition` (stringi).
   - `AddPairsForm`: `draftPairs` (array draft pair objects).
@@ -161,22 +161,18 @@ interface EditBoardVM {
 
 1. **GET** `/api/boards/:id` – ładowanie danych board przy mount (przez `useGetBoardByIdQuery` w hook `useBoard`).
    - Typ odpowiedzi: `BoardViewDTO`.
-   
 2. **PATCH** `/api/boards/:id` – aktualizacja meta (obecnie tylko tytuł; wywołane z `BoardTitleInput` przez `handleTitleSave`).
    - Typ żądania: `PatchBoardCmd` (partial: `{ title?: string, isPublic?: boolean, archived?: boolean, tags?: string[] }`).
    - Typ odpowiedzi: `{ message: string }`.
    - Mutation: `useUpdateBoardMetaMutation`.
-   
 3. **PATCH** `/api/boards/:boardId/pairs/:pairId` – aktualizacja pary (term i/lub definition).
    - Typ żądania: `PairUpdateCmd` (partial: `{ term?: string, definition?: string }`).
    - Typ odpowiedzi: `PairDTO`.
    - Mutation: `useUpdatePairMutation`.
-   
 4. **POST** `/api/boards/:boardId/pairs` – dodanie nowej pary (wywołane z `AddPairsForm`).
    - Typ żądania: `PairCreateCmd` `{ term: string, definition: string }`.
    - Typ odpowiedzi: `PairDTO` (status 201).
    - Mutation: `useAddPairMutation`.
-   
 5. **DELETE** `/api/boards/:boardId/pairs/:pairId` – usunięcie pary (wywołane z `PairEditRow`).
    - Brak body.
    - Typ odpowiedzi: `{ id: string, boardId: string, message: string }`.
@@ -184,32 +180,32 @@ interface EditBoardVM {
 
 ## 8. Interakcje użytkownika
 
-| Akcja                       | Rezultat                                                                      |
-| --------------------------- | ----------------------------------------------------------------------------- |
-| Klik „edit" przy tytule     | Pokazuje input + przyciski ✓✗                                                 |
-| Klik ✓ przy tytule          | Walidacja → PATCH `/api/boards/:id` → toast „Zapisano" → readonly            |
-| Klik ✗ przy tytule          | Anulacja zmian, powrót do readonly                                            |
-| Klik „edit" przy parze      | Pokazuje input + textarea + ✓✗                                                |
-| Klik ✓ przy parze           | Walidacja → PATCH `/api/boards/:boardId/pairs/:pairId` → toast + aktualizacja |
-| Klik ✗ przy parze           | Anulacja zmian, powrót do readonly                                            |
-| Klik „delete" przy parze    | DELETE `/api/boards/:boardId/pairs/:pairId` → toast + usunięcie z listy       |
-| Klik „+ Dodaj parę (X)"     | Dodaje pusty draft pair do listy (tryb edycji)                                |
-| Klik ✓ przy draft pair      | Walidacja → POST `/api/boards/:boardId/pairs` → toast + dodanie do listy      |
-| Klik ✗ przy draft pair      | Anulacja, usunięcie draftu                                                    |
-| Klik „Powrót"               | `history.back()`                                                              |
-| Klik „Dodaj level"          | Przekierowanie do `/boards/:id/add-level`                                     |
+| Akcja                    | Rezultat                                                                      |
+| ------------------------ | ----------------------------------------------------------------------------- |
+| Klik „edit" przy tytule  | Pokazuje input + przyciski ✓✗                                                 |
+| Klik ✓ przy tytule       | Walidacja → PATCH `/api/boards/:id` → toast „Zapisano" → readonly             |
+| Klik ✗ przy tytule       | Anulacja zmian, powrót do readonly                                            |
+| Klik „edit" przy parze   | Pokazuje input + textarea + ✓✗                                                |
+| Klik ✓ przy parze        | Walidacja → PATCH `/api/boards/:boardId/pairs/:pairId` → toast + aktualizacja |
+| Klik ✗ przy parze        | Anulacja zmian, powrót do readonly                                            |
+| Klik „delete" przy parze | DELETE `/api/boards/:boardId/pairs/:pairId` → toast + usunięcie z listy       |
+| Klik „+ Dodaj parę (X)"  | Dodaje pusty draft pair do listy (tryb edycji)                                |
+| Klik ✓ przy draft pair   | Walidacja → POST `/api/boards/:boardId/pairs` → toast + dodanie do listy      |
+| Klik ✗ przy draft pair   | Anulacja, usunięcie draftu                                                    |
+| Klik „Powrót"            | `history.back()`                                                              |
+| Klik „Dodaj level"       | Przekierowanie do `/boards/:id/add-level`                                     |
 
 ## 9. Warunki i walidacja
 
 - **Tytuł:** 1–255 znaków (po trim); walidacja w `BoardTitleInput` - blokuje zapis jeśli pusty lub >255.
-- **Pair (edycja):** 
+- **Pair (edycja):**
   - Term i definition - minimum 1 znak po trim.
   - PATCH wysyłany tylko dla zmienionych pól.
   - Jeśli nic się nie zmieniło, zamyka tryb edycji bez API call.
 - **Pair (dodawanie):**
   - Oba pola (term, definition) **wymagane** - muszą być niepuste po trim.
   - Walidacja w `AddPairsForm` przed POST.
-- **Liczba par:** 
+- **Liczba par:**
   - Maksymalnie `cardCount / 2` par.
   - `PairEditList` sprawdza limit i wyświetla toast error jeśli przekroczony.
   - `AddPairsForm` oblicza `remainingSlots` i blokuje dodawanie nowych draft pairs gdy limit osiągnięty (przycisk "+ Dodaj parę" ukryty gdy `remainingSlots <= 0`).
@@ -217,10 +213,10 @@ interface EditBoardVM {
 ## 10. Obsługa błędów
 
 - **400 Validation:** API zwraca `{ error: string }` → wyświetlany w toast error (nie pod inputem, tylko toast).
-- **401 Unauthorized:** 
+- **401 Unauthorized:**
   - W `EditBoardPage`: brak user → wyświetla toast error.
   - Middleware Astro może przekierować do `/login` przed dotarciem do strony.
-- **404 Board/Pairs not found:** 
+- **404 Board/Pairs not found:**
   - W `useBoard` hook: `isError` = true → toast error w `EditBoardPage`.
   - Nie ma automatycznego redirectu do `/boards` - użytkownik musi ręcznie wrócić.
 - **409 Conflict (duplicate, archived):** toast error z komunikatem z API (`error.data?.error`).

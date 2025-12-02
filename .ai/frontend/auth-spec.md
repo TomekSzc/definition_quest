@@ -220,7 +220,8 @@ export const prerender = false;
 
 #### 2.2.1. LoginPage i AuthForm
 
-**Lokalizacja:** 
+**Lokalizacja:**
+
 - `src/components/pages/LoginPage.tsx` (page wrapper)
 - `src/components/forms/AuthForm.tsx` (formularz logowania)
 
@@ -277,6 +278,7 @@ export const prerender = false;
 #### 2.2.2. SignUpPage i SignUpForm
 
 **Lokalizacja:**
+
 - `src/components/pages/SignUpPage.tsx` (page wrapper)
 - `src/components/forms/SignUpForm.tsx` (formularz rejestracji)
 
@@ -335,6 +337,7 @@ export const prerender = false;
 #### 2.2.3. ForgotPasswordPage i ForgotPasswordForm
 
 **Lokalizacja:**
+
 - `src/components/pages/ForgotPasswordPage.tsx` (page wrapper)
 - `src/components/forms/ForgotPasswordForm.tsx` (formularz)
 
@@ -381,6 +384,7 @@ export const prerender = false;
 #### 2.2.4. ResetPasswordPage i ResetPasswordForm
 
 **Lokalizacja:**
+
 - `src/components/pages/ResetPasswordPage.tsx` (page wrapper z logiką tokenów)
 - `src/components/forms/ResetPasswordForm.tsx` (formularz)
 
@@ -1256,8 +1260,10 @@ export const onRequest = defineMiddleware(async (context, next) => {
   }
 
   // Spróbuj pobrać zalogowanego użytkownika
-  const { data: { user }, error: authError } = 
-    await context.locals.supabase.auth.getUser();
+  const {
+    data: { user },
+    error: authError,
+  } = await context.locals.supabase.auth.getUser();
 
   // Dodaj usera do locals jeśli jest zalogowany
   if (!authError && user) {
@@ -1320,25 +1326,27 @@ export const prerender = false;
 
 export const POST: APIRoute = async ({ request, locals }) => {
   // ... walidacja body przez RefreshTokenSchema
-  
-  const { data: sessionData, error: refreshError } = 
-    await locals.supabase.auth.refreshSession({
-      refresh_token: refreshToken,
-    });
+
+  const { data: sessionData, error: refreshError } = await locals.supabase.auth.refreshSession({
+    refresh_token: refreshToken,
+  });
 
   if (refreshError || !sessionData.session) {
     throw new HttpError("INVALID_REFRESH_TOKEN", 401);
   }
 
-  return createSuccessResponse({
-    data: {
-      session: {
-        accessToken: sessionData.session.access_token,
-        refreshToken: sessionData.session.refresh_token,
+  return createSuccessResponse(
+    {
+      data: {
+        session: {
+          accessToken: sessionData.session.access_token,
+          refreshToken: sessionData.session.refresh_token,
+        },
       },
+      message: "Token refreshed successfully",
     },
-    message: "Token refreshed successfully",
-  }, 200);
+    200
+  );
 };
 ```
 
@@ -1461,7 +1469,6 @@ Aplikacja wykorzystuje **Redux Toolkit Query** do zarządzania komunikacją z AP
    - Tokeny autentykacji (`accessToken`, `refreshToken`)
    - Status autentykacji (`isAuthenticated`)
    - Informacje o użytkowniku
-   
 2. **Automatyczne zarządzanie tokenami:**
    - Każde zapytanie API automatycznie dodaje header `Authorization: Bearer <accessToken>`
    - Przy 401 error, automatyczne odświeżenie tokenu przez `baseQueryWithReauth`
@@ -1480,7 +1487,7 @@ const baseQueryWithReauth: typeof baseQuery = async (args, api, extraOptions) =>
   if (result.error && result.error.status === 401) {
     // Nie próbuj odświeżać dla endpointów auth
     const refreshToken = (api.getState() as RootState).auth.refreshToken;
-    
+
     if (!refreshToken) {
       // Wyloguj użytkownika
       await baseQuery({ url: "/api/auth/logout", method: "POST" }, api, extraOptions);
@@ -1489,11 +1496,15 @@ const baseQueryWithReauth: typeof baseQuery = async (args, api, extraOptions) =>
     }
 
     // Odśwież token
-    const refreshResult = await baseQuery({
-      url: "/api/auth/refresh-token",
-      method: "POST",
-      body: { refreshToken },
-    }, api, extraOptions);
+    const refreshResult = await baseQuery(
+      {
+        url: "/api/auth/refresh-token",
+        method: "POST",
+        body: { refreshToken },
+      },
+      api,
+      extraOptions
+    );
 
     if (refreshResult.data) {
       // Zapisz nowe tokeny
@@ -1585,17 +1596,17 @@ interface AuthState {
 
 #### 4.2.2. Session lifecycle
 
-1. **Login:** 
+1. **Login:**
    - `POST /api/auth/login` → zwraca tokeny
    - RTK Query zapisuje tokeny do Redux store przez `setCredentials` action
    - Store jest automatycznie persistowany w localStorage
 
-2. **Refresh:** 
+2. **Refresh:**
    - Automatyczne odświeżanie przy 401 error przez `baseQueryWithReauth`
    - Wywołanie `POST /api/auth/refresh-token` z refresh token
    - Zapisanie nowych tokenów przez `updateTokens` action
 
-3. **Logout:** 
+3. **Logout:**
    - `POST /api/auth/logout` → usunięcie sesji po stronie serwera (jeśli istnieje)
    - Wywołanie `handleClientLogout()` → czyszczenie Redux store
    - Przekierowanie na `/`
@@ -1619,13 +1630,16 @@ prepareHeaders: (headers, { getState }) => {
     headers.set("Authorization", `Bearer ${token}`);
   }
   return headers;
-}
+};
 ```
 
 **W middleware Astro (dla endpointów API):**
 
 ```typescript
-const { data: { user }, error } = await locals.supabase.auth.getUser();
+const {
+  data: { user },
+  error,
+} = await locals.supabase.auth.getUser();
 // Token jest automatycznie brany z header Authorization przez Supabase client
 ```
 
@@ -1740,7 +1754,6 @@ Tokeny są zarządzane przez aplikację (nie automatycznie przez Supabase client
 - **Access token:** JWT z krótkim czasem życia (domyślnie 1 godzina)
   - Przechowywany w Redux store
   - Automatycznie dodawany do każdego zapytania API w header `Authorization: Bearer <token>`
-  
 - **Refresh token:** token do odświeżania access token (domyślnie 30 dni)
   - Przechowywany w Redux store
   - Używany do odświeżenia access token gdy wygasa
@@ -2491,7 +2504,7 @@ Po implementacji, zaktualizować:
 #### 8.1.2. Komponenty
 
 - **Plan:** Osobne komponenty `LoginForm.tsx`, `SignUpForm.tsx`, etc.
-- **Rzeczywistość:** 
+- **Rzeczywistość:**
   - Warstwa page components: `LoginPage.tsx`, `SignUpPage.tsx`, etc.
   - Warstwa form components: `AuthForm.tsx` (nie LoginForm), `SignUpForm.tsx`, etc.
   - Każdy page component renderuje odpowiedni form i dostarcza layout
@@ -2499,7 +2512,7 @@ Po implementacji, zaktualizować:
 #### 8.1.3. Layout i zabezpieczenia
 
 - **Plan:** `AuthenticatedLayout.astro` sprawdzający sesję po stronie serwera
-- **Rzeczywistość:** 
+- **Rzeczywistość:**
   - Tylko jeden `Layout.astro` (nie sprawdza sesji)
   - `ProtectedRoute.tsx` HOC sprawdzający autentykację po stronie klienta (Redux store)
   - Zabezpieczenie przez React, nie przez Astro SSR
@@ -2521,7 +2534,7 @@ Po implementacji, zaktualizować:
 #### 8.1.6. Reset password
 
 - **Plan:** Token w query params: `?token=...&type=recovery`
-- **Rzeczywistość:** 
+- **Rzeczywistość:**
   - Tokeny w URL hash: `#access_token=...&refresh_token=...`
   - ResetPasswordPage wydobywa tokeny z hash i przekazuje do ResetPasswordForm jako props
   - Endpoint przyjmuje tokeny jako parametry w body (nie automatycznie z sesji)
@@ -2583,7 +2596,7 @@ Po implementacji, zaktualizować:
 ✅ React forms z walidacją client-side  
 ✅ Wylogowanie przez API call  
 ✅ Security best practices (nie ujawniamy czy email istnieje w forgot-password)  
-✅ Strukturalne typy DTO w src/types.ts  
+✅ Strukturalne typy DTO w src/types.ts
 
 ---
 

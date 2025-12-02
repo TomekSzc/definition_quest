@@ -2,9 +2,10 @@
 
 ## 1. Przegląd
 
-Strona **Forgot Password** umożliwia użytkownikom wysłanie żądania resetu hasła. Użytkownik wprowadza swój adres e-mail, a aplikacja – niezależnie od tego, czy podany adres istnieje w bazie – zwraca komunikat sukcesu i instruuje o sprawdzeniu skrzynki odbiorczej (security best practice). 
+Strona **Forgot Password** umożliwia użytkownikom wysłanie żądania resetu hasła. Użytkownik wprowadza swój adres e-mail, a aplikacja – niezależnie od tego, czy podany adres istnieje w bazie – zwraca komunikat sukcesu i instruuje o sprawdzeniu skrzynki odbiorczej (security best practice).
 
 Widok jest częścią publicznej sekcji aplikacji (brak wymogu autentykacji) i wykorzystuje:
+
 - **React Hook Form** z **Zod** do zarządzania stanem formularza i walidacji
 - **RTK Query** (`useForgotPasswordMutation`) do komunikacji z API
 - **Redux Toolkit** (`showToast`) do wyświetlania komunikatów
@@ -40,7 +41,7 @@ ToastContainer (globalny, istnieje w Layout – używany przez mutację)
 ### 4.1. `ForgotPasswordPage`
 
 - **Opis**: Komponent‐kontener renderowany w wyspie React; otacza formularz pełnym layoutem strony. Wrapped przez HOC `withProviders` zapewniający dostęp do Redux Store i React Query.
-- **Główne elementy**: 
+- **Główne elementy**:
   - Nagłówek `h1` ("Definition quest")
   - `ForgotPasswordForm`
   - Link powrotny "Pamiętasz hasło? Zaloguj się" prowadzący do `/login`
@@ -81,7 +82,7 @@ ToastContainer (globalny, istnieje w Layout – używany przez mutację)
    ```ts
    z.object({
      email: z.string().email("Invalid email format"),
-   })
+   });
    ```
 4. **RTK Query response type** – `AuthResponse` z `types.ts` (zawiera opcjonalne `message`).
 
@@ -119,7 +120,7 @@ ToastContainer (globalny, istnieje w Layout – używany przez mutację)
         dispatch(showToast({ type: "error", title: "Błąd", message: errorMessage }));
       }
     },
-  })
+  });
   ```
 - **Hook**: `useForgotPasswordMutation()` – eksportowany z `apiSlice.ts`.
 - **Request body**: `{ email: string }`.
@@ -128,26 +129,26 @@ ToastContainer (globalny, istnieje w Layout – używany przez mutację)
 
 ## 8. Interakcje użytkownika
 
-| Interakcja                              | Wynik                                                                                         |
-| --------------------------------------- | --------------------------------------------------------------------------------------------- |
-| Wpisuje e-mail                          | Stan `email` zarządzany przez `react-hook-form`.                                              |
-| Opuszcza pole e-mail (blur)             | Walidacja Zod – błędy wyświetlane inline pod polem jeśli niepoprawny format.                 |
+| Interakcja                              | Wynik                                                                                          |
+| --------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| Wpisuje e-mail                          | Stan `email` zarządzany przez `react-hook-form`.                                               |
+| Opuszcza pole e-mail (blur)             | Walidacja Zod – błędy wyświetlane inline pod polem jeśli niepoprawny format.                   |
 | Klik „Wyślij link" z poprawnym e-mailem | `isLoading = true` → mutacja `forgotPassword` → disabled input & button + spinner w przycisku. |
-| Sukces odpowiedzi                       | `isSuccess = true` → Toast _success_ + input i button pozostają disabled.                     |
-| Błąd sieci/serwera                      | Toast _error_ z komunikatem błędu.                                                            |
-| Klik na link "Zaloguj się"              | Przekierowanie do `/login` (Routes.Login).                                                    |
+| Sukces odpowiedzi                       | `isSuccess = true` → Toast _success_ + input i button pozostają disabled.                      |
+| Błąd sieci/serwera                      | Toast _error_ z komunikatem błędu.                                                             |
+| Klik na link "Zaloguj się"              | Przekierowanie do `/login` (Routes.Login).                                                     |
 
 ## 9. Warunki i walidacja
 
-| Warunek              | Komponent            | Zachowanie                                                                    |
-| -------------------- | -------------------- | ----------------------------------------------------------------------------- |
-| `email` pusty        | `ForgotPasswordForm` | Brak błędu, ale `react-hook-form` nie pozwoli na submit (nieprawidłowy stan). |
-| `email` niepoprawny  | `ForgotPasswordForm` | Błąd walidacji "Invalid email format" wyświetlony inline pod polem (onBlur). |
-| Loading state        | `FormInput`          | Input disabled.                                                               |
-| Loading state        | `SubmitButton`       | Spinner + disabled + tekst "Wysyłanie...".                                    |
-| Success state        | `FormInput`          | Input disabled (pozostaje disabled po sukcesie).                              |
-| Success state        | `SubmitButton`       | Disabled (pozostaje disabled po sukcesie).                                    |
-| Schema Zod           | `ForgotPasswordForm` | `z.string().email("Invalid email format")` – walidacja formatu email.        |
+| Warunek             | Komponent            | Zachowanie                                                                    |
+| ------------------- | -------------------- | ----------------------------------------------------------------------------- |
+| `email` pusty       | `ForgotPasswordForm` | Brak błędu, ale `react-hook-form` nie pozwoli na submit (nieprawidłowy stan). |
+| `email` niepoprawny | `ForgotPasswordForm` | Błąd walidacji "Invalid email format" wyświetlony inline pod polem (onBlur).  |
+| Loading state       | `FormInput`          | Input disabled.                                                               |
+| Loading state       | `SubmitButton`       | Spinner + disabled + tekst "Wysyłanie...".                                    |
+| Success state       | `FormInput`          | Input disabled (pozostaje disabled po sukcesie).                              |
+| Success state       | `SubmitButton`       | Disabled (pozostaje disabled po sukcesie).                                    |
+| Schema Zod          | `ForgotPasswordForm` | `z.string().email("Invalid email format")` – walidacja formatu email.         |
 
 ## 10. Obsługa błędów
 
@@ -171,7 +172,7 @@ ToastContainer (globalny, istnieje w Layout – używany przez mutację)
    - ✅ Użyto `FormInput` (z disabled podczas loading i success).
    - ✅ Użyto `SubmitButton` (z spinner, disabled podczas loading i success, zmiana tekstu).
 6. **Toast**: ✅ Wykorzystano `showToast` w `onQueryStarted` – sukces i błędy.
-7. **Strona**: 
+7. **Strona**:
    - ✅ Utworzono `ForgotPasswordPage.tsx` w `src/components/pages`.
    - ✅ Opakowano komponent HOC `withProviders` dla dostępu do Redux Store.
    - ✅ Dodano pełny layout: tytuł "Definition quest", formularz, link "Zaloguj się".

@@ -104,6 +104,7 @@ Dodaje nową parę (term–definition) do wskazanego poziomu tablicy (board). Do
 ✅ **Zaimplementowano** – endpoint w pełni funkcjonalny.
 
 Szczegóły implementacji:
+
 1. **Validation** (`src/lib/validation/pairs.ts`):
    - `CreatePairSchema` – walidacja term i definition (1-255 znaków, trim).
    - `CreatePairInput` – typ wyeksportowany przez Zod.

@@ -56,7 +56,7 @@ BoardGamePage (route)
 ### GameMeta
 
 - **Opis:** Pasek boczny (desktop: fixed right, mobile: fixed bottom) zawierający timer, przyciski sterujące grą oraz nawigację poziomów.
-- **Elementy:** 
+- **Elementy:**
   - `<aside>` fixed (pozycja responsywna)
   - Przycisk toggle dźwięku z ikonami `VolumeOnIcon`/`VolumeOffIcon`
   - `<div>` z timerem w formacie HH:MM:SS
@@ -76,13 +76,13 @@ BoardGamePage (route)
 ### BoardGrid
 
 - **Opis:** Renderuje karty w układzie flex wrap z overlayem gdy gra nie jest uruchomiona oraz nawigacją poziomów po ukończeniu.
-- **Elementy:** 
+- **Elementy:**
   - `<div>` główny kontener (flex wrap, responsywna szerokość)
   - Wewnętrzny `<div>` z flex wrap dla kart
   - Komponenty `<Card …/>` dla każdej karty
   - Overlay z komunikatem gdy `!running` (przezroczyste białe tło)
   - Przyciski "Poprzedni level"/"Następny level" po ukończeniu (gdy `cards.length === 0`).
-- **Interakcje:** 
+- **Interakcje:**
   - deleguje `onCardClick(index)`
   - wywołuje `navigateToLevel` dla nawigacji między poziomami.
 - **Logika:**
@@ -103,7 +103,7 @@ BoardGamePage (route)
   - `select-none` aby uniemożliwić zaznaczanie tekstu.
 - **Typy:** `ICardProps`.
 - **Propsy:** `{ text, status, disabled?, onClick }`, gdzie `status: "idle" | "selected" | "success" | "failure"`.
-- **Styling:** 
+- **Styling:**
   - Fixed size: `w-[250px] h-[200px]`
   - Status-dependent borders and backgrounds
   - Dark mode variants dla wszystkich stanów.
@@ -188,6 +188,7 @@ export interface ScoreSubmitCmd {
 **Implementacja:** `src/hooks/useBoardGame.ts`
 
 **Sygnatura:**
+
 ```ts
 useBoardGame(
   board: BoardViewDTO | null | undefined,
@@ -199,12 +200,14 @@ useBoardGame(
 ```
 
 **Działanie:**
+
 - Inicjalizuje `cards` – rozdziela `pairs` na term/definition, miesza własną funkcją `shuffle`.
 - Używa `useMemo` do memoizacji początkowych kart.
 - Przechowuje refs do timera (`timerRef`) i czasu startu (`gameStartRef`).
 - Integruje się z `useBoardSound` dla efektów dźwiękowych.
 
 **Udostępnia funkcje:**
+
 - `markCard(index)` – logika zaznaczania + auto-sprawdzenie:
   - Toggle selection (kliknięcie zaznaczonej karty odznacza ją)
   - Maksymalnie 2 zaznaczone karty
@@ -219,11 +222,13 @@ useBoardGame(
   - Po usunięciu wszystkich kart: odtwarza fanfarę, zapisuje wynik, zatrzymuje timer, wywołuje `callbacks.onFinish`
 
 **Efekty uboczne:**
+
 - `useEffect` odświeża karty gdy zmieni się board
 - `useEffect` sprawdza limit 10 minut i wywołuje `callbacks.onTimeout`
 - `useEffect` czyści interwał przy unmount
 
 **Zwraca:**
+
 ```ts
 {
   state: { cards, selectedIndices, statusMap, timeSec, running, lastScore },
@@ -237,10 +242,12 @@ useBoardGame(
 ### Redux Store (RTK Query)
 
 **API Slice:** `src/store/api/apiSlice.ts`
+
 - `useGetBoardByIdQuery(boardId)` - pobiera dane planszy
 - `useSubmitScoreMutation()` - zapisuje wynik
 
 **Sound Slice:** `src/store/slices/soundSlice.ts`
+
 - Zarządza stanem włączenia/wyłączenia dźwięków
 - Action: `toggleSound()`
 
@@ -249,7 +256,6 @@ useBoardGame(
 1. **GET /api/boards/:id** – RTK Query `useGetBoardByIdQuery` w `BoardGamePage`, typ `BoardViewDTO`.
    - Używa `skipToken` gdy `boardId` jest undefined
    - Zwraca `{ data, isFetching, error }`
-   
 2. **POST /api/boards/:id/scores** – RTK Query `useSubmitScoreMutation`, payload: `{ boardId, elapsedMs }` (`ScoreSubmitCmd`).
    - Wywołane w callback `onGameFinish`
    - Success: wyświetla toast sukcesu
@@ -264,10 +270,10 @@ useBoardGame(
   - Po 500ms karty znikają z tablicy
   - StatusMap oczyszczany z tych indeksów
 - **Failure match:**
-  - Czerwona obwódka, dźwięk porażki  
+  - Czerwona obwódka, dźwięk porażki
   - Po 500ms status wraca do `idle`
   - Karty pozostają na tablicy
-- Wszystkie karty zniknęły ➞ 
+- Wszystkie karty zniknęły ➞
   - Fanfara
   - Timer stop
   - Zapisanie wyniku (`lastScore`)
@@ -275,7 +281,7 @@ useBoardGame(
   - Overlay pokazuje "Wciśnij Reset aby powtórzyć"
   - Przyciski nawigacji do następnego/poprzedniego poziomu (jeśli istnieją)
 - Klik „Stop" ➞ timer pauza, overlay pokazuje się, karty nieklikalne.
-- Klik „Reset" ➞ 
+- Klik „Reset" ➞
   - Stan gry wyzerowany
   - Timer wyzerowany
   - Karty przetasowane na nowo (z `initialCards`)
@@ -325,29 +331,34 @@ useBoardGame(
 ## 12. Dodatkowe funkcjonalności (poza planem)
 
 ### System dźwięków
+
 - **Implementacja:** `src/hooks/useBoardSound.ts`
 - Dźwięki: success.mp3, failure.mp3, fanfare.mp3
 - Toggle dźwięku w GameMeta
 - Stan w Redux (`soundSlice`)
 
 ### System poziomów
+
 - **Hook:** `src/hooks/useLevels.ts`
 - Nawigacja między poziomami planszy
 - Wyświetlanie w GameMeta i BoardGrid
 - Przyciski "Poprzedni/Następny level" po ukończeniu
 
 ### Loading states
+
 - **Komponent:** `SkeletonBoard`
 - Wyświetlany podczas `isFetching`
 - Pokazuje placeholder dla określonej liczby kart
 
 ### Responsive design
-- GameMeta: 
+
+- GameMeta:
   - Desktop: fixed right sidebar
   - Mobile: fixed bottom bar
 - BoardGrid: responsywna szerokość z flex wrap
 - Level navigation: ukryta na mobile
 
 ### Dark mode
+
 - Wszystkie komponenty mają warianty `dark:`
 - Card component z pełnym wsparciem dark mode

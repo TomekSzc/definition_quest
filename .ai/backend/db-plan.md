@@ -19,12 +19,12 @@ Ta tabela jest **w pełni zarządzana przez Supabase Auth**—aplikacja nigdy ni
 
 ### 1.2 `user_meta`
 
-| kolumna       | typ        | ograniczenia                                     | opis              |
-| ------------ | ----------- | ----------------------------------------------- | ------------------------ |
+| kolumna      | typ         | ograniczenia                                    | opis                                  |
+| ------------ | ----------- | ----------------------------------------------- | ------------------------------------- |
 | id           | uuid        | **PK**, **FK** → `auth.users(id)` **NOT NULL**  | odzwierciedla id użytkownika (1-do-1) |
-| display_name | text        | **NOT NULL**, CHECK (length(display_name) ≤ 40) | publiczny pseudonim          |
-| avatar_url   | text        |                                                 | opcjonalny awatar          |
-| created_at   | timestamptz | DEFAULT now()                                   | czas utworzenia wiersza        |
+| display_name | text        | **NOT NULL**, CHECK (length(display_name) ≤ 40) | publiczny pseudonim                   |
+| avatar_url   | text        |                                                 | opcjonalny awatar                     |
+| created_at   | timestamptz | DEFAULT now()                                   | czas utworzenia wiersza               |
 
 Indeksy:
 
@@ -34,8 +34,8 @@ Indeksy:
 
 ### 1.3 `boards`
 
-| kolumna        | typ        | ograniczenia                                                                                                       | opis                           |
-| ------------- | ----------- | ----------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
+| kolumna       | typ         | ograniczenia                                                                                                      | opis                                           |
+| ------------- | ----------- | ----------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
 | id            | uuid        | **PK** DEFAULT gen_random_uuid()                                                                                  |
 | owner_id      | uuid        | **FK** → `auth.users(id)` **NOT NULL**                                                                            |
 | title         | text        | **NOT NULL**                                                                                                      |
@@ -43,7 +43,7 @@ Indeksy:
 | level         | smallint    | **NOT NULL**, CHECK (level ≥ 1)                                                                                   | numer sekwencyjny dla wielostronicowych plansz |
 | is_public     | boolean     | DEFAULT false **NOT NULL**                                                                                        |
 | archived      | boolean     | DEFAULT false **NOT NULL**                                                                                        |
-| tags          | text[]      | DEFAULT '{}'::text[], CHECK (array_length(tags,1) ≤ 10 AND (SELECT bool_and(length(t) ≤ 20) FROM unnest(tags) t)) | maks. 10 tagów, każdy ≤ 20 znaków          |
+| tags          | text[]      | DEFAULT '{}'::text[], CHECK (array_length(tags,1) ≤ 10 AND (SELECT bool_and(length(t) ≤ 20) FROM unnest(tags) t)) | maks. 10 tagów, każdy ≤ 20 znaków              |
 | search_vector | tsvector    | GENERATED ALWAYS AS (to_tsvector('simple', coalesce(title,'') )) STORED                                           |
 | created_at    | timestamptz | DEFAULT now()                                                                                                     |
 | updated_at    | timestamptz | DEFAULT now()                                                                                                     |
@@ -64,8 +64,8 @@ Indeksy:
 
 ### 1.4 `pairs`
 
-| kolumna     | typ        | ograniczenia                                          | opis |
-| ---------- | ----------- | ---------------------------------------------------- | ----------- |
+| kolumna    | typ         | ograniczenia                                         | opis |
+| ---------- | ----------- | ---------------------------------------------------- | ---- |
 | id         | uuid        | **PK** DEFAULT gen_random_uuid()                     |
 | board_id   | uuid        | **FK** → `boards(id)` ON DELETE CASCADE **NOT NULL** |
 | term       | text        | **NOT NULL**                                         |
@@ -85,8 +85,8 @@ Indeksy:
 
 ### 1.5 `scores`
 
-| kolumna     | typ        | ograniczenia                            | opis               |
-| ---------- | ----------- | -------------------------------------- | ------------------------- |
+| kolumna    | typ         | ograniczenia                           | opis                           |
+| ---------- | ----------- | -------------------------------------- | ------------------------------ |
 | id         | uuid        | **PK** DEFAULT gen_random_uuid()       |
 | user_id    | uuid        | **FK** → `auth.users(id)` **NOT NULL** |
 | board_id   | uuid        | **FK** → `boards(id)` **NOT NULL**     |
@@ -107,8 +107,8 @@ Indeksy:
 
 ### 1.6 `ai_requests`
 
-| kolumna        | typ          | ograniczenia                            | opis        |
-| ------------- | ------------- | -------------------------------------- | ------------------ |
+| kolumna       | typ           | ograniczenia                           | opis              |
+| ------------- | ------------- | -------------------------------------- | ----------------- |
 | id            | uuid          | **PK** DEFAULT gen_random_uuid()       |
 | user_id       | uuid          | **FK** → `auth.users(id)` **NOT NULL** |
 | requested_at  | timestamptz   | DEFAULT now()                          |
@@ -126,10 +126,10 @@ Indeksy:
 
 ### 1.7 Zmaterializowane Widoki
 
-| widok             | definicja                                                                                                      | strategia odświeżania                                               |
+| widok            | definicja                                                                                                       | strategia odświeżania                                          |
 | ---------------- | --------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
 | `daily_ai_usage` | SELECT user_id, date_trunc('day', requested_at) AS request_date, count(\*) AS cnt FROM ai_requests GROUP BY 1,2 | odświeżany nocą przez Supabase cron; wspiera limit 50 na dzień |
-| `best_scores`    | SELECT user_id, board_id, MIN(elapsed_ms) AS best_time FROM scores GROUP BY 1,2                                 | odświeżany przy commicie (`ON COMMIT REFRESH`)                     |
+| `best_scores`    | SELECT user_id, board_id, MIN(elapsed_ms) AS best_time FROM scores GROUP BY 1,2                                 | odświeżany przy commicie (`ON COMMIT REFRESH`)                 |
 
 ---
 

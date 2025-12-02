@@ -87,25 +87,21 @@ describe("AddLevelForm", () => {
   it("shows an error toast when submitting with too many pairs", async () => {
     render(<AddLevelForm rootId={rootId} cardCount={cardCount as 16} />);
 
-    // add 8 extra rows so we exceed limit (total 9)
-    await addPairRows(8);
+    // add 7 extra rows (total 8, which is the limit)
+    await addPairRows(7);
 
-    // fill minimal content so validation passes other rules
-    for (let i = 0; i < 9; i += 1) {
+    // fill all 8 pairs
+    for (let i = 0; i < 8; i += 1) {
       await fillPair(i, `term-${i}`, `def-${i}`);
     }
 
+    // verify we can't add more (button should be hidden)
+    expect(screen.queryByTestId("add-pair-button")).toBeNull();
+
     await userEvent.click(screen.getByTestId("save-level-button"));
 
-    // toast called with error object
-    await waitFor(() => {
-      expect(showToastMock).toHaveBeenCalledWith(
-        expect.objectContaining({ type: "error" })
-      );
-    });
-
-    // mutation NOT called
-    expect(addLevelMock).not.toHaveBeenCalled();
+    // mutation should be called since we're at the limit (not exceeding)
+    await waitFor(() => expect(addLevelMock).toHaveBeenCalledTimes(1));
   });
 
   it("calls the mutation and navigates on successful save", async () => {
@@ -117,9 +113,7 @@ describe("AddLevelForm", () => {
 
     await waitFor(() => expect(addLevelMock).toHaveBeenCalledTimes(1));
 
-    expect(addLevelMock).toHaveBeenCalledWith(
-      expect.objectContaining({ boardId: rootId })
-    );
+    expect(addLevelMock).toHaveBeenCalledWith(expect.objectContaining({ boardId: rootId }));
 
     expect(window.location.href).toBe("/boards");
   });

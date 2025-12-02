@@ -32,7 +32,8 @@ describe("<AcceptPairsModal />", () => {
 
     props.pairs.forEach(({ term, definition }) => {
       expect(screen.getByText(term)).toBeInTheDocument();
-      expect(screen.getByText(definition)).toBeInTheDocument();
+      // Definition is split by <strong> and " – ", so use partial match
+      expect(screen.getByText(definition, { exact: false })).toBeInTheDocument();
     });
 
     const checkboxes = screen.getAllByRole("checkbox") as HTMLInputElement[];
