@@ -17,11 +17,6 @@ vi.mock("@/store/api/apiSlice", () => ({
 }));
 
 // 2. Mock toast helper
-interface ToastArgs {
-  type: string;
-  title: string;
-  message: string;
-}
 export const showToastMock = vi.fn();
 vi.mock("@/store/hooks", async () => {
   const actual = await vi.importActual<typeof import("@/store/hooks")>("@/store/hooks");

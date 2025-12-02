@@ -26,11 +26,6 @@ vi.mock("@/store/api/apiSlice", () => ({
 }));
 
 // 2. Mock toast helper
-interface ToastArgs {
-  type: string;
-  title: string;
-  message: string;
-}
 export const showToastMock = vi.fn();
 vi.mock("@/store/hooks", async () => {
   const actual = await vi.importActual<typeof import("@/store/hooks")>("@/store/hooks");
@@ -82,7 +77,7 @@ vi.mock("@/components/forms/parts/PairEditList", () => ({
 }));
 
 vi.mock("@/components/forms/parts/AddPairsForm", () => ({
-  default: ({ boardId, onPairAdded }: { boardId: string; onPairAdded: (pair: PairDTO) => void }) => (
+  default: ({ onPairAdded }: { boardId: string; onPairAdded: (pair: PairDTO) => void }) => (
     <div data-testid="add-pairs-form">
       <button
         data-testid="add-pair-button"

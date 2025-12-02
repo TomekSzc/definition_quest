@@ -13,11 +13,6 @@ import { createRef } from "react";
  */
 
 // 1. Mock toast helper
-interface ToastArgs {
-  type: string;
-  title: string;
-  message: string;
-}
 export const showToastMock = vi.fn();
 
 // 2. Mock Redux hooks
@@ -42,7 +37,7 @@ vi.mock("@/lib/routes", () => ({
 
 // 4. Mock UI components that don't affect core functionality
 vi.mock("@/components/ui/TagsInput", () => ({
-  default: ({ value, onChange, error }: any) => (
+  default: ({ value, onChange, error }: { value?: string[]; onChange?: (tags: string[]) => void; error?: string }) => (
     <div data-testid="tags-input">
       <input
         data-testid="tags-input-field"
@@ -55,7 +50,7 @@ vi.mock("@/components/ui/TagsInput", () => ({
 }));
 
 vi.mock("@/components/ui/ToggleGroup/CardCountToggle", () => ({
-  default: ({ value, onChange }: any) => (
+  default: ({ value, onChange }: { value: number; onChange?: (count: number) => void }) => (
     <div data-testid="card-count-toggle">
       <button data-testid="card-count-16" onClick={() => onChange?.(16)}>
         16
@@ -69,7 +64,7 @@ vi.mock("@/components/ui/ToggleGroup/CardCountToggle", () => ({
 }));
 
 vi.mock("@/components/ui/ToggleGroup/BoardVisibilityToggle", () => ({
-  default: ({ value, onChange }: any) => (
+  default: ({ value, onChange }: { value: boolean; onChange?: (isPublic: boolean) => void }) => (
     <div data-testid="board-visibility-toggle">
       <button data-testid="visibility-public" onClick={() => onChange?.(true)}>
         Public
@@ -83,9 +78,19 @@ vi.mock("@/components/ui/ToggleGroup/BoardVisibilityToggle", () => ({
 }));
 
 vi.mock("@/components/forms/PairForm", () => ({
-  default: ({ fields, register, remove, errors }: any) => (
+  default: ({
+    fields,
+    register,
+    remove,
+    errors,
+  }: {
+    fields: { id: string }[];
+    register: (name: string) => Record<string, unknown>;
+    remove: (index: number) => void;
+    errors?: { term?: { message: string }; definition?: { message: string } }[];
+  }) => (
     <div data-testid="pair-form">
-      {fields.map((field: any, index: number) => (
+      {fields.map((field, index: number) => (
         <div key={field.id} data-testid={`pair-row-${index}`}>
           <input data-testid={`pair-term-${index}`} {...register(`pairs.${index}.term`)} placeholder="Term" />
           <input
@@ -129,7 +134,10 @@ const createTestStore = () => {
   });
 };
 
-const setup = (submitFn: SubmitFn = vi.fn().mockResolvedValue({}), ref?: React.RefObject<CreateBoardFormHandle>) => {
+const setup = (
+  submitFn: SubmitFn = vi.fn().mockResolvedValue({}),
+  ref?: React.RefObject<CreateBoardFormHandle | null>
+) => {
   const user = userEvent.setup();
   const testStore = createTestStore();
 
@@ -257,7 +265,7 @@ describe("<CreateBoardForm />", () => {
     });
 
     it("disables submit button while submitting", async () => {
-      let resolveSubmit: () => void;
+      let resolveSubmit: (() => void) | undefined;
       const submitPromise = new Promise<void>((resolve) => {
         resolveSubmit = resolve;
       });
@@ -277,7 +285,9 @@ describe("<CreateBoardForm />", () => {
       });
 
       // Resolve the promise
-      resolveSubmit!();
+      if (resolveSubmit) {
+        resolveSubmit();
+      }
     });
 
     it("dispatches loading actions during submission", async () => {
@@ -315,7 +325,7 @@ describe("<CreateBoardForm />", () => {
 
     it("shows error when title exceeds 255 characters", async () => {
       const submitFn = vi.fn();
-      const { user, titleInput, submitButton } = setup(submitFn);
+      const { user, titleInput } = setup(submitFn);
 
       const longTitle = "a".repeat(256);
       await user.type(titleInput, longTitle);
@@ -401,10 +411,8 @@ describe("<CreateBoardForm />", () => {
 
       await user.click(submitButton);
 
-      // The error should be displayed somewhere in the document
+      // The error might not be displayed in the UI but validation should still fail
       await waitFor(() => {
-        const errorText = screen.queryByText(/each pair term must be unique/i);
-        // The error might not be displayed in the UI but validation should still fail
         expect(submitFn).not.toHaveBeenCalled();
       });
     });

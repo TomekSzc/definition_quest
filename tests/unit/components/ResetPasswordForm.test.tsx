@@ -91,7 +91,7 @@ describe("<ResetPasswordForm />", () => {
 
   it("shows validation error when password is too short", async () => {
     // Arrange
-    const { user, newPasswordInput, confirmPasswordInput } = setup();
+    const { user, newPasswordInput } = setup();
 
     // Act – type short password and blur to trigger validation
     await user.type(newPasswordInput, "12345");
@@ -184,7 +184,7 @@ describe("<ResetPasswordForm />", () => {
 
   it("clears validation errors when correcting input", async () => {
     // Arrange
-    const { user, newPasswordInput, confirmPasswordInput } = setup();
+    const { user, newPasswordInput } = setup();
 
     // Act – first trigger an error
     await user.type(newPasswordInput, "123");

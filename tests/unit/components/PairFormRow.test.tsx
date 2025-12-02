@@ -13,7 +13,21 @@ import type { CreateBoardFormValues } from "@/components/forms/CreateBoardForm";
 
 // Mock the Button component from shadcn/ui
 vi.mock("@/components/ui/Button", () => ({
-  Button: ({ children, onClick, "data-testid": dataTestId, className, type, variant }: any) => (
+  Button: ({
+    children,
+    onClick,
+    "data-testid": dataTestId,
+    className,
+    type,
+    variant,
+  }: {
+    children?: React.ReactNode;
+    onClick?: () => void;
+    "data-testid"?: string;
+    className?: string;
+    type?: "button" | "submit" | "reset";
+    variant?: string;
+  }) => (
     <button data-testid={dataTestId} onClick={onClick} className={className} type={type} data-variant={variant}>
       {children}
     </button>
@@ -50,7 +64,7 @@ const createFieldError = (message: string): FieldError => ({
 
 describe("PairFormRow", () => {
   let mockRegister: UseFormRegister<CreateBoardFormValues>;
-  let mockOnRemove: ReturnType<typeof vi.fn>;
+  let mockOnRemove: () => void;
 
   beforeEach(() => {
     mockRegister = createMockRegister();
