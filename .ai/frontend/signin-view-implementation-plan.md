@@ -6,20 +6,18 @@ Widok **Sign In** umożliwia użytkownikowi uwierzytelnienie się w aplikacji De
 
 ## 2. Routing widoku
 
-- Ścieżka: `/signin`
-- Typ pliku: `src/pages/signin.astro` (SSR, prerender = false)
-- Guard: jeśli `isAuthenticated === true` następuje `redirect('/dashboard')`
+- Ścieżka: `/` (root – strona logowania)
+- Typ pliku: `src/pages/index.astro` (SSR, `prerender = false`) z dynamicznym komponentem `<LoginPage client:load />`
+- Guard: logika przekierowania użytkownika zalogowanego obsługiwana jest w `ProtectedRoute`/middleware (poza zakresem tego widoku)
 
 ## 3. Struktura komponentów
 
 ```
-SignInPage (Astro)
+LoginPage (React) ładowany w `index.astro`
 └─ <AuthForm /> (React)
    ├─ <EmailInput />
    ├─ <PasswordInput />
-   ├─ <SubmitButton />
-   ├─ <Divider label="lub" />
-   └─ <OAuthButtons />
+   └─ <SubmitButton />
 └─ <ToastContainer /> (global, osadzony w Layout)
 ```
 
@@ -27,19 +25,18 @@ SignInPage (Astro)
 
 ### AuthForm
 
-- **Opis**: Formularz logowania obsługujący tryb e-mail/hasło oraz prezentujący przyciski OAuth.
+- **Opis**: Formularz logowania obsługujący uwierzytelnienie przy pomocy e-mail/hasło. Przyciski OAuth zostały pominięte w bieżącej implementacji.
 - **Główne elementy**:
   - `form` (native) z `onSubmit`
   - `EmailInput` – komponent `Input` z shadcn/ui (`type="email"`)
   - `PasswordInput` – komponent `InputPassword`
   - `SubmitButton` – `Button` z ikoną spinnera w stanie `isLoading`
-  - `OAuthButtons` – lista przycisków dostawców
+  - (brak) Przyciski OAuth niezaimplementowane
 - **Obsługiwane interakcje**:
   - `submit` → wywołuje hook `useLoginMutation`
-  - `click` na przyciskach OAuth → `supabase.auth.signInWithOAuth({ provider })`
 - **Walidacja**:
-  - `email` wymagany, regex RFC 5322
-  - `password` wymagane, min 8 znaków
+  - `email` wymagany (walidacja `LoginSchema`)
+  - `password` wymagane, min 8 znaków (`LoginSchema`)
   - Klient używa `react-hook-form` + `zodResolver(LoginSchema)`
 - **Typy**:
   - `LoginRequest` (z `src/types.ts`)
@@ -47,13 +44,9 @@ SignInPage (Astro)
   - `AuthFormData` (ViewModel – patrz §5)
 - **Propsy**: brak (komponent root)
 
-### OAuthButtons
+### (Pominięto) OAuthButtons
 
-- **Opis**: Renderuje przyciski ikon dostawców (Google, GitHub). Oddzielony w celu ponownego wykorzystania.
-- **Elementy**: `Button` z logo, `data-provider` atrybut.
-- **Interakcje**: `onClick` → `handleOAuth(provider)`
-- **Walidacja**: brak pól; obsługa błędów Supabase.
-- **Propsy**: opcjonalnie `disabled` (gdy formularz w trakcie logowania e-mail/hasło).
+Pierwotnie planowano przyciski OAuth. Nie zostały zaimplementowane w pierwszej iteracji; sekcja pozostaje do ewentualnego rozszerzenia w przyszłości.
 
 ## 5. Typy
 
@@ -83,7 +76,7 @@ export interface AuthFormData {
 Flow:
 
 1. `onSubmit` → `login({ email, password })`.
-2. **Success**: `setCredentials(data)` + `navigate('/dashboard')`.
+2. **Success**: `setCredentials(data)` (realizowane w `apiSlice.onQueryStarted`) + `window.location.assign(returnUrl ?? '/boards')`.
 3. **Error**: mapowanie kodu → toast.
 
 ## 8. Interakcje użytkownika
@@ -100,8 +93,8 @@ Flow:
 ## 9. Warunki i walidacja
 
 - Email i hasło wymagane – blokada przycisku do czasu spełnienia.
-- Duplikacja żądania: przy aktywnym `isLoading` formularz i przyciski zablokowane.
-- Po pomyślnym logowaniu komponent sprawdza, czy odpowiedź zawiera `user` i `session`, w przeciwnym razie zwróci toast _error_.
+- Duplikacja żądania: przy aktywnym `isLoading` formularz zablokowany.
+- Po pomyślnym logowaniu komponent sprawdza `res.data.user` i wykonuje redirect (z obsługą parametru `?return=`).
 
 ## 10. Obsługa błędów
 
@@ -115,14 +108,14 @@ Flow:
 
 ## 11. Kroki implementacji
 
-1. **Utwórz stronę** `src/pages/signin.astro`, wczytaj globalny `Providers` + auth guard.
-2. **Dodaj trasę** do `astro.config.mjs` jeżeli używany jest custom router.
-3. **Stwórz komponent** `src/components/AuthForm.tsx` wg §4.
+1. **Utworzono stronę** `src/pages/index.astro`, która importuje `<LoginPage client:load />` (z `Providers` wewnątrz komponentu).
+2. Routing obsługuje Astro bez dodatkowej konfiguracji – root path `/`.
+3. **Stworzono komponent** `src/components/forms/AuthForm.tsx` wg §4 (bez OAuth).
 4. **Rozszerz `apiSlice`** o endpoint `login` zwracający typy DTO (jeśli nie istnieje) i wygeneruj hook `useLoginMutation`.
 5. **W komponencie** zaimplementuj `react-hook-form` + `zodResolver(LoginSchema)`.
 6. **Obsłuż sukces**: dispatch `setCredentials`, persist via redux-persist, `navigate` do `/dashboard`.
-7. **Obsłuż błędy**: mapuj kody na treści toastów.
-8. **Dodaj przyciski OAuth** wykorzystujące `supabase.auth.signInWithOAuth`.
+7. **Obsługa błędów** realizowana w `apiSlice.onQueryStarted` (toast z komunikatem błędu).
+8. (pominięte) Przyciski OAuth planowane w późniejszej iteracji.
 9. **Testy manualne**: walidacja formularza, obsługa błędów, redirect.
 10. **Testy e2e** (Playwright): scenariusz poprawnego i błędnego logowania.
 11. **Aktualizacja dokumentacji** README oraz changelog.

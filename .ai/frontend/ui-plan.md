@@ -150,6 +150,14 @@ Aplikacja wykorzystuje **Redux Toolkit** z **Redux Persist** jako centralny mana
     layout: {
       sidebarCollapsed: boolean,
     },
+    loading: boolean,
+  },
+  sound: {
+    soundOn: boolean,
+  },
+  // RTK Query slice managed internally
+  api: {
+    /* RTK Query cache & status */
   },
 }
 ```
@@ -240,7 +248,42 @@ const toastSlice = createSlice({
 });
 ```
 
-### 4.5. RTK Query API
+### 4.5. UI Slice
+
+**Lokalizacja:** `src/store/slices/uiSlice.ts`
+
+**Odpowiedzialność:**
+
+- Zarządzanie wyglądem i stanem interfejsu użytkownika
+- Informacja czy sidebar jest zwinięty (`sidebarCollapsed`)
+- Globalny spinner ładowania (`loading`)
+- Akcje: `toggleSidebar`, `setSidebarCollapsed`, `setLoading`
+
+### 4.6. Sound Slice
+
+**Lokalizacja:** `src/store/slices/soundSlice.ts`
+
+**Odpowiedzialność:**
+
+- Przechowywanie preferencji dźwięku (on/off)
+- Akcje: `toggleSound`, `setSound`
+
+```typescript
+const soundSlice = createSlice({
+  name: "sound",
+  initialState: { soundOn: true },
+  reducers: {
+    toggleSound: (state) => {
+      state.soundOn = !state.soundOn;
+    },
+    setSound: (state, { payload }: { payload: boolean }) => {
+      state.soundOn = payload;
+    },
+  },
+});
+```
+
+### 4.7. RTK Query API
 
 **Lokalizacja:** `src/store/api/apiSlice.ts`
 
@@ -323,7 +366,7 @@ export const apiSlice = createApi({
 });
 ```
 
-### 4.6. Interceptor - Dodawanie Access Token
+### 4.8. Interceptor - Dodawanie Access Token
 
 **Mechanizm:**
 
@@ -345,7 +388,7 @@ const baseQuery = fetchBaseQuery({
 });
 ```
 
-### 4.7. Interceptor - Automatyczna wymiana tokenu (401)
+### 4.9. Interceptor - Automatyczna wymiana tokenu (401)
 
 **Mechanizm:**
 
@@ -367,7 +410,7 @@ Request → 401 → Refresh Token → Success → Update Store → Retry Request
                               → Failure → Logout → Redirect /signin
 ```
 
-### 4.8. Redux Persist Configuration
+### 4.10. Redux Persist Configuration
 
 **Lokalizacja:** `src/store/index.ts`
 
@@ -377,7 +420,7 @@ Request → 401 → Refresh Token → Success → Update Store → Retry Request
 const persistConfig = {
   key: "root",
   storage,
-  whitelist: ["auth", "ui"], // Tylko auth i ui są persistowane
+  whitelist: ["auth", "ui", "sound"], // persistujemy auth, ui i sound
   blacklist: ["toast"], // Toast nie jest persistowany
 };
 
@@ -394,7 +437,7 @@ export const store = configureStore({
 });
 ```
 
-### 4.9. Integracja z React (Astro Islands)
+### 4.11. Integracja z React (Astro Islands)
 
 **Provider w Layout:**
 
@@ -418,7 +461,7 @@ import { store, persistor } from "../store";
 </html>
 ```
 
-### 4.10. Użycie w komponentach
+### 4.12. Użycie w komponentach
 
 **Przykład - LoginForm:**
 
@@ -511,9 +554,9 @@ src/
 │   ├── slices/
 │   │   ├── authSlice.ts         # Auth state (user, tokens, isAuthenticated)
 │   │   ├── toastSlice.ts        # Toast state (type, title, message, visible)
-│   │   └── uiSlice.ts           # UI state (sidebar collapsed, theme)
-│   └── api/
-│       └── apiSlice.ts          # RTK Query API endpoints + interceptory
+│   │   ├── uiSlice.ts           # UI state (sidebar collapsed, theme, loading)
+│   │   ├── soundSlice.ts        # Sound preferences (on/off)
+│   │   └── apiSlice.ts          # RTK Query API endpoints + interceptory (reducerPath: "api")
 ├── components/
 │   ├── auth/
 │   │   ├── LoginForm.tsx        # Używa useLoginMutation z RTK Query

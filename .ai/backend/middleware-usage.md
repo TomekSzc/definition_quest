@@ -1,51 +1,51 @@
-# Authentication Middleware Guide
+# Przewodnik po Middleware Uwierzytelniania
 
-## Overview
+## Przegląd
 
-The authentication middleware automatically handles JWT validation for all API endpoints, except those explicitly marked as public (sign-in, sign-up).
+Middleware uwierzytelniania automatycznie obsługuje walidację JWT dla wszystkich endpointów API, z wyjątkiem tych jawnie oznaczonych jako publiczne (logowanie, rejestracja).
 
-## How It Works
+## Jak to działa
 
-### 1. **Automatic Authentication**
+### 1. **Automatyczne uwierzytelnianie**
 
-All endpoints under `/api/*` are automatically protected, except those listed in `PUBLIC_ENDPOINTS`.
+Wszystkie endpointy pod `/api/*` są automatycznie chronione, z wyjątkiem tych wymienionych w `PUBLIC_ENDPOINTS`.
 
 ```typescript
 // src/middleware/index.ts
 const PUBLIC_ENDPOINTS = [
   "/api/auth/signIn.temporary",
   "/api/auth/login.temporary",
-  // Add other public endpoints here
+  // Dodaj tutaj inne publiczne endpointy
 ];
 ```
 
-### 2. **User Available in Locals**
+### 2. **Użytkownik dostępny w Locals**
 
-Authenticated user is automatically added to `context.locals.user`:
+Uwierzytelniony użytkownik jest automatycznie dodawany do `context.locals.user`:
 
 ```typescript
 export const POST: APIRoute = async ({ locals }) => {
-  // User is already authenticated by middleware
+  // Użytkownik jest już uwierzytelniony przez middleware
   const user = locals.user;
 
   if (!user) {
     return createErrorResponse("Unauthorized", 401);
   }
 
-  // Use user.id directly
+  // Użyj user.id bezpośrednio
   const result = await someService(locals.supabase, user.id);
 
   return createSuccessResponse(result);
 };
 ```
 
-### 3. **No Manual Auth Checks Needed**
+### 3. **Brak potrzeby ręcznych sprawdzeń autoryzacji**
 
-❌ **OLD WAY** (before middleware):
+❌ **STARY SPOSÓB** (przed middleware):
 
 ```typescript
 export const POST: APIRoute = async ({ request, locals }) => {
-  // Manual authentication check
+  // Ręczne sprawdzenie uwierzytelnienia
   const {
     data: { user },
     error: authError,
@@ -58,11 +58,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
     });
   }
 
-  // ... rest of code
+  // ... reszta kodu
 };
 ```
 
-✅ **NEW WAY** (with middleware):
+✅ **NOWY SPOSÓB** (z middleware):
 
 ```typescript
 export const POST: APIRoute = async ({ locals }) => {
@@ -72,37 +72,37 @@ export const POST: APIRoute = async ({ locals }) => {
     return createErrorResponse("Unauthorized", 401);
   }
 
-  // ... rest of code
+  // ... reszta kodu
 };
 ```
 
-## Adding Public Endpoints
+## Dodawanie publicznych endpointów
 
-To make an endpoint public (accessible without authentication):
+Aby uczynić endpoint publicznym (dostępnym bez uwierzytelnienia):
 
 ```typescript
 // src/middleware/index.ts
 const PUBLIC_ENDPOINTS = [
   "/api/auth/signIn.temporary",
   "/api/auth/login.temporary",
-  "/api/boards", // Example: public boards listing
-  // Add your endpoint here
+  "/api/boards", // Przykład: publiczna lista tablic
+  // Dodaj tutaj swój endpoint
 ];
 ```
 
-## Using Shared Response Helpers
+## Używanie współdzielonych funkcji pomocniczych odpowiedzi
 
-Import from `src/lib/utils/api-response.ts`:
+Importuj z `src/lib/utils/api-response.ts`:
 
-### Error Responses
+### Odpowiedzi błędów
 
 ```typescript
 import { createErrorResponse, getErrorMapping } from "../../../../lib/utils/api-response";
 
-// Simple error
+// Prosty błąd
 return createErrorResponse("Not found", 404);
 
-// Complex error object
+// Złożony obiekt błędu
 return createErrorResponse(
   {
     error: "validation_failed",
@@ -111,7 +111,7 @@ return createErrorResponse(
   400
 );
 
-// Business error mapping
+// Mapowanie błędów biznesowych
 if (error instanceof Error) {
   const errorMapping = getErrorMapping(error.message);
   if (errorMapping) {
@@ -120,22 +120,22 @@ if (error instanceof Error) {
 }
 ```
 
-### Success Responses
+### Odpowiedzi sukcesu
 
 ```typescript
 import { createSuccessResponse } from "../../../../lib/utils/api-response";
 
-// Simple success (200 OK)
+// Prosty sukces (200 OK)
 return createSuccessResponse({ id: "123", name: "Board" });
 
-// Custom status code (201 Created)
+// Niestandardowy kod statusu (201 Created)
 return createSuccessResponse({ id: "123" }, 201);
 
-// Custom headers
+// Niestandardowe nagłówki
 return createSuccessResponse({ data: "..." }, 200, { "Cache-Control": "max-age=3600" });
 ```
 
-## Example: Complete Protected Endpoint
+## Przykład: Kompletny chroniony endpoint
 
 ```typescript
 import type { APIRoute } from "astro";
@@ -144,22 +144,22 @@ import { myService } from "../../../../lib/services/my.service";
 
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
-    // 1. User is already authenticated by middleware
+    // 1. Użytkownik jest już uwierzytelniony przez middleware
     const user = locals.user;
 
     if (!user) {
       return createErrorResponse("Unauthorized", 401);
     }
 
-    // 2. Parse and validate request
+    // 2. Parsuj i waliduj żądanie
     const body = await request.json();
 
-    // ... validation logic
+    // ... logika walidacji
 
-    // 3. Execute business logic
+    // 3. Wykonaj logikę biznesową
     const result = await myService(locals.supabase, user.id, body);
 
-    // 4. Return success
+    // 4. Zwróć sukces
     return createSuccessResponse(result);
   } catch (error) {
     console.error("Error in endpoint:", error);
@@ -168,9 +168,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
 };
 ```
 
-## Type Safety
+## Bezpieczeństwo typów
 
-The `user` is properly typed in `src/env.d.ts`:
+`user` jest właściwie otypowany w `src/env.d.ts`:
 
 ```typescript
 import type { User } from "@supabase/supabase-js";
@@ -179,17 +179,17 @@ declare global {
   namespace App {
     interface Locals {
       supabase: SupabaseClient<Database>;
-      user?: User; // Authenticated user (available in protected endpoints)
+      user?: User; // Uwierzytelniony użytkownik (dostępny w chronionych endpointach)
     }
   }
 }
 ```
 
-## Benefits
+## Korzyści
 
-✅ **DRY**: No repeated auth logic in every endpoint  
-✅ **Consistent**: Same auth check everywhere  
-✅ **Type-safe**: User properly typed in locals  
-✅ **Maintainable**: Auth logic in one place  
-✅ **Flexible**: Easy to add/remove public endpoints  
-✅ **Clean**: Endpoints focus on business logic
+✅ **DRY**: Brak powtarzania logiki uwierzytelniania w każdym endpoincie  
+✅ **Spójność**: Takie samo sprawdzenie uwierzytelnienia wszędzie  
+✅ **Bezpieczeństwo typów**: Użytkownik właściwie otypowany w locals  
+✅ **Łatwość utrzymania**: Logika uwierzytelniania w jednym miejscu  
+✅ **Elastyczność**: Łatwe dodawanie/usuwanie publicznych endpointów  
+✅ **Czystość**: Endpointy skupiają się na logice biznesowej

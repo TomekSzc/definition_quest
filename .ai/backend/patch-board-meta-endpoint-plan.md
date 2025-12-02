@@ -2,12 +2,15 @@
 
 ## 1. Przegląd punktu końcowego
 
-Celem punktu końcowego jest umożliwienie właścicielowi tablicy częściowej aktualizacji metadanych tablicy (tytuł, widoczność publiczna, archiwizacja, tagi). Endpoint nie zmienia kart ani poziomów — dotyczy wyłącznie pól tabeli `boards`.
+Celem punktu końcowego jest umożliwienie właścicielowi tablicy częściowej aktualizacji metadanych tablicy (tytuł, widoczność publiczna, tagi). Endpoint nie zmienia kart ani poziomów — dotyczy wyłącznie pól tabeli `boards`.
+
+**Kluczowa cecha**: Endpoint aktualizuje **wszystkie poziomy** tablicy o tym samym tytule, nie tylko pojedynczy board wskazany przez `:id`. Dzięki temu metadane pozostają spójne dla całej tablicy wielopoziomowej.
 
 - **URL**: `/api/boards/:id`
 - **Metoda**: `PATCH`
 - **Uprawnienia**: Autentykowany użytkownik będący właścicielem tablicy
 - **Prerender**: `export const prerender = false` (endpoint serwerowy)
+- **Archiwizacja**: Nie można edytować zarchiwizowanej tablicy. Archiwizacja odbywa się przez `DELETE /api/boards/:id`
 
 ---
 
@@ -21,31 +24,34 @@ Celem punktu końcowego jest umożliwienie właścicielowi tablicy częściowej 
 
 ### 2.2 Body (JSON)
 
-Używa modelu `PatchBoardCmd` (z `src/types.ts`) z ograniczeniem do pól:
+Używa schematu `PatchBoardSchema` (z `src/lib/validation/boards.ts`):
 
 ```ts
 {
   title?: string;        // 1–255 znaków
   isPublic?: boolean;
-  archived?: boolean;    // pozwala oznaczyć tablicę jako zarchiwizowaną
   tags?: string[];       // ≤ 10 tagów, każdy ≤ 20 znaków
 }
 ```
 
 _Wymagane_: co najmniej jedno pole.
 
+**Uwaga**: Pole `archived` **nie** jest obsługiwane przez ten endpoint. Archiwizacja odbywa się przez osobny endpoint `DELETE /api/boards/:id`.
+
 ---
 
 ## 3. Wykorzystywane typy
 
-- **PatchBoardCmd** – model komend (już istnieje)
-- **BoardDetailDTO** – zwracany po aktualizacji
-- **Strict<T>** helper, `SortDirection` (pośrednio z types.ts)
+### Validation (Zod schemas)
+- **PatchBoardSchema** (`src/lib/validation/boards.ts`) – walidacja ciała żądania
+- **BoardIdParamSchema** – walidacja parametru `:id` w URL
 
-Nowe/aktualizowane typy:
+### Types (TypeScript)
+- **PatchBoardCmd** (`src/types.ts`) – typ komend (zawiera również nieużywane pola `archived?` i `pairs?`)
+- **PatchBoardInput** – typ inferred z `PatchBoardSchema`, używany w rzeczywistej implementacji
 
-- **PatchBoardSchema** (Zod) – walidacja ciała żądania
-- **BoardIdParamSchema** – już istnieje
+### Response
+- Endpoint zwraca: `{ message: string }` zamiast `BoardDetailDTO`
 
 ---
 
@@ -53,12 +59,19 @@ Nowe/aktualizowane typy:
 
 | Kod                           | Body                  | Warunek                                                       |
 | ----------------------------- | --------------------- | ------------------------------------------------------------- |
-| **200 OK**                    | `BoardDetailDTO`      | Aktualizacja zakończona powodzeniem                           |
-| **400 Bad Request**           | `{ error, details? }` | Błąd walidacji lub archiwizowanie już zarchiwizowanej tablicy |
+| **200 OK**                    | `{ message: string }` | Aktualizacja zakończona powodzeniem                           |
+| **400 Bad Request**           | `{ error, details? }` | Błąd walidacji, brak zmian lub próba edycji zarchiwizowanej tablicy |
 | **401 Unauthorized**          | `{ error }`           | Brak JWT lub nie jesteś właścicielem                          |
 | **404 Not Found**             | `{ error }`           | Tablica nie istnieje lub brak dostępu                         |
 | **409 Conflict**              | `{ error }`           | Duplikat tytułu (UNIQUE na (owner_id, title, level))          |
 | **500 Internal Server Error** | `{ error }`           | Inne błędy serwera                                            |
+
+**Przykład odpowiedzi 200 OK**:
+```json
+{
+  "message": "updated title, is_public, tags for all levels"
+}
+```
 
 ---
 
@@ -85,15 +98,15 @@ sequenceDiagram
       S-->>R: Error("BOARD_NOT_FOUND")
       R-->>C: 404
     else board istnieje
-      S->>DB: UPDATE boards SET ... WHERE id = $id RETURNING *
+      S->>DB: UPDATE boards SET ... WHERE owner_id = $userId AND title = $currentTitle
       alt conflict 23505
         DB-->>S: error
         S-->>R: Error("DUPLICATE_BOARD")
         R-->>C: 409
       else success
-        DB-->>S: updated row
-        S-->>R: BoardDetailDTO
-        R-->>C: 200 OK
+        DB-->>S: OK
+        S-->>R: message string
+        R-->>C: 200 OK { message }
       end
     end
   end
@@ -101,52 +114,89 @@ sequenceDiagram
 
 ---
 
-## 6. Względy bezpieczeństwa
+## 6. Logika biznesowa - Aktualizacja wszystkich poziomów
 
-1. **Autoryzacja**: middleware JWT w `src/middleware/index.ts` ustawia `locals.user` i `locals.supabase` z tokenem użytkownika → RLS wymusza, aby tylko właściciel mógł `UPDATE`.
-2. **Walidacja danych**: Zod + guard clauses (wcześnie odrzucamy nieprawidłowe dane).
-3. **Ochrona przed masową aktualizacją**: Schema wyraźnie zawęża pola; ignoruje nieznane właściwości (`StripUnknown`).
-4. **SQL Injection**: Kwerendy Supabase są parametryzowane.
-5. **Duplikaty**: Obsługa błędu `23505 UNIQUE` ➜ 409 Conflict.
+**Kluczowa cecha**: Endpoint aktualizuje **wszystkie poziomy** tablicy o tym samym tytule, a nie tylko pojedynczy board wskazany przez `:id`.
+
+### Implementacja w `updateBoardMeta`:
+
+1. Pobiera board o podanym `boardId` w celu weryfikacji:
+   - Czy istnieje
+   - Czy użytkownik jest właścicielem
+   - Czy nie jest zarchiwizowana
+2. Następnie wykonuje UPDATE na **wszystkich** boardach spełniających warunki:
+   ```sql
+   UPDATE boards 
+   SET ... 
+   WHERE owner_id = $userId AND title = $currentTitle
+   ```
+3. To oznacza, że jeśli masz tablicę "JavaScript Basics" z 3 poziomami, aktualizacja któregokolwiek z nich zmieni metadane (tytuł, widoczność, tagi) dla wszystkich trzech poziomów.
+
+### Uzasadnienie:
+
+W modelu danych tablice wielopoziomowe są reprezentowane jako osobne rekordy w tabeli `boards` o tym samym tytule i różnych wartościach `level`. Metadane takie jak tytuł, widoczność publiczna czy tagi powinny być spójne dla wszystkich poziomów tej samej tablicy.
 
 ---
 
-## 7. Obsługa błędów
+## 7. Względy bezpieczeństwa
+
+1. **Autoryzacja**: middleware JWT w `src/middleware/index.ts` ustawia `locals.user` i `locals.supabase` z tokenem użytkownika. Service layer jawnie sprawdza `owner_id` przed wykonaniem UPDATE.
+2. **Walidacja danych**: Zod + guard clauses (wcześnie odrzucamy nieprawidłowe dane).
+3. **Ochrona przed masową aktualizacją**: Schema wyraźnie zawęża pola; ignoruje nieznane właściwości.
+4. **SQL Injection**: Kwerendy Supabase są parametryzowane.
+5. **Duplikaty**: Obsługa błędu `23505 UNIQUE` ➜ 409 Conflict.
+6. **Ochrona zarchiwizowanych**: Sprawdzenie `archived = true` blokuje wszelkie modyfikacje.
+
+---
+
+## 8. Obsługa błędów
 
 | Kod | Mapa `getErrorMapping`                | Uwagi                                 |
 | --- | ------------------------------------- | ------------------------------------- |
-| 400 | `VALIDATION_FAILED`, `BOARD_ARCHIVED` | Walidacja lub próba zmian na archiwum |
+| 400 | `VALIDATION_FAILED`, `BOARD_ARCHIVED`, `NO_CHANGES` | Walidacja, próba zmian na archiwum lub brak zmian |
 | 401 | `NOT_OWNER`, `UNAUTHORIZED`           |
 | 404 | `BOARD_NOT_FOUND`                     |
-| 409 | `DUPLICATE_BOARD`                     |
+| 409 | `DUPLICATE_BOARD`, `BOARD_ARCHIVED`   | Duplikat tytułu lub tablica już zarchiwizowana |
 | 500 | `SERVER_ERROR`                        | fallback                              |
 
 ---
 
-## 8. Rozważania dotyczące wydajności
+## 9. Rozważania dotyczące wydajności
 
-- Operacja dotyczy jednego wiersza – koszt znikomy.
-- Użycie `select().single()` po `update()` zwraca zaktualizowany rekord w jednym round-trippie.
-- Indeksy: `PK boards(id)` zapewnia O(1) lookup.
+- Operacja może dotyczyć wielu wierszy (wszystkie poziomy tablicy), ale zazwyczaj to 1-3 rekordy.
+- Indeksy: `PK boards(id)` dla weryfikacji, indeks na `(owner_id, title)` dla UPDATE.
+- Operacja jest atomiczna – wszystkie poziomy aktualizowane w jednej transakcji.
 
 ---
 
-## 9. Etapy wdrożenia
+## 10. Status implementacji
 
-1. **Validation**
-   - Stwórz `PatchBoardSchema` w `src/lib/validation/boards.ts` (reuse części wspólne z `CreateBoardSchema`).
-2. **Service layer**
-   - Dodaj funkcję `updateBoardMeta` w `src/lib/services/board.service.ts`:
-     - Parametry `(supabase, userId, boardId, payload: PatchBoardCmd)`
-     - Sprawdza istnienie, właściciela, status `archived` (chyba że payload.archived === false).
-     - Wykonuje `update` z `returning`.
-3. **Error mapping**
-   - Upewnij się, że `DUPLICATE_BOARD` i `BOARD_ARCHIVED` już istnieją w `getErrorMapping`. Jeśli nie, dodać.
-4. **Route handler**
-   - W `src/pages/api/boards/[id].ts` dodaj `export const PATCH`:
-     1. Validate `params` (`BoardIdParamSchema`) i `request.json()` (`PatchBoardSchema`).
-     2. Call `updateBoardMeta`.
-     3. Zwróć `createSuccessResponse` z danymi.
-     4. Obsłuż błędy analogicznie jak w GET.
-5. **Docs & Changelog**
-   - Aktualizuj README i OpenAPI/Redoc.
+✅ **Zaimplementowano**
+
+Endpoint został w pełni zaimplementowany zgodnie z planem, z następującymi szczegółami:
+
+1. **Validation** ✅
+   - `PatchBoardSchema` w `src/lib/validation/boards.ts` (linie 154-176)
+   - Zawiera pola: `title`, `isPublic`, `tags` (wszystkie opcjonalne)
+   - Walidacja wymaga co najmniej jednego pola
+
+2. **Service layer** ✅
+   - Funkcja `updateBoardMeta` w `src/lib/services/board.service.ts` (linie 489-557)
+   - Weryfikuje własność, sprawdza czy board nie jest zarchiwizowany
+   - Aktualizuje wszystkie poziomy tablicy o tym samym tytule
+   - Zwraca komunikat opisujący zaktualizowane pola
+
+3. **Error mapping** ✅
+   - `DUPLICATE_BOARD`, `BOARD_ARCHIVED`, `NO_CHANGES`, `NOT_OWNER`, `BOARD_NOT_FOUND` w `src/lib/utils/api-response.ts`
+
+4. **Route handler** ✅
+   - Handler `PATCH` w `src/pages/api/boards/[id].ts` (linie 72-119)
+   - Pełna walidacja parametrów i body
+   - Weryfikacja autentykacji
+   - Obsługa błędów przez `ValidationError`, `HttpError` i `getErrorMapping`
+
+### Różnice względem początkowego planu:
+
+- **Odpowiedź**: Zwraca `{ message: string }` zamiast `BoardDetailDTO`
+- **Pole `archived`**: Nie jest obsługiwane (archiwizacja przez `DELETE /api/boards/:id`)
+- **Zakres aktualizacji**: Modyfikuje wszystkie poziomy tablicy zamiast pojedynczego board
