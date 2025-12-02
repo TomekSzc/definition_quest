@@ -87,26 +87,16 @@ vi.mock("@/components/forms/PairForm", () => ({
     <div data-testid="pair-form">
       {fields.map((field: any, index: number) => (
         <div key={field.id} data-testid={`pair-row-${index}`}>
-          <input
-            data-testid={`pair-term-${index}`}
-            {...register(`pairs.${index}.term`)}
-            placeholder="Term"
-          />
+          <input data-testid={`pair-term-${index}`} {...register(`pairs.${index}.term`)} placeholder="Term" />
           <input
             data-testid={`pair-definition-${index}`}
             {...register(`pairs.${index}.definition`)}
             placeholder="Definition"
           />
-          <button
-            data-testid={`remove-pair-${index}`}
-            type="button"
-            onClick={() => remove(index)}
-          >
+          <button data-testid={`remove-pair-${index}`} type="button" onClick={() => remove(index)}>
             Remove
           </button>
-          {errors?.[index]?.term && (
-            <span data-testid={`pair-term-error-${index}`}>{errors[index].term.message}</span>
-          )}
+          {errors?.[index]?.term && <span data-testid={`pair-term-error-${index}`}>{errors[index].term.message}</span>}
           {errors?.[index]?.definition && (
             <span data-testid={`pair-definition-error-${index}`}>{errors[index].definition.message}</span>
           )}
@@ -644,4 +634,3 @@ describe("<CreateBoardForm />", () => {
     });
   });
 });
-

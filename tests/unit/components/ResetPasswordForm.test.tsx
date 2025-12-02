@@ -72,10 +72,7 @@ describe("<ResetPasswordForm />", () => {
     const refreshToken = "test-refresh-456";
     const newPassword = "securePassword123";
 
-    const { user, newPasswordInput, confirmPasswordInput, submitButton } = setup(
-      accessToken,
-      refreshToken
-    );
+    const { user, newPasswordInput, confirmPasswordInput, submitButton } = setup(accessToken, refreshToken);
 
     // Act – fill and submit the form
     await user.type(newPasswordInput, newPassword);
@@ -209,4 +206,3 @@ describe("<ResetPasswordForm />", () => {
     });
   });
 });
-

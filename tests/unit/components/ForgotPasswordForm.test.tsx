@@ -120,7 +120,7 @@ describe("<ForgotPasswordForm />", () => {
 
   it("does not show validation error when email field is empty on initial render", () => {
     setup();
-    
+
     // Assert – no validation error on initial render
     expect(screen.queryByText(/invalid email format/i)).not.toBeInTheDocument();
   });
@@ -205,7 +205,7 @@ describe("<ForgotPasswordForm />", () => {
     await waitFor(() => {
       expect(screen.getByText(/invalid email format/i)).toBeInTheDocument();
     });
-    
+
     expect(requestResetSpy).not.toHaveBeenCalled();
   });
 
@@ -236,11 +236,10 @@ describe("<ForgotPasswordForm />", () => {
 
   it("maintains form structure with proper styling classes", () => {
     setup();
-    
+
     // Assert – form container has expected styling
     const formContainer = screen.getByLabelText(/email/i).closest("div.max-w-md");
     expect(formContainer).toBeInTheDocument();
     expect(formContainer).toHaveClass("max-w-md", "w-full", "mx-auto");
   });
 });
-

@@ -82,13 +82,7 @@ vi.mock("@/components/forms/parts/PairEditList", () => ({
 }));
 
 vi.mock("@/components/forms/parts/AddPairsForm", () => ({
-  default: ({
-    boardId,
-    onPairAdded,
-  }: {
-    boardId: string;
-    onPairAdded: (pair: PairDTO) => void;
-  }) => (
+  default: ({ boardId, onPairAdded }: { boardId: string; onPairAdded: (pair: PairDTO) => void }) => (
     <div data-testid="add-pairs-form">
       <button
         data-testid="add-pair-button"
@@ -340,4 +334,3 @@ describe("EditBoardForm", () => {
     });
   });
 });
-

@@ -73,6 +73,7 @@ Punkt końcowy pozwala zalogowanemu użytkownikowi **zapisać** czas ukończenia
 
 3. **upsertScore** (serwis w `src/lib/services/score.service.ts`):
    - **Krok 1**: Sprawdza istnienie i dostępność tablicy:
+
      ```ts
      const { data: boardRow } = await supabase
        .from("boards")
@@ -83,7 +84,9 @@ Punkt końcowy pozwala zalogowanemu użytkownikowi **zapisać** czas ukończenia
 
      - Brak rekordu ⇒ `throw new Error("BOARD_NOT_FOUND")`.
      - Jeśli tablica prywatna (`!is_public`) i `owner_id !== userId` ⇒ `throw new Error("BOARD_NOT_FOUND")`.
+
    - **Krok 2**: Sprawdza czy istnieje score dla pary (user, board):
+
      ```ts
      const { data: existingScore } = await supabase
        .from("scores")
@@ -94,6 +97,7 @@ Punkt końcowy pozwala zalogowanemu użytkownikowi **zapisać** czas ukończenia
      ```
 
      - Jeśli istnieje, używa jego `id`; w przeciwnym razie generuje nowe UUID.
+
    - **Krok 3**: Wykonuje upsert:
      ```ts
      const { data: upserted } = await supabase
