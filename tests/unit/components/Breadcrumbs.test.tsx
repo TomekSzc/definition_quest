@@ -56,7 +56,7 @@ describe("Breadcrumbs", () => {
   });
 
   describe("Renderowanie standardowego tytułu", () => {
-    it("powinien wyrenderować h1 z tytułem 'Public Boards' dla ścieżki /boards", () => {
+    it("powinien wyrenderować h1 z tytułem 'Publiczne tablice' dla ścieżki /boards", () => {
       // Arrange
       mockLocation("/boards");
 
@@ -66,11 +66,11 @@ describe("Breadcrumbs", () => {
       // Assert
       const heading = screen.getByRole("heading", { level: 1 });
       expect(heading).toBeInTheDocument();
-      expect(heading).toHaveTextContent("Public Boards");
+      expect(heading).toHaveTextContent("Publiczne tablice");
       expect(heading.tagName).toBe("H1");
     });
 
-    it("powinien wyrenderować h1 z tytułem 'My Boards' dla ścieżki /my-boards", () => {
+    it("powinien wyrenderować h1 z tytułem 'Moje tablice' dla ścieżki /my-boards", () => {
       // Arrange
       mockLocation("/my-boards");
 
@@ -79,10 +79,10 @@ describe("Breadcrumbs", () => {
 
       // Assert
       const heading = screen.getByRole("heading", { level: 1 });
-      expect(heading).toHaveTextContent("My Boards");
+      expect(heading).toHaveTextContent("Moje tablice");
     });
 
-    it("powinien wyrenderować h1 z tytułem 'Played Boards' dla ścieżki /played", () => {
+    it("powinien wyrenderować h1 z tytułem 'Rozegrane tablice' dla ścieżki /played", () => {
       // Arrange
       mockLocation("/played");
 
@@ -91,10 +91,10 @@ describe("Breadcrumbs", () => {
 
       // Assert
       const heading = screen.getByRole("heading", { level: 1 });
-      expect(heading).toHaveTextContent("Played Boards");
+      expect(heading).toHaveTextContent("Rozegrane tablice");
     });
 
-    it("powinien wyrenderować domyślny tytuł 'Public Boards' dla nieznanych ścieżek", () => {
+    it("powinien wyrenderować domyślny tytuł 'Publiczne tablice' dla nieznanych ścieżek", () => {
       // Arrange
       mockLocation("/unknown-route");
 
@@ -103,7 +103,7 @@ describe("Breadcrumbs", () => {
 
       // Assert
       const heading = screen.getByRole("heading", { level: 1 });
-      expect(heading).toHaveTextContent("Public Boards");
+      expect(heading).toHaveTextContent("Publiczne tablice");
     });
 
     it("powinien mieć poprawne klasy stylowania dla h1", () => {
@@ -115,7 +115,8 @@ describe("Breadcrumbs", () => {
 
       // Assert
       const heading = screen.getByRole("heading", { level: 1 });
-      expect(heading).toHaveClass("text-2xl");
+      expect(heading).toHaveClass("text-[20px]");
+      expect(heading).toHaveClass("md:text-2xl");
       expect(heading).toHaveClass("font-bold");
     });
   });
@@ -136,7 +137,7 @@ describe("Breadcrumbs", () => {
       expect(button.tagName).toBe("BUTTON");
     });
 
-    it("powinien wyświetlić breadcrumbs z 'Public Boards / Play' dla board detail", () => {
+    it("powinien wyświetlić breadcrumbs z 'Publiczne tablice / Graj' dla board detail", () => {
       // Arrange
       mockLocation("/boards/abc-123");
       mockReferrer("http://localhost/boards");
@@ -146,12 +147,12 @@ describe("Breadcrumbs", () => {
       render(<Breadcrumbs />);
 
       // Assert
-      expect(screen.getByText("Public Boards")).toBeInTheDocument();
-      expect(screen.getByText("Play")).toBeInTheDocument();
+      expect(screen.getByText("Publiczne tablice")).toBeInTheDocument();
+      expect(screen.getByText("Graj")).toBeInTheDocument();
       expect(screen.getAllByText("/")).toHaveLength(1);
     });
 
-    it("powinien wyświetlić 'Edit' dla ścieżki /boards/123/edit", () => {
+    it("powinien wyświetlić 'Edytuj' dla ścieżki /boards/123/edit", () => {
       // Arrange
       mockLocation("/boards/123/edit");
       mockReferrer("http://localhost/my-boards");
@@ -161,11 +162,11 @@ describe("Breadcrumbs", () => {
       render(<Breadcrumbs />);
 
       // Assert
-      expect(screen.getByText("Edit")).toBeInTheDocument();
-      expect(screen.queryByText("Play")).not.toBeInTheDocument();
+      expect(screen.getByText("Edytuj")).toBeInTheDocument();
+      expect(screen.queryByText("Graj")).not.toBeInTheDocument();
     });
 
-    it("powinien wyświetlić 'My Boards' jako prevTitle gdy referrer to /my-boards", () => {
+    it("powinien wyświetlić 'Moje tablice' jako prevTitle gdy referrer to /my-boards", () => {
       // Arrange
       mockLocation("/boards/456");
       mockReferrer("http://localhost/my-boards");
@@ -175,10 +176,10 @@ describe("Breadcrumbs", () => {
       render(<Breadcrumbs />);
 
       // Assert
-      expect(screen.getByText("My Boards")).toBeInTheDocument();
+      expect(screen.getByText("Moje tablice")).toBeInTheDocument();
     });
 
-    it("powinien wyświetlić 'Played Boards' jako prevTitle gdy referrer to /played", () => {
+    it("powinien wyświetlić 'Rozegrane tablice' jako prevTitle gdy referrer to /played", () => {
       // Arrange
       mockLocation("/boards/789");
       mockReferrer("http://localhost/played");
@@ -188,7 +189,7 @@ describe("Breadcrumbs", () => {
       render(<Breadcrumbs />);
 
       // Assert
-      expect(screen.getByText("Played Boards")).toBeInTheDocument();
+      expect(screen.getByText("Rozegrane tablice")).toBeInTheDocument();
     });
   });
 
@@ -203,8 +204,8 @@ describe("Breadcrumbs", () => {
       // Assert
       const heading = screen.getByRole("heading", { level: 1 });
       expect(heading).toBeInTheDocument();
-      expect(screen.getByText("My Boards")).toBeInTheDocument();
-      expect(screen.getByText("Add level")).toBeInTheDocument();
+      expect(screen.getByText("Moje tablice")).toBeInTheDocument();
+      expect(screen.getByText("Dodaj poziom")).toBeInTheDocument();
     });
 
     it("powinien zawierać link do /my-boards dla add level w my-boards", () => {
@@ -215,7 +216,7 @@ describe("Breadcrumbs", () => {
       render(<Breadcrumbs />);
 
       // Assert
-      const link = screen.getByRole("link", { name: "My Boards" });
+      const link = screen.getByRole("link", { name: "Moje tablice" });
       expect(link).toHaveAttribute("href", "/my-boards");
       expect(link).toHaveClass("hover:underline");
     });
@@ -228,8 +229,8 @@ describe("Breadcrumbs", () => {
       render(<Breadcrumbs />);
 
       // Assert
-      expect(screen.getByText("Public Boards")).toBeInTheDocument();
-      expect(screen.getByText("Add level")).toBeInTheDocument();
+      expect(screen.getByText("Publiczne tablice")).toBeInTheDocument();
+      expect(screen.getByText("Dodaj poziom")).toBeInTheDocument();
     });
 
     it("powinien zawierać link do /boards dla add level w boards", () => {
@@ -240,7 +241,7 @@ describe("Breadcrumbs", () => {
       render(<Breadcrumbs />);
 
       // Assert
-      const link = screen.getByRole("link", { name: "Public Boards" });
+      const link = screen.getByRole("link", { name: "Publiczne tablice" });
       expect(link).toHaveAttribute("href", "/boards");
     });
 
@@ -289,7 +290,7 @@ describe("Breadcrumbs", () => {
   });
 
   describe("Logika określania prevTitle z referrera", () => {
-    it("powinien użyć 'Public Boards' gdy document.referrer jest pusty", () => {
+    it("powinien użyć 'Publiczne tablice' gdy document.referrer jest pusty", () => {
       // Arrange
       mockLocation("/boards/123");
       mockReferrer("");
@@ -299,10 +300,10 @@ describe("Breadcrumbs", () => {
       render(<Breadcrumbs />);
 
       // Assert
-      expect(screen.getByText("Public Boards")).toBeInTheDocument();
+      expect(screen.getByText("Publiczne tablice")).toBeInTheDocument();
     });
 
-    it("powinien użyć 'Public Boards' gdy referrer pochodzi z innego origin", () => {
+    it("powinien użyć 'Publiczne tablice' gdy referrer pochodzi z innego origin", () => {
       // Arrange
       mockLocation("/boards/123");
       mockReferrer("http://other-domain.com/boards");
@@ -312,10 +313,10 @@ describe("Breadcrumbs", () => {
       render(<Breadcrumbs />);
 
       // Assert
-      expect(screen.getByText("Public Boards")).toBeInTheDocument();
+      expect(screen.getByText("Publiczne tablice")).toBeInTheDocument();
     });
 
-    it("powinien użyć 'Public Boards' gdy referrer jest niepoprawnym URL", () => {
+    it("powinien użyć 'Publiczne tablice' gdy referrer jest niepoprawnym URL", () => {
       // Arrange
       mockLocation("/boards/123");
       mockReferrer("invalid-url");
@@ -325,7 +326,7 @@ describe("Breadcrumbs", () => {
       render(<Breadcrumbs />);
 
       // Assert
-      expect(screen.getByText("Public Boards")).toBeInTheDocument();
+      expect(screen.getByText("Publiczne tablice")).toBeInTheDocument();
     });
 
     it("powinien użyć poprawnego tytułu dla znanej ścieżki w referrer", () => {
@@ -338,10 +339,10 @@ describe("Breadcrumbs", () => {
       render(<Breadcrumbs />);
 
       // Assert
-      expect(screen.getByText("Played Boards")).toBeInTheDocument();
+      expect(screen.getByText("Rozegrane tablice")).toBeInTheDocument();
     });
 
-    it("powinien użyć 'Public Boards' dla nieznanej ścieżki w referrer", () => {
+    it("powinien użyć 'Publiczne tablice' dla nieznanej ścieżki w referrer", () => {
       // Arrange
       mockLocation("/boards/123");
       mockReferrer("http://localhost/unknown-path");
@@ -351,7 +352,7 @@ describe("Breadcrumbs", () => {
       render(<Breadcrumbs />);
 
       // Assert
-      expect(screen.getByText("Public Boards")).toBeInTheDocument();
+      expect(screen.getByText("Publiczne tablice")).toBeInTheDocument();
     });
   });
 
@@ -380,7 +381,7 @@ describe("Breadcrumbs", () => {
       render(<Breadcrumbs />);
 
       // Assert
-      expect(screen.getByText("Edit")).toBeInTheDocument();
+      expect(screen.getByText("Edytuj")).toBeInTheDocument();
     });
 
     it("powinien rozpoznać add level z ID zawierającym znaki specjalne", () => {
@@ -391,7 +392,7 @@ describe("Breadcrumbs", () => {
       render(<Breadcrumbs />);
 
       // Assert
-      expect(screen.getByText("Add level")).toBeInTheDocument();
+      expect(screen.getByText("Dodaj poziom")).toBeInTheDocument();
     });
 
     it("nie powinien rozpoznać jako board detail gdy ścieżka ma dodatkowe segmenty (poza /edit)", () => {
@@ -418,8 +419,7 @@ describe("Breadcrumbs", () => {
 
       // Assert
       const button = screen.getByRole("button");
-      expect(button).toHaveClass("text-[18px]");
-      expect(button).toHaveClass("md:text-[22px]");
+      expect(button).toHaveClass("text-[20px]");
       expect(button).toHaveClass("md:text-2xl");
     });
 
@@ -591,9 +591,9 @@ describe("Breadcrumbs", () => {
 
       // Assert
       const button = screen.getByRole("button");
-      expect(button).toHaveTextContent("My Boards");
+      expect(button).toHaveTextContent("Moje tablice");
       expect(button).toHaveTextContent("/");
-      expect(button).toHaveTextContent("Play");
+      expect(button).toHaveTextContent("Graj");
     });
 
     it("powinien zapewniać navigation landmark przez h1", () => {
@@ -631,14 +631,14 @@ describe("Breadcrumbs", () => {
       const { rerender } = render(<Breadcrumbs />);
 
       // Assert pierwszego renderowania
-      expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Public Boards");
+      expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Publiczne tablice");
 
       // Zmiana pathname
       mockLocation("/my-boards");
       rerender(<Breadcrumbs />);
 
       // Assert drugiego renderowania
-      expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("My Boards");
+      expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Moje tablice");
     });
 
     it("powinien obsłużyć referrer z query parametrami", () => {
@@ -651,7 +651,7 @@ describe("Breadcrumbs", () => {
       render(<Breadcrumbs />);
 
       // Assert
-      expect(screen.getByText("My Boards")).toBeInTheDocument();
+      expect(screen.getByText("Moje tablice")).toBeInTheDocument();
     });
 
     it("powinien obsłużyć referrer z hash", () => {
@@ -664,7 +664,7 @@ describe("Breadcrumbs", () => {
       render(<Breadcrumbs />);
 
       // Assert
-      expect(screen.getByText("Public Boards")).toBeInTheDocument();
+      expect(screen.getByText("Publiczne tablice")).toBeInTheDocument();
     });
 
     it("powinien obsłużyć brak window.history podczas kliknięcia", () => {
@@ -684,10 +684,10 @@ describe("Breadcrumbs", () => {
   describe("Integracja routeTitles", () => {
     it("powinien poprawnie mapować znane ścieżki do tytułów", () => {
       const paths = [
-        { path: "/boards", title: "Public Boards" },
-        { path: "/my-boards", title: "My Boards" },
-        { path: "/played-boards", title: "Played Boards" },
-        { path: "/played", title: "Played Boards" },
+        { path: "/boards", title: "Publiczne tablice" },
+        { path: "/my-boards", title: "Moje tablice" },
+        { path: "/played-boards", title: "Rozegrane tablice" },
+        { path: "/played", title: "Rozegrane tablice" },
       ];
 
       paths.forEach(({ path, title }) => {
@@ -726,7 +726,7 @@ describe("Breadcrumbs", () => {
       // Arrange & Act - standardowy tytuł
       mockLocation("/boards");
       const { unmount: unmount1 } = render(<Breadcrumbs />);
-      expect(screen.getByRole("heading")).toHaveTextContent("Public Boards");
+      expect(screen.getByRole("heading")).toHaveTextContent("Publiczne tablice");
       unmount1();
 
       // Act - board detail
@@ -746,11 +746,11 @@ describe("Breadcrumbs", () => {
 
     it("powinien obsłużyć wszystkie typy referrerów dla board detail", () => {
       const referrers = [
-        { ref: "http://localhost/boards", expected: "Public Boards" },
-        { ref: "http://localhost/my-boards", expected: "My Boards" },
-        { ref: "http://localhost/played", expected: "Played Boards" },
-        { ref: "", expected: "Public Boards" },
-        { ref: "http://other-domain.com/boards", expected: "Public Boards" },
+        { ref: "http://localhost/boards", expected: "Publiczne tablice" },
+        { ref: "http://localhost/my-boards", expected: "Moje tablice" },
+        { ref: "http://localhost/played", expected: "Rozegrane tablice" },
+        { ref: "", expected: "Publiczne tablice" },
+        { ref: "http://other-domain.com/boards", expected: "Publiczne tablice" },
       ];
 
       referrers.forEach(({ ref, expected }) => {

@@ -18,9 +18,10 @@ Usuwa pojedynczą parę (term + definition) z istniejącej tablicy (board). Dost
 
 - `PairDTO` (src/types.ts) – użyte wyłącznie w testach / logice, odpowiedź nie zwraca samej pary.
 - Komenda: brak – operacja identyfikowana tylko parametrami.
-- DTO odpowiedzi:
+- DTO odpowiedzi (nie jest zdefiniowane jako formalny typ w `types.ts`, ale zwracane przez endpoint):
   ```ts
-  export interface DeletePairSuccessDTO {
+  // Zwracana struktura:
+  {
     id: string; // usunięty pairId
     boardId: string; // boardId
     message: "deleted";
@@ -29,14 +30,14 @@ Usuwa pojedynczą parę (term + definition) z istniejącej tablicy (board). Dost
 
 ## 4. Szczegóły odpowiedzi
 
-| Status | Treść                                                            | Warunek                                          |
-| ------ | ---------------------------------------------------------------- | ------------------------------------------------ |
-| 200    | `DeletePairSuccessDTO`                                           | Para usunięta poprawnie                          |
-| 400    | `{ errors: ValidationError[] }`                                  | Niepoprawne UUID / błędy walidacji               |
-| 401    | `{ error: "Unauthorized" }`                                      | Brak lub nieważny JWT                            |
-| 404    | `{ error: "Board not found" }` lub `{ error: "Pair not found" }` | Zasób nie istnieje lub nie należy do użytkownika |
-| 409    | `{ error: "Board archived" }`                                    | Board w stanie archived                          |
-| 500    | `{ error: "Internal server error" }`                             | Nieoczekiwany wyjątek serwera                    |
+| Status | Treść                                                 | Warunek                                          |
+| ------ | ----------------------------------------------------- | ------------------------------------------------ |
+| 200    | `{ id: string, boardId: string, message: "deleted" }` | Para usunięta poprawnie                          |
+| 400    | `{ error: string, details: ValidationError[] }`       | Niepoprawne UUID / błędy walidacji               |
+| 401    | `{ error: string, message: string }`                  | Brak lub nieważny JWT / brak uprawnień właściciela |
+| 404    | `{ error: string, message: string }`                  | Zasób nie istnieje lub nie należy do użytkownika |
+| 409    | `{ error: string, message: string }`                  | Board w stanie archived                          |
+| 500    | `{ error: string, message?: string }`                 | Nieoczekiwany wyjątek serwera                    |
 
 ## 5. Przepływ danych
 
@@ -47,8 +48,8 @@ Usuwa pojedynczą parę (term + definition) z istniejącej tablicy (board). Dost
    3. Wywołuje nowy serwis `removePair(...)`.
 3. Service `removePair` (dodany do `board.service.ts`):
    1. Pobiera tablicę i weryfikuje: istnienie, ownerId === userId, `archived = false`.
-   2. Próbuje usunąć parę (`delete from pairs where id = pairId and board_id = boardId`).
-   3. Jeśli `delete` zwróci `count = 0`, rzuca błąd `"PAIR_NOT_FOUND"`.
+   2. Próbuje usunąć parę (`delete from pairs where id = pairId and board_id = boardId`) z `.select("id, board_id").maybeSingle()`.
+   3. Jeśli `deletedRow` jest `null`, rzuca błąd `"PAIR_NOT_FOUND"`.
 4. RLS w DB (`pairs_delete_owner`) zapewnia dodatkowe bezpieczeństwo.
 5. Endpoint zwraca `{ id, boardId, message: "deleted" }`.
 
@@ -61,16 +62,16 @@ Usuwa pojedynczą parę (term + definition) z istniejącej tablicy (board). Dost
 
 ## 7. Obsługa błędów
 
-| Kod błędu serwisowego | HTTP  | Komunikat             |
-| --------------------- | ----- | --------------------- |
-| UNAUTHORIZED          | 401   | Unauthorized          |
-| BOARD_NOT_FOUND       | 404   | Board not found       |
-| PAIR_NOT_FOUND        | 404   | Pair not found        |
-| NOT_OWNER             | 404\* | Board not found       |
-| BOARD_ARCHIVED        | 409   | Board archived        |
-| SERVER_ERROR          | 500   | Internal server error |
+| Kod błędu serwisowego | HTTP | Komunikat                                                   |
+| --------------------- | ---- | ----------------------------------------------------------- |
+| UNAUTHORIZED          | 401  | Authentication required                                     |
+| BOARD_NOT_FOUND       | 404  | Board does not exist or access denied                       |
+| PAIR_NOT_FOUND        | 404  | Pair does not exist on this board or access denied          |
+| NOT_OWNER             | 401  | You are not the owner of this board                         |
+| BOARD_ARCHIVED        | 409  | Board is archived and cannot be modified                    |
+| SERVER_ERROR          | 500  | Internal server error                                       |
 
-\* Ukrywamy fakt istnienia zasobu przed osobami niebędącymi właścicielem.
+**Uwaga:** Komunikaty błędów zostały ujednolicone w `src/lib/utils/api-response.ts` w funkcji `getErrorMapping()`.
 
 ## 8. Rozważania dotyczące wydajności
 
@@ -81,15 +82,17 @@ Usuwa pojedynczą parę (term + definition) z istniejącej tablicy (board). Dost
 ## 9. Etapy wdrożenia
 
 1. **Service**
-   - [ ] Dodaj funkcję `removePair` w `src/lib/services/board.service.ts`.
-   - [ ] Implementuj walidację właściciela, status archived, usunięcie, mapowanie błędów.
+   - [x] Dodaj funkcję `removePair` w `src/lib/services/board.service.ts` (linie 615-667).
+   - [x] Implementuj walidację właściciela, status archived, usunięcie, mapowanie błędów.
 2. **Walidacja**
-   - [ ] W `src/lib/validation/pairs.ts` dodaj/publikuj `PathParamSchema` na `boardId`, `pairId`.
+   - [x] W `src/lib/validation/pairs.ts` dodano `PairPathParamSchema` na `boardId`, `pairId` (linie 40-45).
 3. **Endpoint**
-   - [ ] W `src/pages/api/boards/[boardId]/pairs/[pairId].ts` dodaj handler `DELETE` wg schematu PATCH.
-   - [ ] Zwracaj `createSuccessResponse` z `DeletePairSuccessDTO`.
+   - [x] W `src/pages/api/boards/[boardId]/pairs/[pairId].ts` dodano handler `DELETE` (linie 71-109).
+   - [x] Zwraca `createSuccessResponse` z `{ id, boardId, message: "deleted" }`.
 4. **Error mapping**
-   - [ ] Rozszerz `http-error.ts` / `api-response.ts` o mapowanie `"BOARD_ARCHIVED" → 409`.
+   - [x] Rozszerzono `api-response.ts` o mapowanie `"BOARD_ARCHIVED" → 409` (linie 79-85).
+   - [x] Dodano również mapowanie dla `"PAIR_NOT_FOUND" → 404` (linie 86-92).
 5. **Dokumentacja**
-   - [ ] Uzupełnij OpenAPI/README.
-6. **Review & merge**.
+   - [x] Uzupełniono plan implementacji o rzeczywiste szczegóły.
+6. **Review & merge**
+   - [x] Implementacja zakończona i gotowa do użycia.

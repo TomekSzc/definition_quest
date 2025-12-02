@@ -12,43 +12,30 @@ Toast nie posiada własnej trasy URL. Portal montujemy jednokrotnie w `src/compo
 
 ```
 <Providers>
-  └── <ToastProvider>   ← portal (ReactDOM.createPortal)
-        └── <GlobalToast />
-              ├── <Toast />        ← shadcn/ui komponent bazowy
-              └── <ToastViewport />
+  └── <Toast />   ← Radix Provider + Toast.Root + Viewport
 ```
 
 ## 4. Szczegóły komponentów
 
-### ToastProvider
+### Toast (globalny)
 
-- **Opis**: Odpowiada za utworzenie portalu i wstrzyknięcie kontekstu Shadcn `Toast.Provider`.
-- **Elementy**: `Toast.Provider`, `ToastViewport`, `Portal` (ReactDOM)
-- **Interakcje**: brak (tylko renderuje)
-- **Walidacja**: brak
-- **Typy**: brak specjalnych
-- **Propsy**: `children: ReactNode`
-
-### GlobalToast
-
-- **Opis**: Konsumuje stan `toastSlice` i wyświetla pojedynczego `Toast`a gdy `visible === true`.
-- **Elementy**: `Toast.Root`, `Toast.Title`, `Toast.Description`, przyciski zamykania (opcjonalnie)
+- **Opis**: Łączy w sobie `ToastPrimitive.Provider`, `Toast.Root` i `ToastViewport`. Konsumuje stan Redux (`toastSlice`) i renderuje komunikat gdy `visible === true`.
+- **Elementy**: `ToastPrimitive.Provider`, `ToastPrimitive.Root`, `ToastPrimitive.Title`, `ToastPrimitive.Description`, `ToastPrimitive.Viewport`, przycisk zamknięcia (×).
 - **Interakcje**:
-  - Auto-close po 15 s (`duration`)
-  - Manualne zamknięcie (krzyżyk lub ESC) → dispatch(`toast/hide`)
-- **Walidacja**: gwarancja istnienia `title` lub `description`
-- **Typy**: `ToastState`
-- **Propsy**: brak (pobiera z Redux)
+  - Auto-close po 15 s (`setTimeout`) → `dispatch(hideToast())`
+  - Manualne zamknięcie (× lub swipe/ESC) → `dispatch(clearToast())`
+- **Walidacja**: wymaga `message`; `title` opcjonalny (fallback zależny od `type`).
+- **Typy**: `ToastState`, `ToastType`
+- **Propsy**: brak (stan z Redux)
 
 ## 5. Typy
 
 ```ts
-export type ToastVariant = "success" | "warning" | "error";
+export type ToastType = "success" | "warning" | "error" | "info";
 export interface ToastState {
-  id: string; // uuid – pomocne przy debugowaniu
-  title?: string;
-  message: string; // główna treść
-  variant: ToastVariant;
+  type: ToastType | null;
+  title: string | null;
+  message: string | null;
   visible: boolean;
 }
 ```
@@ -56,12 +43,13 @@ export interface ToastState {
 ## 6. Zarządzanie stanem
 
 - **Redux slice `toastSlice`**
-  - `initialState: ToastState | null`
+  - `initialState: ToastState` (pola `type`, `title`, `message` mogą być `null`)
   - Akcje:
-    - `show(payload: Omit<ToastState, 'visible'>)` → ustawia `visible=true`
-    - `hide()` → ustawia `visible=false`
-  - Extra reducer wykorzystujący `RTK.createSlice`.
-- **Selector**: `selectToast(state) → ToastState | null`
+    - `showToast(payload: { type; message; title? })` → ustawia treść i `visible=true`
+    - `hideToast()` → ustawia `visible=false` (używane przy auto-close)
+    - `clearToast()` → czyści cały stan (używane przy ręcznym zamknięciu)
+  - Zaimplementowane przy użyciu `createSlice` z RTK.
+- **Selector**: `selectToast(state) → ToastState`
 
 ## 7. Integracja API
 
@@ -88,13 +76,10 @@ export interface ToastState {
 
 ## 11. Kroki implementacji
 
-1. **Instalacja zależności**: `shadcn/ui`, `@radix-ui/react-toast` (jeśli nie ma), `uuid`.
-2. **Utwórz `toastSlice`** w `src/store/slices`.
-3. **Dodaj `ToastProvider`** w `src/components/Providers.tsx` i stwórz portal (`document.body`).
-4. **Zaimplementuj `GlobalToast`** w `src/components/GlobalToast.tsx` – subskrybuje Redux.
-5. **Importuj style toastów** (`shadcn` CLI lub ręcznie do `global.css`).
-6. **Aktualizuj interceptor HTTP** – dispatch `show(error)` oprócz 401.
-7. **Modyfikuj akcje związane z loginem** – przy błędzie dispatch toast.
-8. **Dodaj helper hook `useToast()`** aby łatwo wywoływać toast w komponentach.
-9. **Testy manualne**: symulacja sukcesu, ostrzeżeń, błędów; auto-hide.
-10. **E2E lub jednostkowe**: sprawdzenie slice i wyświetlania komponentu.
+1. **Instalacja zależności**: `@radix-ui/react-toast` (Tailwind/CSS zmienne dla kolorów).
+2. **Utwórz `toastSlice`** w `src/store/slices` z akcjami `showToast`, `hideToast`, `clearToast`.
+3. **Dodaj komponent `Toast`** w `src/components/ui/Toast.tsx` (łączy provider i logikę).
+4. **Umieść `<Toast />`** w `src/components/HOC/Providers.tsx`, aby był obecny globalnie.
+5. **Hook `useToast()`** w `src/store/hooks.ts` ułatwia wywołanie `showToast`/`hideToast` w komponentach i endpointach RTK Query.
+6. **Aktualizuj interceptory/endpointy HTTP** – dispatch `showToast` dla błędów/sukcesów (z wyjątkiem 401).
+7. **Testy manualne/E2E**: sukces, ostrzeżenie, błąd; auto-hide; ręczne zamknięcie.

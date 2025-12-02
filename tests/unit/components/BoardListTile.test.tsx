@@ -418,7 +418,7 @@ describe("BoardListTile", () => {
       });
 
       // Assert
-      expect(screen.getByText("Last score")).toBeInTheDocument();
+      expect(screen.getByText("Czas")).toBeInTheDocument();
       expect(screen.getByText("00:05 min")).toBeInTheDocument();
     });
 
@@ -433,7 +433,7 @@ describe("BoardListTile", () => {
       });
 
       // Assert
-      expect(screen.queryByText("Last score")).not.toBeInTheDocument();
+      expect(screen.queryByText("Czas")).not.toBeInTheDocument();
       expect(screen.queryByText("00:05 min")).not.toBeInTheDocument();
     });
 
@@ -449,7 +449,7 @@ describe("BoardListTile", () => {
       });
 
       // Assert
-      expect(screen.queryByText("Last score")).not.toBeInTheDocument();
+      expect(screen.queryByText("Czas")).not.toBeInTheDocument();
     });
   });
 
@@ -588,10 +588,11 @@ describe("BoardListTile", () => {
       });
 
       // Assert
-      const lastTimeContainer = screen.getByText("Last score").parentElement;
-      expect(lastTimeContainer).toHaveClass("lowercase");
+      const lastTimeContainer = screen.getByText("Czas").parentElement;
       expect(lastTimeContainer).toHaveClass("text-sm");
       expect(lastTimeContainer).toHaveClass("text-gray-500");
+      expect(lastTimeContainer).toHaveClass("flex");
+      expect(lastTimeContainer).toHaveClass("flex-col");
     });
   });
 
