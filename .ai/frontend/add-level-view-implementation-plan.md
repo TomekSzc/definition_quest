@@ -76,7 +76,7 @@ AddLevelPage (Astro page + withProviders)
 ### Przyciski akcji (inline w AddLevelForm)
 
 - **Opis:** Dwa przyciski submitu zaimplementowane bezpośrednio w `AddLevelForm` (NIE jako osobny komponent).
-- **Główne elementy:** 
+- **Główne elementy:**
   - `<Button type="submit">Zapisz</Button>` (primary, bg-[var(--color-primary)])
   - `<Button type="submit" variant="outline">Zapisz i utwórz kolejny level</Button>`
 - **Interakcje:** `onClick` każdego przycisku ustawia `saveMode` state przed submitem.
@@ -146,7 +146,7 @@ type SaveMode = "save" | "saveAndContinue";
 - **useState:** `saveMode` - przechowuje wybrany tryb zapisu ("save" | "saveAndContinue").
 - **useImperativeHandle:** exposuje metodę `addPairs` dla komponentu rodzica.
 - **RTK Query:** `useAddLevelMutation()` - wysyła POST do API.
-- **Redux:** 
+- **Redux:**
   - `dispatch(setLoading(true/false))` - zarządza globalnym stanem ładowania.
   - `useAppDispatch()`, `useToast()` - hooki Redux.
 

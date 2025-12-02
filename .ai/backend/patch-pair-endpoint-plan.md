@@ -28,12 +28,12 @@ Uprawniony jest wyłącznie właściciel planszy. Endpoint umożliwia częściow
 
 ## 3. Wykorzystywane typy
 
-| Cel               | Typ                                               | Plik                          |
-| ----------------- | ------------------------------------------------- | ----------------------------- |
-| Komenda wejściowa | `PairUpdateCmd`                                   | `src/types.ts`                |
-| Walidacja         | `PatchPairSchema`                                 | `src/lib/validation/pairs.ts` |
-| DTO odpowiedzi    | `PairDTO`                                         | `src/types.ts`                |
-| Błędy HTTP        | `ValidationError`, `getErrorMapping`              | `src/lib/utils`               |
+| Cel               | Typ                                  | Plik                          |
+| ----------------- | ------------------------------------ | ----------------------------- |
+| Komenda wejściowa | `PairUpdateCmd`                      | `src/types.ts`                |
+| Walidacja         | `PatchPairSchema`                    | `src/lib/validation/pairs.ts` |
+| DTO odpowiedzi    | `PairDTO`                            | `src/types.ts`                |
+| Błędy HTTP        | `ValidationError`, `getErrorMapping` | `src/lib/utils`               |
 
 ## 4. Szczegóły odpowiedzi
 
@@ -104,7 +104,7 @@ async function updatePair(
 - **Autoryzacja:** tylko właściciel planszy może modyfikować:
   - Sprawdzane w service layer przez porównanie `boardRow.owner_id !== userId`
   - Dodatkowo chronione przez RLS w Supabase
-- **Walidacja wejścia:** 
+- **Walidacja wejścia:**
   - Zod `PatchPairSchema` sprawdza typy i długość (1-255 znaków)
   - `.trim()` czyści białe znaki
   - `.refine()` wymusza przynajmniej jedno pole

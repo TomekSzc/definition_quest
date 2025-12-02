@@ -8,13 +8,13 @@ Sidebar to lewa, stała nawigacja aplikacji webowej Definition Quest. Umożliwia
 
 Sidebar jest częścią układu chronionego renderowanego przez `ReactLayout`. Renderuje się globalnie dla wszystkich chronionych tras (zdefiniowanych w `ProtectedRoutes`) i nie posiada własnej ścieżki URL. Poszczególne elementy nawigacyjne prowadzą do routów:
 
-| Label (polski)        | Route (rzeczywista ścieżka) | Routes enum             |
-| --------------------- | --------------------------- | ----------------------- |
-| Publiczne tablice     | `/boards`                   | `Routes.Boards`         |
-| Moje tablice          | `/my-boards`                | `Routes.MyBoards`       |
-| Rozegrane Tablice     | `/played`                   | `Routes.MyPlayedBoards` |
-| Utwórz tablicę        | `/boards/create`            | hardcoded string        |
-| Wyloguj (przycisk)    | logout action               | n/a                     |
+| Label (polski)     | Route (rzeczywista ścieżka) | Routes enum             |
+| ------------------ | --------------------------- | ----------------------- |
+| Publiczne tablice  | `/boards`                   | `Routes.Boards`         |
+| Moje tablice       | `/my-boards`                | `Routes.MyBoards`       |
+| Rozegrane Tablice  | `/played`                   | `Routes.MyPlayedBoards` |
+| Utwórz tablicę     | `/boards/create`            | hardcoded string        |
+| Wyloguj (przycisk) | logout action               | n/a                     |
 
 ## 3. Struktura komponentów
 
@@ -33,6 +33,7 @@ Sidebar jest częścią układu chronionego renderowanego przez `ReactLayout`. R
 ```
 
 **Lokalizacje plików**:
+
 - `src/components/HOC/ReactLayout.tsx` - główny layout z warunkiem dla chronionych tras
 - `src/components/ui/Sidebar/Sidebar.tsx` - główny komponent
 - `src/components/ui/Sidebar/SidebarToggleButton.tsx` - przycisk toggle
@@ -43,7 +44,7 @@ Sidebar jest częścią układu chronionego renderowanego przez `ReactLayout`. R
 ### Sidebar (src/components/ui/Sidebar/Sidebar.tsx)
 
 - **Opis**: Lewy panel nawigacji, responsywny, z możliwością zwinięcia. Fixed position z `z-40`.
-- **Główne elementy**: 
+- **Główne elementy**:
   - `<aside>` z `ref={asideRef}` dla `useClickOutside`
   - `<SidebarToggleButton />`
   - `<nav>` z mapowaniem `navItems` do `<NavItem />`
@@ -57,7 +58,7 @@ Sidebar jest częścią układu chronionego renderowanego przez `ReactLayout`. R
 - **State Redux**: `collapsed` i `set` z `useSidebar()`
 - **Typy**: `NavItemVM` (array zdefiniowany lokalnie w komponencie)
 - **Propsy**: brak
-- **Styling**: 
+- **Styling**:
   - Collapsed: `left-[-50px] md:left-0` (ukryty na mobile, widoczny na desktop jako wąski)
   - Expanded: `left-0 w-64` (pełna szerokość)
   - Przejścia: `transition-all duration-200`
@@ -70,12 +71,12 @@ Sidebar jest częścią układu chronionego renderowanego przez `ReactLayout`. R
   - Collapsed: `<MenuIcon />` (hamburger)
   - Expanded: `<ChevronLeftIcon />` (strzałka w lewo)
 - **Interakcje**: `onClick` → `toggle()` z `useSidebar()`
-- **Accessibility**: 
+- **Accessibility**:
   - `aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}`
   - `aria-pressed={collapsed}`
 - **Typy**: brak (używa hooks)
 - **Propsy**: brak (pobiera `collapsed` i `toggle` z hooka)
-- **Styling**: 
+- **Styling**:
   - Collapsed: `justify-center position: absolute md:relative left-13 top-3 md:top-[unset] md:left-[unset]`
   - Expanded: `px-3`
   - Hover: `hover:bg-blue-700 hover:bg-opacity-50`
@@ -84,13 +85,13 @@ Sidebar jest częścią układu chronionego renderowanego przez `ReactLayout`. R
 
 - **Opis**: Pojedynczy link nawigacyjny.
 - **Elementy**: `<a href>` + `Icon` + `<span>` (conditional)
-- **Interakcje**: 
+- **Interakcje**:
   - `onClick` → `handleClick()` - zawsze wywołuje `toggle()` jeśli sidebar nie jest collapsed (zamyka po kliknięciu)
   - Natywna nawigacja przez `<a href>`
-- **Stan lokalny**: 
+- **Stan lokalny**:
   - `currentPath` - odczytany z `window.location.pathname` w `useEffect`
   - `isActive` - porównanie `currentPath === item.route`
-- **Accessibility**: 
+- **Accessibility**:
   - `role="menuitem"`
   - `aria-current={isActive ? "page" : undefined}`
   - `aria-disabled={isActive || undefined}`
@@ -126,6 +127,7 @@ export interface NavItemVM {
 ```
 
 **Definicja navItems** (w `Sidebar.tsx`):
+
 ```ts
 const navItems: NavItemVM[] = [
   { label: "Publiczne tablice", route: Routes.Boards, icon: BoardsIcon },
@@ -136,6 +138,7 @@ const navItems: NavItemVM[] = [
 ```
 
 **UIState** (w `src/store/slices/uiSlice.ts`):
+
 ```ts
 export interface UIState {
   layout: {
@@ -197,19 +200,20 @@ export interface UIState {
 ## 7. Integracja API
 
 Sidebar nie wykonuje bezpośrednich wywołań API do własnych celów. Wykorzystuje jednak:
+
 - **useLogoutMutation()** z `src/store/api/apiSlice.ts` - dla przycisku wylogowania
 - Endpoint: `POST /api/auth/logout`
 
 ## 8. Interakcje użytkownika
 
-| Akcja                                    | Rezultat                                                                                           |
-| ---------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| Kliknięcie przycisku toggle              | Sidebar zwija/rozwija się, preferencja zapisana w Redux + localStorage                             |
-| Kliknięcie poza sidebar (gdy rozwinięty) | Sidebar automatycznie zwija się (useClickOutside)                                                  |
-| Kliknięcie linku nawigacyjnego           | Natywna nawigacja + sidebar zwija się (jeśli był rozwinięty)                                      |
-| Kliknięcie aktywnego linku               | Brak akcji (`pointer-events-none`)                                                                 |
-| Kliknięcie "Wyloguj"                     | Wywołanie `logout()` mutation → przekierowanie + czyszczenie sesji                                 |
-| Resize okna < `md` (768px)               | Sidebar ukryty poza ekranem (`left-[-50px]`), przycisk toggle widoczny absolutnie na ekranie      |
+| Akcja                                    | Rezultat                                                                                            |
+| ---------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Kliknięcie przycisku toggle              | Sidebar zwija/rozwija się, preferencja zapisana w Redux + localStorage                              |
+| Kliknięcie poza sidebar (gdy rozwinięty) | Sidebar automatycznie zwija się (useClickOutside)                                                   |
+| Kliknięcie linku nawigacyjnego           | Natywna nawigacja + sidebar zwija się (jeśli był rozwinięty)                                        |
+| Kliknięcie aktywnego linku               | Brak akcji (`pointer-events-none`)                                                                  |
+| Kliknięcie "Wyloguj"                     | Wywołanie `logout()` mutation → przekierowanie + czyszczenie sesji                                  |
+| Resize okna < `md` (768px)               | Sidebar ukryty poza ekranem (`left-[-50px]`), przycisk toggle widoczny absolutnie na ekranie        |
 | Resize okna >= `md` (768px)              | Sidebar widoczny, collapsed pokazuje wąski panel z ikonami, expanded pokazuje pełny panel z tekstem |
 
 ## 9. Warunki i walidacja

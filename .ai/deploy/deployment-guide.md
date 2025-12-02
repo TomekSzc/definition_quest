@@ -118,11 +118,13 @@ GitHub Actions wykona następujące kroki:
 ### Monitorowanie deployment
 
 **GitHub Actions:**
+
 - URL: `https://github.com/TomekSzc/definition_quest/actions`
 - Sprawdź status workflow "Build and Deploy Docker Container"
 - Sprawdź logi każdego kroku
 
 **Digital Ocean:**
+
 - Dashboard → Twoja aplikacja → **Activity**
 - Sprawdź logi deployment
 - Sprawdź status aplikacji
@@ -149,16 +151,19 @@ Stage 3: runner   → Finalna wersja (tylko prod dependencies)
 Po pomyślnym deploymencie sprawdź:
 
 ### 1. Status aplikacji
+
 ```bash
 doctl apps get <APP_ID>
 ```
 
 ### 2. Logi aplikacji
+
 ```bash
 doctl apps logs <APP_ID> --follow
 ```
 
 ### 3. Aplikacja w przeglądarce
+
 - URL: `https://<twoja-aplikacja>.ondigitalocean.app`
 - Sprawdź czy strona się ładuje
 - Sprawdź czy możesz się zalogować
@@ -179,6 +184,7 @@ doctl apps logs <APP_ID> --follow
 ### Digital Ocean CLI (doctl)
 
 Instalacja:
+
 ```bash
 # MacOS
 brew install doctl
@@ -191,11 +197,13 @@ snap install doctl
 ```
 
 Autentykacja:
+
 ```bash
 doctl auth init
 ```
 
 Przydatne komendy:
+
 ```bash
 # Lista aplikacji
 doctl apps list
@@ -254,36 +262,41 @@ curl http://localhost:3000
 ### Deployment Failed
 
 **1. Sprawdź logi GitHub Actions**
+
 ```
 GitHub → Actions → Znajdź failed workflow → Sprawdź który krok nie powiódł się
 ```
 
 **2. Najczęstsze problemy:**
 
-| Problem | Rozwiązanie |
-|---------|------------|
-| Lint errors | Uruchom `npm run lint` lokalnie i popraw błędy |
-| Test failures | Uruchom `npm test` lokalnie |
-| Docker build failed | Sprawdź czy wszystkie secrets są ustawione |
-| Push to GHCR failed | Sprawdź uprawnienia GITHUB_TOKEN |
+| Problem             | Rozwiązanie                                                 |
+| ------------------- | ----------------------------------------------------------- |
+| Lint errors         | Uruchom `npm run lint` lokalnie i popraw błędy              |
+| Test failures       | Uruchom `npm test` lokalnie                                 |
+| Docker build failed | Sprawdź czy wszystkie secrets są ustawione                  |
+| Push to GHCR failed | Sprawdź uprawnienia GITHUB_TOKEN                            |
 | Deploy to DO failed | Sprawdź `DIGITALOCEAN_ACCESS_TOKEN` i `DIGITALOCEAN_APP_ID` |
 
 ### Aplikacja nie działa po deployment
 
 **1. Sprawdź logi Digital Ocean:**
+
 ```bash
 doctl apps logs <APP_ID> --follow
 ```
 
 **2. Sprawdź zmienne środowiskowe:**
+
 - Digital Ocean Dashboard → App → Settings → Environment Variables
 - Upewnij się że wszystkie wymagane zmienne są ustawione
 
 **3. Sprawdź port:**
+
 - Digital Ocean App Platform używa portu `8080` domyślnie
 - Upewnij się że `PORT=8080` w zmiennych środowiskowych
 
 **4. Sprawdź Supabase:**
+
 - Czy URL i KEY są poprawne?
 - Czy Supabase projekt jest aktywny?
 
@@ -292,6 +305,7 @@ doctl apps logs <APP_ID> --follow
 Jeśli obraz jest zbyt duży:
 
 1. Sprawdź `.dockerignore` - upewnij się że wykluczamy:
+
    ```
    node_modules
    dist
@@ -315,6 +329,7 @@ Jeśli obraz jest zbyt duży:
 ### Digital Ocean Monitoring
 
 Dashboard → App → Insights:
+
 - CPU usage
 - Memory usage
 - HTTP requests
@@ -324,12 +339,14 @@ Dashboard → App → Insights:
 ### Alerty (opcjonalne)
 
 Możesz skonfigurować alerty w Digital Ocean:
+
 - Dashboard → Monitoring → Alerts
 - Ustaw alerty dla CPU, memory, response time
 
 ### Scaling
 
 Digital Ocean App Platform pozwala na łatwe skalowanie:
+
 - Dashboard → App → Settings → Resources
 - Zmień plan (Basic / Professional / Enterprise)
 - Dodaj więcej instancji (horizontal scaling)
@@ -370,4 +387,3 @@ Digital Ocean App Platform pozwala na łatwe skalowanie:
 **Ostatnia aktualizacja:** Grudzień 2025  
 **Stack:** Docker + GitHub Actions + Digital Ocean  
 **Status:** ✅ Produkcyjny
-

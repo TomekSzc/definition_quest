@@ -5,6 +5,7 @@
 Punkt końcowy pozwala zalogowanemu użytkownikowi **zapisać** czas ukończenia gry w milisekundach dla wskazanej tablicy. Dla MVP przechowujemy **wyłącznie ostatni zgłoszony czas** – każdorazowe wywołanie nadpisuje poprzednią wartość.
 
 **Implementacja obsługuje zarówno POST, jak i PATCH** przez współdzieloną funkcję `handleUpsert`, różniąc się jedynie semantyką kodów HTTP:
+
 - **POST**: zwraca `201` dla nowego rekordu, `200` dla aktualizacji
 - **PATCH**: zawsze zwraca `200` (semantyka idempotentna)
 
@@ -36,7 +37,7 @@ Punkt końcowy pozwala zalogowanemu użytkownikowi **zapisać** czas ukończenia
 - **DTO Odpowiedzi** (inline):
   ```ts
   {
-    id: string;      // uuid rekordu w scores
+    id: string; // uuid rekordu w scores
     elapsedMs: number;
   }
   ```
@@ -45,7 +46,7 @@ Punkt końcowy pozwala zalogowanemu użytkownikowi **zapisać** czas ukończenia
 
 | Kod | Scenariusz                            | Body                                | Uwagi                                  |
 | --- | ------------------------------------- | ----------------------------------- | -------------------------------------- |
-| 201 | Rekord utworzony (POST)               | `{ id: string, elapsedMs: number }` | Tylko POST zwraca 201 dla nowych      |
+| 201 | Rekord utworzony (POST)               | `{ id: string, elapsedMs: number }` | Tylko POST zwraca 201 dla nowych       |
 | 200 | Rekord zaktualizowany (POST/PATCH)    | `{ id: string, elapsedMs: number }` | POST dla update; PATCH zawsze          |
 | 400 | Błędne dane wejściowe                 | `{ error: "INVALID_INPUT", ... }`   | Szczegóły walidacji w `details`        |
 | 400 | Błędny JSON                           | `{ error: "INVALID_JSON" }`         | Body nie jest poprawnym JSON           |
@@ -72,6 +73,7 @@ Punkt końcowy pozwala zalogowanemu użytkownikowi **zapisać** czas ukończenia
 
 3. **upsertScore** (serwis w `src/lib/services/score.service.ts`):
    - **Krok 1**: Sprawdza istnienie i dostępność tablicy:
+
      ```ts
      const { data: boardRow } = await supabase
        .from("boards")
@@ -79,10 +81,12 @@ Punkt końcowy pozwala zalogowanemu użytkownikowi **zapisać** czas ukończenia
        .eq("id", boardId)
        .maybeSingle();
      ```
+
      - Brak rekordu ⇒ `throw new Error("BOARD_NOT_FOUND")`.
      - Jeśli tablica prywatna (`!is_public`) i `owner_id !== userId` ⇒ `throw new Error("BOARD_NOT_FOUND")`.
-   
+
    - **Krok 2**: Sprawdza czy istnieje score dla pary (user, board):
+
      ```ts
      const { data: existingScore } = await supabase
        .from("scores")
@@ -91,8 +95,9 @@ Punkt końcowy pozwala zalogowanemu użytkownikowi **zapisać** czas ukończenia
        .eq("board_id", boardId)
        .maybeSingle();
      ```
+
      - Jeśli istnieje, używa jego `id`; w przeciwnym razie generuje nowe UUID.
-   
+
    - **Krok 3**: Wykonuje upsert:
      ```ts
      const { data: upserted } = await supabase
@@ -112,7 +117,6 @@ Punkt końcowy pozwala zalogowanemu użytkownikowi **zapisać** czas ukończenia
        .select("id, elapsed_ms")
        .single();
      ```
-   
    - **Zwraca**: `{ id, elapsedMs, isNew: !existingScore }`.
 
 ## 6. Względy bezpieczeństwa
@@ -133,19 +137,20 @@ Punkt końcowy pozwala zalogowanemu użytkownikowi **zapisać** czas ukończenia
 
 Implementacja wykorzystuje dedykowane klasy błędów (`HttpError`, `ValidationError`) oraz utility `getErrorMapping`:
 
-| Błąd                        | Detekcja                                  | Kod | Szczegóły                                              |
-| --------------------------- | ----------------------------------------- | --- | ------------------------------------------------------ |
-| Błędny boardId              | `!params.boardId`                         | 400 | `HttpError("invalid_board_id")`                        |
-| Nieautoryzowany             | `!locals.user`                            | 401 | `HttpError("unauthorized")`                            |
-| Błędny JSON                 | `request.json()` throw                    | 400 | `HttpError("invalid_json")`                            |
-| Błędne body (walidacja)     | `SubmitScoreSchema.safeParse` fail        | 400 | `ValidationError` z `formatValidationErrors(zod.err)`  |
-| Tablica nie istnieje        | `!boardRow` w serwisie                    | 404 | `throw new Error("BOARD_NOT_FOUND")` → mapped to 404   |
-| Brak dostępu (prywatna)     | `!is_public && owner_id !== userId`       | 404 | `throw new Error("BOARD_NOT_FOUND")` → mapped to 404   |
-| Błąd DB (checking existing) | `existingError` w serwisie                | 500 | `throw new Error("SERVER_ERROR")` → mapped to 500      |
-| Błąd DB (upsert)            | `upsertError` w serwisie                  | 500 | `throw new Error("SERVER_ERROR")` → mapped to 500      |
-| Inny nieobsłużony błąd      | Catch-all w route                         | 500 | Zwraca `{ error: "SERVER_ERROR" }`                     |
+| Błąd                        | Detekcja                            | Kod | Szczegóły                                             |
+| --------------------------- | ----------------------------------- | --- | ----------------------------------------------------- |
+| Błędny boardId              | `!params.boardId`                   | 400 | `HttpError("invalid_board_id")`                       |
+| Nieautoryzowany             | `!locals.user`                      | 401 | `HttpError("unauthorized")`                           |
+| Błędny JSON                 | `request.json()` throw              | 400 | `HttpError("invalid_json")`                           |
+| Błędne body (walidacja)     | `SubmitScoreSchema.safeParse` fail  | 400 | `ValidationError` z `formatValidationErrors(zod.err)` |
+| Tablica nie istnieje        | `!boardRow` w serwisie              | 404 | `throw new Error("BOARD_NOT_FOUND")` → mapped to 404  |
+| Brak dostępu (prywatna)     | `!is_public && owner_id !== userId` | 404 | `throw new Error("BOARD_NOT_FOUND")` → mapped to 404  |
+| Błąd DB (checking existing) | `existingError` w serwisie          | 500 | `throw new Error("SERVER_ERROR")` → mapped to 500     |
+| Błąd DB (upsert)            | `upsertError` w serwisie            | 500 | `throw new Error("SERVER_ERROR")` → mapped to 500     |
+| Inny nieobsłużony błąd      | Catch-all w route                   | 500 | Zwraca `{ error: "SERVER_ERROR" }`                    |
 
 **Struktura obsługi błędów w route**:
+
 ```ts
 try {
   // ... business logic
@@ -198,6 +203,6 @@ try {
 
 5. **Frontend**: wysyła `POST` lub `PATCH`; otrzymuje zwrotnie ostatni zapisany czas.
 
-6. **Przyszłość**: 
+6. **Przyszłość**:
    - Dodać kolumnę `best_elapsed_ms` dla przechowywania najlepszego czasu (obecnie tylko ostatni).
    - Rozbudować logikę leaderboard (sortowanie po najlepszym czasie).

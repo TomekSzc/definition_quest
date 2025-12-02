@@ -30,14 +30,14 @@ Usuwa pojedynczą parę (term + definition) z istniejącej tablicy (board). Dost
 
 ## 4. Szczegóły odpowiedzi
 
-| Status | Treść                                                 | Warunek                                          |
-| ------ | ----------------------------------------------------- | ------------------------------------------------ |
-| 200    | `{ id: string, boardId: string, message: "deleted" }` | Para usunięta poprawnie                          |
-| 400    | `{ error: string, details: ValidationError[] }`       | Niepoprawne UUID / błędy walidacji               |
+| Status | Treść                                                 | Warunek                                            |
+| ------ | ----------------------------------------------------- | -------------------------------------------------- |
+| 200    | `{ id: string, boardId: string, message: "deleted" }` | Para usunięta poprawnie                            |
+| 400    | `{ error: string, details: ValidationError[] }`       | Niepoprawne UUID / błędy walidacji                 |
 | 401    | `{ error: string, message: string }`                  | Brak lub nieważny JWT / brak uprawnień właściciela |
-| 404    | `{ error: string, message: string }`                  | Zasób nie istnieje lub nie należy do użytkownika |
-| 409    | `{ error: string, message: string }`                  | Board w stanie archived                          |
-| 500    | `{ error: string, message?: string }`                 | Nieoczekiwany wyjątek serwera                    |
+| 404    | `{ error: string, message: string }`                  | Zasób nie istnieje lub nie należy do użytkownika   |
+| 409    | `{ error: string, message: string }`                  | Board w stanie archived                            |
+| 500    | `{ error: string, message?: string }`                 | Nieoczekiwany wyjątek serwera                      |
 
 ## 5. Przepływ danych
 
@@ -62,14 +62,14 @@ Usuwa pojedynczą parę (term + definition) z istniejącej tablicy (board). Dost
 
 ## 7. Obsługa błędów
 
-| Kod błędu serwisowego | HTTP | Komunikat                                                   |
-| --------------------- | ---- | ----------------------------------------------------------- |
-| UNAUTHORIZED          | 401  | Authentication required                                     |
-| BOARD_NOT_FOUND       | 404  | Board does not exist or access denied                       |
-| PAIR_NOT_FOUND        | 404  | Pair does not exist on this board or access denied          |
-| NOT_OWNER             | 401  | You are not the owner of this board                         |
-| BOARD_ARCHIVED        | 409  | Board is archived and cannot be modified                    |
-| SERVER_ERROR          | 500  | Internal server error                                       |
+| Kod błędu serwisowego | HTTP | Komunikat                                          |
+| --------------------- | ---- | -------------------------------------------------- |
+| UNAUTHORIZED          | 401  | Authentication required                            |
+| BOARD_NOT_FOUND       | 404  | Board does not exist or access denied              |
+| PAIR_NOT_FOUND        | 404  | Pair does not exist on this board or access denied |
+| NOT_OWNER             | 401  | You are not the owner of this board                |
+| BOARD_ARCHIVED        | 409  | Board is archived and cannot be modified           |
+| SERVER_ERROR          | 500  | Internal server error                              |
 
 **Uwaga:** Komunikaty błędów zostały ujednolicone w `src/lib/utils/api-response.ts` w funkcji `getErrorMapping()`.
 

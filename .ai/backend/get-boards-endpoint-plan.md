@@ -5,6 +5,7 @@
 Enpoint służy do pobierania PAGO-nizowanej listy plansz (boards), z możliwością wyszukiwania, filtrowania po tagach, autorze oraz sortowania wyników. Dostęp anonimowy jest dozwolony – brak wymogu uwierzytelniania.
 
 **Logika dostępu**:
+
 - **Gdy `ownerId` jest podany**: zwraca wszystkie plansze (publiczne + prywatne) tego właściciela
 - **Bez `ownerId`**: zwraca tylko publiczne, niearchiwowane plansze
 
@@ -97,7 +98,7 @@ export interface ListBoardsQuery {
       - Jeśli brak `ownerId` → `.eq("is_public", true)` (tylko publiczne)
    4. **Wyszukiwanie** (parametr `q`):
       - Escapuje znaki specjalne pattern matching (`%`, `_`, `\`)
-      - Używa `.or(\`title.ilike.%${escapedQ}%,tags.cs.{${escapedQ}}\`)` 
+      - Używa `.or(\`title.ilike.%${escapedQ}%,tags.cs.{${escapedQ}}\`)`
       - Wyszukuje case-insensitive substring w tytule LUB dokładne dopasowanie w tagach
       - ⚠️ **Zmiana względem planu**: nie używa FTS `search_vector`, tylko `ILIKE` + `contains`
    5. **Filtrowanie po tagach** (parametr `tags`):
@@ -109,7 +110,7 @@ export interface ListBoardsQuery {
 
 ## 6. Względy bezpieczeństwa
 
-- **Anonimowy dostęp**: dozwolony; brak wymogu JWT. 
+- **Anonimowy dostęp**: dozwolony; brak wymogu JWT.
 - **Dostęp do prywatnych plansz**: gdy `ownerId` jest podany, endpoint zwraca zarówno publiczne jak i prywatne plansze tego użytkownika. To zachowanie jest zamierzone i pozwala właścicielowi przeglądać swoje plansze, ale **nie** wymusza autoryzacji – każdy może zobaczyć czyjeś prywatne plansze jeśli zna `ownerId`. RLS polityki na poziomie bazy danych powinny być skonfigurowane odpowiednio.
 - **SQL injection**: Supabase klient parametryzuje zapytania; wartości `sort` są walidowane przez Zod enum; parametr `q` jest escapowany przed użyciem w `ILIKE`.
 - **Denial-of-Service**: `pageSize` ograniczone do 100 przez walidację Zod; aplikacja frontu powinna mieć debouncer; backend ma limit czasu.
@@ -124,7 +125,7 @@ export interface ListBoardsQuery {
 
 ## 8. Rozważania dotyczące wydajności
 
-- **Indeksy**: Zakładamy istnienie indeksów: `BTREE (is_public, archived, owner_id)` i `GIN tags`. 
+- **Indeksy**: Zakładamy istnienie indeksów: `BTREE (is_public, archived, owner_id)` i `GIN tags`.
 - **Wyszukiwanie**: Implementacja używa `ILIKE` dla case-insensitive substring search zamiast FTS `search_vector`. `ILIKE` z wildcard na początku (`%term%`) nie może wykorzystać standardowych indeksów B-tree, więc dla dużych tabel może być wolne. Rozważenia na przyszłość:
   - Dodanie trigram indeksu (`pg_trgm`) dla wydajnego `ILIKE`
   - Implementacja pełnotekstowego wyszukiwania z `tsvector` i `GIN` indeksem
@@ -154,16 +155,20 @@ export interface ListBoardsQuery {
 Podczas implementacji wprowadzono następujące zmiany względem pierwotnego planu:
 
 ### 10.1. Logika dostępu z parametrem `ownerId`
+
 **Plan**: Endpoint zwraca tylko publiczne, niearchiwowane plansze.  
-**Implementacja**: 
+**Implementacja**:
+
 - Gdy `ownerId` jest podany → zwraca **wszystkie** plansze (publiczne + prywatne) tego właściciela
 - Bez `ownerId` → zwraca tylko publiczne plansze
 
 **Implikacje bezpieczeństwa**: Każdy użytkownik (nawet anonimowy) może zobaczyć czyjeś prywatne plansze znając `ownerId`. To zachowanie wymaga weryfikacji z wymaganiami biznesowymi.
 
 ### 10.2. Mechanizm wyszukiwania
+
 **Plan**: Pełnotekstowe wyszukiwanie (FTS) z `search_vector` i operatorem `.textSearch()`.  
-**Implementacja**: 
+**Implementacja**:
+
 - Substring search przez `ILIKE` na kolumnie `title`
 - Exact/substring match w tablicy `tags` przez `contains` (`cs` operator)
 - Escape znaków specjalnych pattern matching (`%`, `_`, `\`)
@@ -172,11 +177,14 @@ Podczas implementacji wprowadzono następujące zmiany względem pierwotnego pla
 **Implikacje wydajności**: `ILIKE` z wildcardami na obu końcach nie wykorzystuje standardowych indeksów. Dla lepszej wydajności rozważ trigram index (`pg_trgm`) lub przejście na FTS.
 
 ### 10.3. Sposób pobierania COUNT
+
 **Plan**: Równoległe zapytanie dla `COUNT(*)`.  
 **Implementacja**: Opcja `{count: "exact"}` w głównym zapytaniu Supabase – prostsze i atomowe podejście.
 
 ### 10.4. Duplikacja typu `ListBoardsQuery`
+
 Typ `ListBoardsQuery` jest zdefiniowany dwukrotnie:
+
 - W `src/lib/validation/boards.ts` (linia 133) – jako `z.infer<typeof ListBoardsSchema>`
 - W `src/types.ts` (linie 293-301) – jako `interface` z opcjonalnymi polami
 

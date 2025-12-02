@@ -2,7 +2,7 @@
 
 ## 1. Przegląd
 
-Widoki „Public Boards" (`/boards`) i „My Boards" (`/my-boards`) umożliwiają przeglądanie plansz oraz wyszukiwanie ich po tytule. Widok Public Boards pokazuje wszystkie publiczne plansze, podczas gdy My Boards filtruje tylko plansze należące do zalogowanego użytkownika. 
+Widoki „Public Boards" (`/boards`) i „My Boards" (`/my-boards`) umożliwiają przeglądanie plansz oraz wyszukiwanie ich po tytule. Widok Public Boards pokazuje wszystkie publiczne plansze, podczas gdy My Boards filtruje tylko plansze należące do zalogowanego użytkownika.
 
 Oba widoki współdzielą tę samą implementację UI, różniąc się tylko parametrem `ownerId` w zapytaniu API. Używają RTK Query do pobierania danych, synchronizują parametry wyszukiwania z URL, oraz oferują paginację. Właściciele plansz mają dostęp do funkcji edycji i usuwania swoich plansz bezpośrednio z listy.
 
@@ -65,7 +65,7 @@ BoardsPage / MyBoardsPage (route component)
 ### BoardListTile (`src/components/ui/Boards/BoardListTile.tsx`)
 
 - **Opis**: Przedstawia pojedynczą planszę w formacie kafelka; klikalna – przejście do `/boards/[id]`.
-- **Elementy**: 
+- **Elementy**:
   - Avatar z pierwszą literą tytułu
   - Tytuł (skrócony do 22 znaków na mobile)
   - Poziom (level)
@@ -147,7 +147,7 @@ interface ISearchInputProps {
   - Wejście: `Partial<ListBoardsQuery>`
   - Wynik: `{ data: Paged<BoardSummaryDTO>, isFetching, refetch }`
   - Automatyczna cache'owanie i ponowne pobieranie danych przy zmianie parametrów.
-  
+
 ### Zarządzanie parametrami URL
 
 - **Hook**: `useQueryParams<{ q?: string; page?: string }>()` (w `src/hooks/useQueryParams.ts`)
@@ -188,7 +188,7 @@ interface ISearchInputProps {
 
 ## 10. Obsługa błędów
 
-- **Błąd API**: Obsługiwane automatycznie przez RTK Query middleware (`baseQueryWithReauth`). 
+- **Błąd API**: Obsługiwane automatycznie przez RTK Query middleware (`baseQueryWithReauth`).
   - Błędy 401: Automatyczna próba odświeżenia tokena lub logout.
   - Inne błędy: Automatyczny toast z Redux (`showToast`) z komunikatem błędu z backendu lub domyślnym "Wystąpił błąd zapytania".
 - **Brak wyników**: `BoardsList` renderuje komunikat "Brak plansz do wyświetlenia.".

@@ -35,17 +35,17 @@ reset-password.astro (Astro - prosty wrapper z Layout)
 ### ResetPasswordPage.tsx
 
 - **Opis**: Komponent React odpowiedzialny za ekstrahowanie tokenów z URL hash, ich walidację i zarządzanie stanem strony.
-- **Główne elementy**: 
+- **Główne elementy**:
   - Stan ładowania z komunikatem "Ładowanie..."
   - Stan błędu z komunikatem "Link jest nieprawidłowy. Przekierowywanie..."
   - Renderowanie `<ResetPasswordForm />` po pomyślnej walidacji tokenów
   - Nagłówek H1 "Definition quest"
-- **Obsługiwane interakcje**: 
+- **Obsługiwane interakcje**:
   - `useEffect` ekstrahuje `access_token` i `refresh_token` z `window.location.hash`
   - Jeśli brak tokenów: `setError(true)` i `setTimeout(() => window.location.replace('/forgot-password'), 2000)`
   - Jeśli tokeny obecne: `setTokens({ accessToken, refreshToken })`
 - **Walidacja**: Client-side sprawdzenie obecności obu tokenów w URL hash.
-- **Typy**: 
+- **Typy**:
   ```typescript
   tokens: { accessToken: string; refreshToken: string } | null
   error: boolean
@@ -73,15 +73,25 @@ reset-password.astro (Astro - prosty wrapper z Layout)
 - **Typy**:
   - `ResetPasswordFormData` – ViewModel formularza (inferred z `ClientSchema`)
     ```typescript
-    { newPassword: string; confirmPassword: string; }
+    {
+      newPassword: string;
+      confirmPassword: string;
+    }
     ```
   - `ResetPasswordRequest` – DTO do API (z `src/types.ts`)
     ```typescript
-    { accessToken: string; refreshToken: string; newPassword: string; }
+    {
+      accessToken: string;
+      refreshToken: string;
+      newPassword: string;
+    }
     ```
-- **Propsy**: 
+- **Propsy**:
   ```typescript
-  { accessToken: string; refreshToken: string; }
+  {
+    accessToken: string;
+    refreshToken: string;
+  }
   ```
 
 ### ToastContainer (globalny)
@@ -138,10 +148,10 @@ export type ResetPasswordInput = z.infer<typeof ResetPasswordSchema>;
 
 ### Lokalny state
 
-- **ResetPasswordPage**: 
+- **ResetPasswordPage**:
   - `tokens: { accessToken: string; refreshToken: string } | null` – przechowuje tokeny z URL
   - `error: boolean` – flaga błędu dla missing tokenów
-- **ResetPasswordForm**: 
+- **ResetPasswordForm**:
   - Zarządzany przez `react-hook-form` z konfiguracją:
     - `resolver: zodResolver(ClientSchema)`
     - `mode: "onBlur"` – walidacja przy opuszczeniu pola
@@ -171,12 +181,11 @@ export type ResetPasswordInput = z.infer<typeof ResetPasswordSchema>;
         window.location.href = "/";
       } catch (err: unknown) {
         const errorMessage =
-          (err as { error?: { data?: { error?: string } } }).error?.data?.error 
-          ?? "Nie udało się zresetować hasła";
+          (err as { error?: { data?: { error?: string } } }).error?.data?.error ?? "Nie udało się zresetować hasła";
         dispatch(showToast({ type: "error", title: "Błąd", message: errorMessage }));
       }
     },
-  })
+  });
   ```
 - **Hook**: `useResetPasswordMutation()` – eksportowany z `apiSlice.ts`.
 
@@ -206,25 +215,25 @@ export type ResetPasswordInput = z.infer<typeof ResetPasswordSchema>;
   4. `supabase.auth.updateUser({ password: newPassword })` – aktualizuje hasło
   5. Zwraca sukces lub odpowiedni błąd
 
-- **RTK Query**: 
+- **RTK Query**:
   ```typescript
-  resetPassword: builder.mutation<{ message: string }, ResetPasswordRequest>
+  resetPassword: builder.mutation<{ message: string }, ResetPasswordRequest>;
   ```
 - **Hook**: `useResetPasswordMutation()` – eksportowany z `apiSlice.ts`.
 
 ## 8. Interakcje użytkownika
 
-| Akcja                                    | Rezultat                                                                           |
-| ---------------------------------------- | ---------------------------------------------------------------------------------- |
-| Wejście na stronę z poprawnymi tokenami  | `ResetPasswordPage` ekstrahuje tokeny, renderuje formularz                        |
-| Wejście na stronę bez tokenów            | Komunikat "Link jest nieprawidłowy. Przekierowywanie..." + redirect po 2s         |
-| Uzupełnienie obu pól zgodnie z walidacją | Pola disabled gdy `isLoading`, błędy inline przy `onBlur`                          |
-| Błąd walidacji (hasła nie pasują)        | Komunikat pod polem `confirmPassword`: "Hasła muszą być identyczne"               |
-| Kliknięcie „Zmień hasło"                 | `isLoading = true`, przycisk pokazuje "Zapisywanie..." + spinner, pola disabled   |
-| Sukces                                   | Toast "Hasło zostało zmienione", redirect do `/` (strona główna)                  |
-| Błąd 422 (invalid token)                 | Toast z błędem: "Token nieważny lub wygasł..."                                     |
-| Błąd walidacji backend (400)             | Toast z błędem zwróconym przez API                                                 |
-| Błąd sieci / 500                         | Toast "Nie udało się zresetować hasła" (fallback message)                         |
+| Akcja                                    | Rezultat                                                                        |
+| ---------------------------------------- | ------------------------------------------------------------------------------- |
+| Wejście na stronę z poprawnymi tokenami  | `ResetPasswordPage` ekstrahuje tokeny, renderuje formularz                      |
+| Wejście na stronę bez tokenów            | Komunikat "Link jest nieprawidłowy. Przekierowywanie..." + redirect po 2s       |
+| Uzupełnienie obu pól zgodnie z walidacją | Pola disabled gdy `isLoading`, błędy inline przy `onBlur`                       |
+| Błąd walidacji (hasła nie pasują)        | Komunikat pod polem `confirmPassword`: "Hasła muszą być identyczne"             |
+| Kliknięcie „Zmień hasło"                 | `isLoading = true`, przycisk pokazuje "Zapisywanie..." + spinner, pola disabled |
+| Sukces                                   | Toast "Hasło zostało zmienione", redirect do `/` (strona główna)                |
+| Błąd 422 (invalid token)                 | Toast z błędem: "Token nieważny lub wygasł..."                                  |
+| Błąd walidacji backend (400)             | Toast z błędem zwróconym przez API                                              |
+| Błąd sieci / 500                         | Toast "Nie udało się zresetować hasła" (fallback message)                       |
 
 ## 9. Warunki i walidacja
 

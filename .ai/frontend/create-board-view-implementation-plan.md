@@ -3,6 +3,7 @@
 ## 1. Przegląd
 
 Widok „Utwórz tablicę" umożliwia ręczne dodawanie par termin–definicja lub generowanie ich przy pomocy AI. Użytkownik może skonfigurować:
+
 - tytuł tablicy
 - widoczność (publiczna/prywatna)
 - tagi (max 10)
@@ -53,7 +54,7 @@ CreateBoardPage (.astro)
 
 - **Opis**: Główny formularz tworzenia tablicy z użyciem `react-hook-form` i walidacji `zod`.
 - **Elementy**: `form`, inline title input, `TagsInput`, `CardCountToggle`, `BoardVisibilityToggle`, `PairForm`, `Submit`.
-- **Interakcje**: 
+- **Interakcje**:
   - submit → wywołuje `submitFn` (RTK Query mutation)
   - dodawanie/usuwanie par przez `useFieldArray` (append, remove)
   - expose `addPairs` method przez `forwardRef` + `useImperativeHandle`
@@ -74,7 +75,7 @@ CreateBoardPage (.astro)
 
 - **Opis**: Pole tekstowe + lista chipów usuwalnych używając Shadcn `Badge`.
 - **Elementy**: `input`, lista `Badge` z `CloseIcon`.
-- **Interakcje**: 
+- **Interakcje**:
   - Enter dodaje tag do listy
   - Sprawdza unikalność i limit 10 przed dodaniem
   - Klik X (CloseIcon) usuwa tag
@@ -116,7 +117,7 @@ CreateBoardPage (.astro)
 
 - **Opis**: Panel z textarea i przyciskiem „Generuj AI". Pozycjonowany jako `fixed` na mobile (bottom) i sticky na desktop (right).
 - **Elementy**: `Textarea`, `Button`, opcjonalnie `AcceptPairsModal`.
-- **Interakcje**: 
+- **Interakcje**:
   - Wpisanie tekstu + klik „Generuj" → POST `/api/boards/generate`
   - Enter (bez shift/ctrl/alt) również wywołuje generowanie
   - Po sukcesie otwiera `AcceptPairsModal`
@@ -128,7 +129,7 @@ CreateBoardPage (.astro)
 
 - **Opis**: Modal z listą wygenerowanych par (checkbox per pair, zaznaczone domyślnie).
 - **Elementy**: `Dialog`, lista par z `checkbox`, przyciski Anuluj/Akceptuj.
-- **Interakcje**: 
+- **Interakcje**:
   - Toggle checkbox per para
   - „Akceptuj" → filtruje zaznaczone pary → wywołuje `onAccept` → dodaje do formularza
   - „Anuluj" → zamyka modal bez zmian
@@ -192,12 +193,14 @@ interface CreateBoardFormHandle {
 Implementacja w RTK Query (`src/store/api/apiSlice.ts`):
 
 ### createBoard
+
 - invalidatesTags: `["Boards"]`
 - onQueryStarted:
   - sukces: toast success + automatyczne przekierowanie do `/boards/${data[0].id}` (pierwsza utworzona tablica)
   - błąd: toast error z komunikatem z serwera
 
 ### generatePairs
+
 - bez cache invalidation (nie modyfikuje stanu serwera, tylko generuje pary)
 - bez onQueryStarted (obsługa błędów w komponencie)
 

@@ -24,24 +24,24 @@ Endpoint umożliwia właścicielowi tablicy jej „miękkie" usunięcie poprzez 
 
 ## 3. Wykorzystywane typy
 
-| Typ                                                               | Plik                                | Zastosowanie                      |
-| ----------------------------------------------------------------- | ----------------------------------- | --------------------------------- |
-| `BoardIdParamSchema`                                              | `src/lib/validation/boards.ts`      | walidacja `id` (linie 150-152)    |
-| `HttpError`, `ValidationError`                                    | `src/lib/utils/http-error.ts`       | obsługa błędów                    |
-| `createSuccessResponse`, `createErrorResponse`, `getErrorMapping` | `src/lib/utils/api-response.ts`     | standaryzacja odpowiedzi          |
-| `formatValidationErrors`                                          | `src/lib/utils/api-response.ts`     | formatowanie błędów Zod           |
-| `archiveBoard` ✅                                                  | `src/lib/services/board.service.ts` | logika biznesowa (linie 749-786)  |
+| Typ                                                               | Plik                                | Zastosowanie                     |
+| ----------------------------------------------------------------- | ----------------------------------- | -------------------------------- |
+| `BoardIdParamSchema`                                              | `src/lib/validation/boards.ts`      | walidacja `id` (linie 150-152)   |
+| `HttpError`, `ValidationError`                                    | `src/lib/utils/http-error.ts`       | obsługa błędów                   |
+| `createSuccessResponse`, `createErrorResponse`, `getErrorMapping` | `src/lib/utils/api-response.ts`     | standaryzacja odpowiedzi         |
+| `formatValidationErrors`                                          | `src/lib/utils/api-response.ts`     | formatowanie błędów Zod          |
+| `archiveBoard` ✅                                                 | `src/lib/services/board.service.ts` | logika biznesowa (linie 749-786) |
 
 ## 4. Szczegóły odpowiedzi
 
-| Kod                       | Treść                                                                                    | Warunek                          |
-| ------------------------- | ---------------------------------------------------------------------------------------- | -------------------------------- |
-| 200 OK ✅                  | `{ "message": "Board archived" }`                                                        | Archiwizacja zakończona sukcesem |
-| 400 Bad Request ✅         | `{ "error": "validation_failed", "message": "...", errors: [...] }`                      | Niepoprawny UUID                 |
-| 401 Unauthorized ✅        | `{ "error": "Authentication required" }` lub `{ "error": "not_owner", "message": "..." }` | Brak sesji lub nie-owner         |
-| 404 Not Found ✅           | `{ "error": "board_not_found", "message": "Board does not exist or access denied." }`    | Brak rekordu                     |
-| 409 Conflict ✅            | `{ "error": "board_already_archived", "message": "Board is already archived." }`         | Tablica już archived             |
-| 500 Internal Server Error | `{ "error": "Internal server error" }`                                                   | Nieoczekiwany błąd               |
+| Kod                       | Treść                                                                                     | Warunek                          |
+| ------------------------- | ----------------------------------------------------------------------------------------- | -------------------------------- |
+| 200 OK ✅                 | `{ "message": "Board archived" }`                                                         | Archiwizacja zakończona sukcesem |
+| 400 Bad Request ✅        | `{ "error": "validation_failed", "message": "...", errors: [...] }`                       | Niepoprawny UUID                 |
+| 401 Unauthorized ✅       | `{ "error": "Authentication required" }` lub `{ "error": "not_owner", "message": "..." }` | Brak sesji lub nie-owner         |
+| 404 Not Found ✅          | `{ "error": "board_not_found", "message": "Board does not exist or access denied." }`     | Brak rekordu                     |
+| 409 Conflict ✅           | `{ "error": "board_already_archived", "message": "Board is already archived." }`          | Tablica już archived             |
+| 500 Internal Server Error | `{ "error": "Internal server error" }`                                                    | Nieoczekiwany błąd               |
 
 ## 5. Przepływ danych
 
@@ -67,15 +67,16 @@ Endpoint umożliwia właścicielowi tablicy jej „miękkie" usunięcie poprzez 
 
 ## 7. Obsługa błędów
 
-| Kod | Źródło                                                         | Mapa w `getErrorMapping`       | Status |
-| --- | -------------------------------------------------------------- | ------------------------------ | ------ |
-| 400 | `ValidationError`                                              | `"VALIDATION_FAILED"`          | ✅      |
-| 401 | `HttpError("Authentication required")`<br>`Error("NOT_OWNER")` | `"NOT_OWNER"`                  | ✅      |
-| 404 | `Error("BOARD_NOT_FOUND")`                                     | `"BOARD_NOT_FOUND"`            | ✅      |
-| 409 | `Error("BOARD_ALREADY_ARCHIVED")`                              | `"BOARD_ALREADY_ARCHIVED"` ✅   | ✅      |
-| 500 | inne błędy Supabase / nieoczekiwane                            | fallback "Internal server error" | ✅      |
+| Kod | Źródło                                                         | Mapa w `getErrorMapping`         | Status |
+| --- | -------------------------------------------------------------- | -------------------------------- | ------ |
+| 400 | `ValidationError`                                              | `"VALIDATION_FAILED"`            | ✅     |
+| 401 | `HttpError("Authentication required")`<br>`Error("NOT_OWNER")` | `"NOT_OWNER"`                    | ✅     |
+| 404 | `Error("BOARD_NOT_FOUND")`                                     | `"BOARD_NOT_FOUND"`              | ✅     |
+| 409 | `Error("BOARD_ALREADY_ARCHIVED")`                              | `"BOARD_ALREADY_ARCHIVED"` ✅    | ✅     |
+| 500 | inne błędy Supabase / nieoczekiwane                            | fallback "Internal server error" | ✅     |
 
 **Przepływ obsługi w endpoincie:**
+
 1. `ValidationError` → zwraca `error.response` i `error.status` (400)
 2. `HttpError` → zwraca `{ error: error.message }` i `error.status` (401)
 3. `Error` z nazwą zmapowaną w `getErrorMapping` → zwraca zmapowaną odpowiedź
@@ -112,11 +113,13 @@ Endpoint umożliwia właścicielowi tablicy jej „miękkie" usunięcie poprzez 
 Istnieje celowa różnica w zakresie operacji:
 
 **`archiveBoard` (DELETE /boards/:id):**
+
 - Dotyczy **tylko jednego poziomu** (konkretny `boardId`)
 - UPDATE z warunkiem: `.eq("id", boardId)`
 - Komentarz w kodzie: "affect only this board level"
 
 **`updateBoardMeta` (PATCH /boards/:id):**
+
 - Dotyczy **wszystkich poziomów** tej samej tablicy
 - UPDATE z warunkami: `.eq("owner_id", userId).eq("title", boardRow.title)`
 - Aktualizuje title, isPublic, tags dla wszystkich level
@@ -124,6 +127,7 @@ Istnieje celowa różnica w zakresie operacji:
 ### Uzasadnienie projektowe
 
 Archiwizacja pojedynczego poziomu pozwala na większą elastyczność:
+
 - Właściciel może usunąć tylko wybrane poziomy trudności
 - Inne poziomy pozostają dostępne
 - Zachowana spójność z filozofią "każdy poziom to osobny rekord"

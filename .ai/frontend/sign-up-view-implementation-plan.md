@@ -110,12 +110,12 @@ Wykorzystuje istniejące:
 
 ## 6. Zarządzanie stanem
 
-| Stan            | Lokalizacja                    | Typ     | Opis                                                        |
-| --------------- | ------------------------------ | ------- | ----------------------------------------------------------- |
-| błędy walidacji | `react-hook-form`              | lokalny | Wyświetlane przez `FormInput` pod polami.                   |
-| `showPwd`       | `useState` w `FormInput`       | lokalny | Pokazuje/ukrywa hasło przy przytrzymaniu ikony oka.         |
-| isLoading       | zwracany z `useSignUpMutation` | lokalny | Blokuje pola i przycisk podczas requestu.                   |
-| globalne toasty | `toastSlice`                   | Redux   | Sukces / błąd API – obsługiwane przez `apiSlice`.           |
+| Stan            | Lokalizacja                    | Typ     | Opis                                                |
+| --------------- | ------------------------------ | ------- | --------------------------------------------------- |
+| błędy walidacji | `react-hook-form`              | lokalny | Wyświetlane przez `FormInput` pod polami.           |
+| `showPwd`       | `useState` w `FormInput`       | lokalny | Pokazuje/ukrywa hasło przy przytrzymaniu ikony oka. |
+| isLoading       | zwracany z `useSignUpMutation` | lokalny | Blokuje pola i przycisk podczas requestu.           |
+| globalne toasty | `toastSlice`                   | Redux   | Sukces / błąd API – obsługiwane przez `apiSlice`.   |
 
 **Uwaga**: Logika `showPwd` jest zaimplementowana wewnątrz komponentu `FormInput`, nie bezpośrednio w `SignUpForm`.
 
@@ -146,26 +146,26 @@ window.location.assign(Routes.Login);
 
 ## 8. Interakcje użytkownika
 
-| Akcja                                       | Rezultat                                                                                               |
-| ------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| Wprowadza niepoprawny e-mail                | Komunikat walidacji pojawia się po opuszczeniu pola (onBlur).                                          |
-| Hasło < 6 znaków                            | Komunikat walidacji pojawia się po opuszczeniu pola (onBlur).                                          |
-| Hasła nie pasują                            | Komunikat "Passwords do not match" przy polu `repeatPassword`.                                         |
-| Przytrzymuje ikonę oka przy polu hasła      | Hasło staje się widoczne jako tekst; puszczenie ikony/opuszczenie kursora ukrywa hasło.               |
-| Klik „Zarejestruj" z błędnymi danymi        | Formularz blokuje submit, pokazuje lokalne błędy walidacji.                                            |
-| Click „Zarejestruj" (OK)                    | Przycisk pokazuje "Rejestracja...", wysyłka; po sukcesie → toast sukcesu + przekierowanie `/login`.   |
-| API zwraca 409                              | Toast error z komunikatem z API (np. "Email already exists").                                          |
-| Dowolny inny błąd sieci lub API (oprócz 401)| Toast error z komunikatem z serwera lub ogólny "Sign up failed".                                      |
+| Akcja                                        | Rezultat                                                                                            |
+| -------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Wprowadza niepoprawny e-mail                 | Komunikat walidacji pojawia się po opuszczeniu pola (onBlur).                                       |
+| Hasło < 6 znaków                             | Komunikat walidacji pojawia się po opuszczeniu pola (onBlur).                                       |
+| Hasła nie pasują                             | Komunikat "Passwords do not match" przy polu `repeatPassword`.                                      |
+| Przytrzymuje ikonę oka przy polu hasła       | Hasło staje się widoczne jako tekst; puszczenie ikony/opuszczenie kursora ukrywa hasło.             |
+| Klik „Zarejestruj" z błędnymi danymi         | Formularz blokuje submit, pokazuje lokalne błędy walidacji.                                         |
+| Click „Zarejestruj" (OK)                     | Przycisk pokazuje "Rejestracja...", wysyłka; po sukcesie → toast sukcesu + przekierowanie `/login`. |
+| API zwraca 409                               | Toast error z komunikatem z API (np. "Email already exists").                                       |
+| Dowolny inny błąd sieci lub API (oprócz 401) | Toast error z komunikatem z serwera lub ogólny "Sign up failed".                                    |
 
 ## 9. Warunki i walidacja
 
-| Warunek                        | Komponent           | Działanie UI                                          |
-| ------------------------------ | ------------------- | ----------------------------------------------------- |
-| `email` nie spełnia `.email()` | `FormInput`         | Czerwony border + message w prawym górnym rogu pola.  |
-| `password.length < 6`          | `FormInput`         | jw.                                                   |
-| `displayName` nie spełnia walidacji | `FormInput`    | jw.                                                   |
-| `repeatPassword` ≠ `password`  | `FormInput`         | jw. + message "Passwords do not match".               |
-| API 409 lub inny błąd          | Toast (Redux)       | Toast error z komunikatem z API.                      |
+| Warunek                             | Komponent     | Działanie UI                                         |
+| ----------------------------------- | ------------- | ---------------------------------------------------- |
+| `email` nie spełnia `.email()`      | `FormInput`   | Czerwony border + message w prawym górnym rogu pola. |
+| `password.length < 6`               | `FormInput`   | jw.                                                  |
+| `displayName` nie spełnia walidacji | `FormInput`   | jw.                                                  |
+| `repeatPassword` ≠ `password`       | `FormInput`   | jw. + message "Passwords do not match".              |
+| API 409 lub inny błąd               | Toast (Redux) | Toast error z komunikatem z API.                     |
 
 **Uwaga**: Walidacja uruchamiana jest w trybie `onBlur`, więc błędy pokazują się po opuszczeniu pola, nie w trakcie wpisywania.
 
@@ -181,7 +181,6 @@ window.location.assign(Routes.Login);
 1. ✅ **Utworzono plik** `src/components/pages/SignUpPage.tsx`:
    - Komponent jest owrapowany przez HOC `withProviders`.
    - Zawiera nagłówek "Definition quest", `SignUpForm` i link "Masz już konto? Zaloguj się".
-   
 2. ✅ **Utworzono komponent** `src/components/forms/SignUpForm.tsx`:
    - Używa `ClientSignUpSchema` (rozszerzenie backend schema o `repeatPassword`).
    - Wykorzystuje reużywalne komponenty `FormInput` i `SubmitButton`.
@@ -195,13 +194,14 @@ window.location.assign(Routes.Login);
    - `src/components/ui/SubmitButton.tsx` – przycisk submit z obsługą stanu ładowania.
 
 4. ✅ **Dodano routing** w `src/pages/signup.astro`:
+
    ```astro
    ---
    import SignUpPage from "../components/pages/SignUpPage";
    import Layout from "../layouts/Layout.astro";
    export const prerender = false;
    ---
-   
+
    <Layout>
      <SignUpPage client:load />
    </Layout>
